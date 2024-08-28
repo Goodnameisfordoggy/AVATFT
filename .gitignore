@@ -3,6 +3,7 @@
 cookies.json
 commit.bat
 commit_message.txt
+action_keywords/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

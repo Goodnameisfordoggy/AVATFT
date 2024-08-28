@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-27 00:16:25
+LastEditTime: 2024-08-29 00:16:08
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_edit.py
 Description: 
 
@@ -16,7 +16,8 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 from PySide6.QtWidgets import (
-    QApplication, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QWidget, QLineEdit
+    QApplication, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QWidget, QLineEdit, QTreeWidget,
+    QTreeWidgetItem
     )
 from PySide6.QtGui import QScreen
 from PySide6.QtCore import Qt
@@ -37,7 +38,7 @@ class EditDock(QDockWidget):
         # QDockWidget.DockWidgetAutoHide          允许停靠窗口自动隐藏。当用户将鼠标移到窗口边缘时，停靠窗口将会自动显示出来，移开鼠标时将会自动隐藏。
         # QDockWidget.DockWidgetFloatable         允许停靠窗口浮动，使其可以脱离主窗口作为独立的浮动窗口显示。
         # QDockWidget.DockWidgetMovable           允许停靠窗口在主窗口中进行移动。
-        self.setFeatures(QDockWidget.DockWidgetMovable)
+        self.setFeatures(QDockWidget.NoDockWidgetFeatures)
         self.initUI()
         
     
@@ -53,4 +54,26 @@ class EditDock(QDockWidget):
         # self.search_box.textChanged.connect()
         center_widget_layout.addWidget(self.search_box)
 
+        # 树状控件
+        self.tree = QTreeWidget()
+        center_widget_layout.addWidget(self.tree)
+        self.tree.setColumnCount(3) # 列数
+        self.tree.setHeaderLabels(['参数描述', '参数名称', '参数值'])
+    
+    def display_action_details(self, action_path:str):
+        """ 
+        展示action的详细信息 
         
+        action_path: 由信号携带
+        """
+        # 清空树控件
+        self.tree.clear()
+        # 创建action子项
+        print('action_path: ', action_path)
+        # action_item = QTreeWidgetItem()
+
+if __name__ == '__main__':
+    app = QApplication([])
+    window = EditDock()
+    window.show()
+    app.exec()

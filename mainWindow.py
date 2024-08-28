@@ -1,18 +1,18 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-27 14:34:41
+LastEditTime: 2024-08-29 00:26:31
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\mainWindow.py
 Description: 
 
-				*		Ğ´×ÖÂ¥ÀïĞ´×Ö¼ä£¬Ğ´×Ö¼äÀï³ÌĞòÔ±£»
-				*		³ÌĞòÈËÔ±Ğ´³ÌĞò£¬ÓÖÄÃ³ÌĞò»»¾ÆÇ®¡£
-				*		¾ÆĞÑÖ»ÔÚÍøÉÏ×ø£¬¾Æ×í»¹À´ÍøÏÂÃß£»
-				*		¾Æ×í¾ÆĞÑÈÕ¸´ÈÕ£¬ÍøÉÏÍøÏÂÄê¸´Äê¡£
-				*		µ«Ô¸ÀÏËÀµçÄÔ¼ä£¬²»Ô¸¾Ï¹ªÀÏ°åÇ°£»
-				*		±¼³Û±¦Âí¹óÕßÈ¤£¬¹«½»×ÔĞĞ³ÌĞòÔ±¡£
-				*		±ğÈËĞ¦ÎÒß¯·èñ²£¬ÎÒĞ¦×Ô¼ºÃüÌ«¼ú£»
-				*		²»¼ûÂú½ÖÆ¯ÁÁÃÃ£¬ÄÄ¸ö¹éµÃ³ÌĞòÔ±£¿    
+				*		å†™å­—æ¥¼é‡Œå†™å­—é—´ï¼Œå†™å­—é—´é‡Œç¨‹åºå‘˜ï¼›
+				*		ç¨‹åºäººå‘˜å†™ç¨‹åºï¼Œåˆæ‹¿ç¨‹åºæ¢é…’é’±ã€‚
+				*		é…’é†’åªåœ¨ç½‘ä¸Šåï¼Œé…’é†‰è¿˜æ¥ç½‘ä¸‹çœ ï¼›
+				*		é…’é†‰é…’é†’æ—¥å¤æ—¥ï¼Œç½‘ä¸Šç½‘ä¸‹å¹´å¤å¹´ã€‚
+				*		ä½†æ„¿è€æ­»ç”µè„‘é—´ï¼Œä¸æ„¿é èº¬è€æ¿å‰ï¼›
+				*		å¥”é©°å®é©¬è´µè€…è¶£ï¼Œå…¬äº¤è‡ªè¡Œç¨‹åºå‘˜ã€‚
+				*		åˆ«äººç¬‘æˆ‘å¿’ç–¯ç™«ï¼Œæˆ‘ç¬‘è‡ªå·±å‘½å¤ªè´±ï¼›
+				*		ä¸è§æ»¡è¡—æ¼‚äº®å¦¹ï¼Œå“ªä¸ªå½’å¾—ç¨‹åºå‘˜ï¼Ÿ    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 from PySide6.QtWidgets import QApplication, QLabel, QMainWindow, QDockWidget, QMenuBar, QMenu, QSplitter
@@ -27,9 +27,9 @@ from dockWidget_project import ProjectDock
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("¿ÉÊÓ»¯×Ô¶¯²âÊÔ¿ò¼Ü¹¤¾ß")
+        self.setWindowTitle("å¯è§†åŒ–è‡ªåŠ¨æµ‹è¯•æ¡†æ¶å·¥å…·")
 
-        # »ñÈ¡Ö÷ÆÁÄ»µÄ´óĞ¡
+        # è·å–ä¸»å±å¹•çš„å¤§å°
         screen = app.primaryScreen()
         screen_size = screen.size()
         self.screen_width = screen_size.width()
@@ -38,6 +38,7 @@ class MainWindow(QMainWindow):
         # self.maximumSize()
 
         self.initUI()
+        self.connect_signal()
 
     def initUI(self):
         self.build_menu()
@@ -45,25 +46,25 @@ class MainWindow(QMainWindow):
         self.initialize_layout()
 
     def build_menu(self):
-        # ´´½¨²Ëµ¥À¸
+        # åˆ›å»ºèœå•æ 
         menuBar = self.menuBar()
 
-        # ´´½¨²Ëµ¥
-        fileMenu = QMenu("ÎÄ¼ş", self)
-        viewMenu = QMenu("ÊÓÍ¼", self)
-        helpMenu = QMenu("°ïÖú", self)
+        # åˆ›å»ºèœå•
+        fileMenu = QMenu("æ–‡ä»¶", self)
+        viewMenu = QMenu("è§†å›¾", self)
+        helpMenu = QMenu("å¸®åŠ©", self)
 
-        # fileMenu¶¯×÷
-        newAction = QAction("ĞÂ½¨", self)
-        openAction = QAction("´ò¿ª", self)
-        saveAction = QAction("±£´æ", self)
-        exitAction = QAction("ÍË³ö", self)
-        exitAction.triggered.connect(self.close)  # Á¬½ÓÍË³ö¶¯×÷µ½´°¿ÚµÄ¹Ø±Õ¹¦ÄÜ
+        # fileMenuåŠ¨ä½œ
+        newAction = QAction("æ–°å»º", self)
+        openAction = QAction("æ‰“å¼€", self)
+        saveAction = QAction("ä¿å­˜", self)
+        exitAction = QAction("é€€å‡º", self)
+        exitAction.triggered.connect(self.close)  # è¿æ¥é€€å‡ºåŠ¨ä½œåˆ°çª—å£çš„å…³é—­åŠŸèƒ½
 
         fileMenu.addAction(newAction)
         fileMenu.addAction(openAction)
         fileMenu.addAction(saveAction)
-        fileMenu.addSeparator()  # ·Ö¸ô·û
+        fileMenu.addSeparator()  # åˆ†éš”ç¬¦
         fileMenu.addAction(exitAction)
 
         menuBar.addMenu(fileMenu)
@@ -71,44 +72,31 @@ class MainWindow(QMainWindow):
         menuBar.addMenu(helpMenu)
 
     def create_dock_widgets(self):
-        # ¹Ø¼ü´ÊÇøÓò
+        # å…³é”®è¯åŒºåŸŸ
         self.action_dock = ActionDock('', self)
         self.addDockWidget(Qt.RightDockWidgetArea, self.action_dock)
 
-        # ÕıÔÚ±à¼­ÓÃÀıÇøÓò
+        # æ­£åœ¨ç¼–è¾‘ç”¨ä¾‹åŒºåŸŸ
         self.edit_dock = EditDock('', self)
         self.addDockWidget(Qt.RightDockWidgetArea, self.edit_dock)
 
-        # ¹¤³ÌÇøÓò
+        # å·¥ç¨‹åŒºåŸŸ
         self.project_dock = ProjectDock('', self)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.project_dock)
 
-        # ÈÕÖ¾ÇøÓò
+        # æ—¥å¿—åŒºåŸŸ
         self.log_dock = LogDock('', self)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.log_dock)
 
     
     def initialize_layout(self):
-        pass
-        # # ·Ö¸î Horizontal Vertical
-        # self.splitDockWidget(self.action_dock, self.edit_dock, Qt.Horizontal)
-        # self.splitDockWidget(self.edit_dock, self.project_dock, Qt.Horizontal)
-        # self.splitDockWidget(self.edit_dock, self.log_dock, Qt.Vertical)
-        # # # ÉèÖÃ¹Ø¼ü´ÊÇøÓòºÍÕıÔÚ±à¼­ÓÃÀıÇøÓòµÄ·Ö¸î±ÈÀı
-        # self.action_dock.setMinimumSize(10, 10)
-        # self.edit_dock.setMinimumSize(10, 10)
-        # self.action_dock.setMinimumSize(10, 10)
-        # self.log_dock.setMinimumSize(10, 10)
+        
+        # åˆ†å‰² Horizontal Vertical
+        self.splitDockWidget(self.action_dock, self.edit_dock, Qt.Horizontal)
+        self.splitDockWidget(self.edit_dock, self.project_dock, Qt.Horizontal)
 
-        # # Ê¹ÓÃ QTimer ÔÚ´°¿ÚÏÔÊ¾ºóµ÷Õû·Ö¸î±ÈÀı
-        # from PySide6.QtCore import QTimer
-        # QTimer.singleShot(0, self.adjust_dock_sizes)
-
-    # def adjust_dock_sizes(self):
-    #     # ÕâÀï¼ÙÉè findChild ÕÒµ½µÄÊÇÒ»¸ö QSplitter£¬²¢µ÷Õû´óĞ¡
-    #     for splitter in self.findChildren(QSplitter):
-    #         print(1)
-    #         splitter.setSizes([100, 500])  # ÉèÖÃÄãÏëÒªµÄ±ÈÀı
+    def connect_signal(self): # QwQ: sender.signal.connect(receiver.func)
+        self.action_dock.item_double_clicked_signal.connect(self.edit_dock.display_action_details)
 
 
 if __name__ == '__main__':
