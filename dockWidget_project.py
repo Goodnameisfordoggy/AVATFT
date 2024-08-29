@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-26 23:59:32
+LastEditTime: 2024-08-29 23:35:45
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_project.py
 Description: 
 
@@ -15,13 +15,21 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
+import os
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QLineEdit
+    QApplication, QWidget, QLabel, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, 
+    QTreeWidgetItem, QMenu, QFileDialog
 	)
-from PySide6.QtGui import QScreen
-from PySide6.QtCore import Qt
+from PySide6.QtGui import QScreen, QAction
+from PySide6.QtCore import Qt, QPoint, Signal
+
+PROJECTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'projects')
 
 class ProjectDock(QDockWidget):
+    
+    # 自定义信号
+    item_double_clicked_signal = Signal(str)  # 信号携带一个字符串参数
+    
     def __init_subclass__(cls) -> None:
         return super().__init_subclass__()
     
@@ -42,3 +50,72 @@ class ProjectDock(QDockWidget):
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
         # self.search_box.textChanged.connect()
         center_widget_layout.addWidget(self.search_box)
+
+        # 树控件
+        self.tree = QTreeWidget()
+        center_widget_layout.addWidget(self.tree)
+        self.tree.setHeaderHidden(True) # 隐藏表头
+        # 拖拽功能
+        self.tree.setDragEnabled(True) # 能否拖拽
+        self.tree.setAcceptDrops(False) # 能否放置
+        self.tree.setDropIndicatorShown(True) # 是否启用放置指示器
+        self.tree.setDefaultDropAction(Qt.LinkAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
+        self.tree.itemDoubleClicked.connect(self.on_item_double_clicked)
+        # 连接右键菜单事件
+        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tree.customContextMenuRequested.connect(self.show_context_menu)
+
+    def load_project(self):
+        """ 加载项目 """
+        directory = QFileDialog.getExistingDirectory(self, "选择项目目录", PROJECTS_PATH)
+        # 创建树控件子项
+        if directory:
+            projectItem = QTreeWidgetItem(self.tree, [os.path.basename(directory)])
+            first_iteration = True
+            for root, dirs, files in os.walk(os.path.join(directory, 'business')): # 项目目录下的business()
+                if first_iteration:
+                    first_iteration = False
+                    continue
+                packageItem = QTreeWidgetItem(projectItem, [os.path.basename(root)])
+                packageItem.setData(0, Qt.UserRole, {'type': 'package', 'path': root, })
+                for file_name in files:
+                    moduleItem = QTreeWidgetItem(packageItem, [os.path.splitext(file_name)[0]])
+                    moduleItem.setData(0, Qt.UserRole, {'type': 'module', 'path': os.path.join(root, file_name), })
+
+    def on_item_double_clicked(self, item, column):
+        """ 树控件子项双击事件 """
+        try:
+            if item.data(0, Qt.UserRole).get('type') == 'action':
+                self.item_double_clicked_signal.emit(item.data(0, Qt.UserRole).get('path')) # 发送信号
+        except AttributeError:
+            pass
+    
+    def show_context_menu(self, pos: QPoint):
+        """ 树控件子项右键菜单事件 """
+        # 获取点击的项
+        item = self.tree.itemAt(pos)
+        if item:
+            # 创建上下文菜单
+            context_menu = QMenu(self)
+
+            # 创建菜单项
+            action_edit = QAction("打开文件(目录)", self)
+
+            # 连接菜单项的触发信号
+            action_edit.triggered.connect(lambda: self.open_file(item.data(0, Qt.UserRole).get('path')))
+
+            # 将菜单项添加到上下文菜单
+            context_menu.addAction(action_edit)
+
+            # 显示上下文菜单
+            context_menu.exec(self.tree.viewport().mapToGlobal(pos))
+
+    def open_file(self, path: str):
+        """ 调用系统默认程序打开文件 """
+        pass
+
+if __name__ == '__main__':
+    app = QApplication([])
+    window = ProjectDock()
+    window.show()
+    app.exec()

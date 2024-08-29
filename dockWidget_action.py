@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-29 00:23:29
+LastEditTime: 2024-08-29 21:46:41
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_action.py
 Description: 
 
@@ -16,12 +16,14 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import os
+import sys
+import subprocess
 from PySide6.QtWidgets import (
     QApplication, QWidget, QTextEdit, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QLineEdit,
-    QTreeWidget, QTreeWidgetItem
+    QTreeWidget, QTreeWidgetItem, QMenu
     )
-from PySide6.QtGui import QScreen
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QScreen, QAction
+from PySide6.QtCore import Qt, Signal, QPoint
 
 ACTION_KEYWORDS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'action_keywords')
 
@@ -63,6 +65,9 @@ class ActionDock(QDockWidget):
         self.tree.setDropIndicatorShown(True) # 是否启用放置指示器
         self.tree.setDefaultDropAction(Qt.LinkAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
         self.tree.itemDoubleClicked.connect(self.on_item_double_clicked)
+        # 连接右键菜单事件
+        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tree.customContextMenuRequested.connect(self.show_context_menu)
         # 子项
         first_iteration = True
         for root, dirs, files in os.walk(ACTION_KEYWORDS_PATH):
@@ -70,19 +75,49 @@ class ActionDock(QDockWidget):
                 first_iteration = False
                 continue
             rootItem = QTreeWidgetItem(self.tree, [os.path.basename(root)])
+            rootItem.setData(0, Qt.UserRole, {'type': 'package', 'path': root, })
             for file_name in files:
                 childItem = QTreeWidgetItem(rootItem, [os.path.splitext(file_name)[0]])
-                childItem.setData(0, Qt.UserRole, {'type': 'action', 'action_path': os.path.join(root, file_name), })
+                childItem.setData(0, Qt.UserRole, {'type': 'action', 'path': os.path.join(root, file_name), })
             
     def on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件 """
         try:
             if item.data(0, Qt.UserRole).get('type') == 'action':
-                # print(f"Item '{item.text(0)}' in column {column} was double-clicked.")
-                self.item_double_clicked_signal.emit(item.data(0, Qt.UserRole).get('action_path'))
+                self.item_double_clicked_signal.emit(item.data(0, Qt.UserRole).get('path')) # 发送信号
         except AttributeError:
             pass
     
+    def show_context_menu(self, pos: QPoint):
+        """ 树控件子项右键菜单事件 """
+        # 获取点击的项
+        item = self.tree.itemAt(pos)
+        if item:
+            # 创建上下文菜单
+            context_menu = QMenu(self)
+
+            # 创建菜单项
+            action_edit = QAction("打开文件(目录)", self)
+
+            # 连接菜单项的触发信号
+            action_edit.triggered.connect(lambda: self.open_file(item.data(0, Qt.UserRole).get('path')))
+
+            # 将菜单项添加到上下文菜单
+            context_menu.addAction(action_edit)
+
+            # 显示上下文菜单
+            context_menu.exec(self.tree.viewport().mapToGlobal(pos))
+    
+    def open_file(self, path: str):
+        """ 调用系统默认程序打开文件 """
+        if sys.platform == "win32":
+            subprocess.Popen(["start", path], shell=True)
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", path])
+        else:  # Linux
+            subprocess.Popen(["xdg-open", path])
+
+
 if __name__ == '__main__':
     app = QApplication([])
     window = ActionDock()

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-29 00:16:08
+LastEditTime: 2024-08-29 22:27:26
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_edit.py
 Description: 
 
@@ -15,6 +15,7 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
+import yaml
 from PySide6.QtWidgets import (
     QApplication, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QWidget, QLineEdit, QTreeWidget,
     QTreeWidgetItem
@@ -29,7 +30,6 @@ class EditDock(QDockWidget):
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
         
-        self.setWindowTitle('main')
         # QDockWidget.NoDockWidgetFeatures        禁用所有特性，停靠窗口将不能移动、浮动或关闭。
         # QDockWidget.DockWidgetMovable           允许停靠窗口在主窗口中移动（拖动）。
         # QDockWidget.DockWidgetFloatable         允许停靠窗口浮动到主窗口之外成为独立窗口。
@@ -38,7 +38,8 @@ class EditDock(QDockWidget):
         # QDockWidget.DockWidgetAutoHide          允许停靠窗口自动隐藏。当用户将鼠标移到窗口边缘时，停靠窗口将会自动显示出来，移开鼠标时将会自动隐藏。
         # QDockWidget.DockWidgetFloatable         允许停靠窗口浮动，使其可以脱离主窗口作为独立的浮动窗口显示。
         # QDockWidget.DockWidgetMovable           允许停靠窗口在主窗口中进行移动。
-        self.setFeatures(QDockWidget.NoDockWidgetFeatures)
+        self.setFeatures(QDockWidget.NoDockWidgetFeatures | QDockWidget.DockWidgetClosable)
+        self.setTitleBarWidget(QLabel('   测试用例编辑区'))
         self.initUI()
         
     
@@ -47,7 +48,6 @@ class EditDock(QDockWidget):
         self.setWidget(self.center_widget)
         center_widget_layout = QVBoxLayout(self.center_widget)
         
-
         # 搜索框
         self.search_box = QLineEdit(self)
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
@@ -59,6 +59,7 @@ class EditDock(QDockWidget):
         center_widget_layout.addWidget(self.tree)
         self.tree.setColumnCount(3) # 列数
         self.tree.setHeaderLabels(['参数描述', '参数名称', '参数值'])
+        
     
     def display_action_details(self, action_path:str):
         """ 
@@ -68,9 +69,31 @@ class EditDock(QDockWidget):
         """
         # 清空树控件
         self.tree.clear()
+        # 读取 YAML 文件
+        with open(action_path, 'r', encoding='utf-8') as file:
+            config = yaml.safe_load(file)
         # 创建action子项
-        print('action_path: ', action_path)
-        # action_item = QTreeWidgetItem()
+        actionItem = QTreeWidgetItem(self.tree, [config[0]['describe']]) # 配置文件(yaml)有列表结构
+        actionItem.setFirstColumnSpanned(True)  # 合并三列
+        try:
+            parameterItemsText = [[config[0]['params_describe'][key], key, value] for key, value in config[0]['params'].items()]
+        except KeyError:
+            print(f'文件参数缺失：{action_path}')
+            return
+            
+        for parameterItemText in parameterItemsText:
+            parameterItem = QTreeWidgetItem(actionItem, parameterItemText)
+
+        # 展开子项
+        actionItem.setExpanded(True)
+        # 自动调整所有列的宽度
+        self.tree.resizeColumnToContents(0)
+        self.tree.resizeColumnToContents(1)
+        self.tree.resizeColumnToContents(2)
+    
+    def display_module_details(self, module_path:str):
+        print('display_module_details')
+        pass
 
 if __name__ == '__main__':
     app = QApplication([])
