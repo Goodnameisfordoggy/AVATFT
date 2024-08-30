@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-29 21:46:41
+LastEditTime: 2024-08-30 23:14:01
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_action.py
 Description: 
 
@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
     )
 from PySide6.QtGui import QScreen, QAction
 from PySide6.QtCore import Qt, Signal, QPoint
+from treeWidgetItem import TreeWidgetItem
 
 ACTION_KEYWORDS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'action_keywords')
 
@@ -31,9 +32,6 @@ class ActionDock(QDockWidget):
     
     # 自定义信号
     item_double_clicked_signal = Signal(str)  # 信号携带一个字符串参数
-
-    def __init_subclass__(cls) -> None:
-        return super().__init_subclass__()
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
@@ -74,17 +72,17 @@ class ActionDock(QDockWidget):
             if first_iteration:
                 first_iteration = False
                 continue
-            rootItem = QTreeWidgetItem(self.tree, [os.path.basename(root)])
-            rootItem.setData(0, Qt.UserRole, {'type': 'package', 'path': root, })
+            rootItem = TreeWidgetItem(self.tree, [os.path.basename(root)], ('package', root))
+            # rootItem.setData(0, Qt.UserRole, {'type': 'package', 'path': root, })
             for file_name in files:
-                childItem = QTreeWidgetItem(rootItem, [os.path.splitext(file_name)[0]])
-                childItem.setData(0, Qt.UserRole, {'type': 'action', 'path': os.path.join(root, file_name), })
+                childItem = TreeWidgetItem(rootItem, [os.path.splitext(file_name)[0]], ('action', os.path.join(root, file_name)))
+                # childItem.setData(0, Qt.UserRole, {'type': 'action', 'path': os.path.join(root, file_name), })
             
     def on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件 """
         try:
-            if item.data(0, Qt.UserRole).get('type') == 'action':
-                self.item_double_clicked_signal.emit(item.data(0, Qt.UserRole).get('path')) # 发送信号
+            if item.data(0, Qt.UserRole) == 'action':
+                self.item_double_clicked_signal.emit(item.data(1, Qt.UserRole)) # 发送信号
         except AttributeError:
             pass
     
@@ -100,7 +98,7 @@ class ActionDock(QDockWidget):
             action_edit = QAction("打开文件(目录)", self)
 
             # 连接菜单项的触发信号
-            action_edit.triggered.connect(lambda: self.open_file(item.data(0, Qt.UserRole).get('path')))
+            action_edit.triggered.connect(lambda: self.open_file(item.data(1, Qt.UserRole)))
 
             # 将菜单项添加到上下文菜单
             context_menu.addAction(action_edit)

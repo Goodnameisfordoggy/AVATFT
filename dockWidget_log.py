@@ -22,8 +22,6 @@ from PySide6.QtGui import QScreen
 from PySide6.QtCore import Qt
 
 class LogDock(QDockWidget):
-    def __init_subclass__(cls) -> None:
-        return super().__init_subclass__()
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)

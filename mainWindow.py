@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-29 23:45:35
+LastEditTime: 2024-08-30 21:17:30
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\mainWindow.py
 Description: 
 
@@ -30,7 +30,6 @@ class MainWindow(QMainWindow):
     new_project_signal = Signal(str)
     load_project_signal = Signal(str)
     
-
     def __init__(self):
         super().__init__()
         self.setWindowTitle("可视化自动测试框架工具")
@@ -132,7 +131,7 @@ class MainWindow(QMainWindow):
     def viewMenu_clicked(self, checked):
         """ 视图菜单下子项的单击事件 """
         sender = self.sender()  # 获取信号发送者
-        actionText = self.sender().text()
+        actionText = sender.text()
         dock = None
         if actionText == '自动化测试关键字窗口':
             dock = self.action_dock
