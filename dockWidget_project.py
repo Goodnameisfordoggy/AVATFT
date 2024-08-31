@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-30 20:43:52
+LastEditTime: 2024-08-31 12:46:30
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_project.py
 Description: 
 
@@ -20,10 +20,11 @@ import sys
 import subprocess
 from PySide6.QtWidgets import (
     QApplication, QWidget, QLabel, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, 
-    QTreeWidgetItem, QMenu, QFileDialog
+    QMenu, QFileDialog
 	)
 from PySide6.QtGui import QScreen, QAction
 from PySide6.QtCore import Qt, QPoint, Signal
+from treeWidgetItem import TreeWidgetItem
 
 PROJECTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'projects')
 
@@ -68,23 +69,21 @@ class ProjectDock(QDockWidget):
         """ 加载项目 """
         # 创建树控件子项
         if directory_path:
-            projectItem = QTreeWidgetItem(self.tree, [os.path.basename(directory_path)])
+            projectItem = TreeWidgetItem(self.tree, [os.path.basename(directory_path)], ('project', directory_path))
             first_iteration = True
             for root, dirs, files in os.walk(os.path.join(directory_path, 'business')): # 项目目录下的business()
                 if first_iteration:
                     first_iteration = False
                     continue
-                packageItem = QTreeWidgetItem(projectItem, [os.path.basename(root)])
-                packageItem.setData(0, Qt.UserRole, {'type': 'package', 'path': root, })
+                packageItem = TreeWidgetItem(projectItem, [os.path.basename(root)], ('packageItem', root))
                 for file_name in files:
-                    moduleItem = QTreeWidgetItem(packageItem, [os.path.splitext(file_name)[0]])
-                    moduleItem.setData(0, Qt.UserRole, {'type': 'module', 'path': os.path.join(root, file_name), })
+                    moduleItem = TreeWidgetItem(packageItem, [os.path.splitext(file_name)[0]], ('module', os.path.join(root, file_name)))
 
     def on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件 """
         try:
-            if item.data(0, Qt.UserRole).get('type') == 'module':
-                self.item_double_clicked_signal.emit(item.data(0, Qt.UserRole).get('path')) # 发送信号
+            if item.data(0, Qt.UserRole) == 'module':
+                self.item_double_clicked_signal.emit(item.data(1, Qt.UserRole)) # 发送信号
         except AttributeError:
             pass
     
@@ -102,7 +101,7 @@ class ProjectDock(QDockWidget):
             # 创建菜单项
             action_edit = QAction("打开文件(目录)", self)
             # 连接菜单项的触发信号
-            action_edit.triggered.connect(lambda: self.open_file(item.data(0, Qt.UserRole).get('path')))
+            action_edit.triggered.connect(lambda: self.open_file(item.data(1, Qt.UserRole)))
             # 将菜单项添加到上下文菜单
             context_menu.addAction(action_edit)
             # 显示上下文菜单

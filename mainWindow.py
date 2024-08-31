@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-30 21:17:30
+LastEditTime: 2024-08-31 16:27:59
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\mainWindow.py
 Description: 
 
