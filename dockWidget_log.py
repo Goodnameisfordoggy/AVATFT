@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-27 00:16:44
+LastEditTime: 2024-09-02 09:05:24
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_log.py
 Description: 
 
@@ -16,7 +16,7 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QLineEdit
+    QApplication, QWidget, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QLineEdit, QTextEdit
 	)
 from PySide6.QtGui import QScreen
 from PySide6.QtCore import Qt
@@ -40,3 +40,14 @@ class LogDock(QDockWidget):
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
         # self.search_box.textChanged.connect()
         center_widget_layout.addWidget(self.search_box)
+
+        # 日志区
+        self.logText = QTextEdit(self)
+        center_widget_layout.addWidget(self.logText)
+
+
+if __name__ == '__main__':
+    app = QApplication([])
+    window = LogDock()
+    window.show()
+    app.exec()

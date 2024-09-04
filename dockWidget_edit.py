@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-31 16:13:25
+LastEditTime: 2024-09-04 20:57:04
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_edit.py
 Description: 
 
@@ -22,11 +22,14 @@ from PySide6.QtWidgets import (
     QMenu, QPushButton
     )
 from PySide6.QtGui import QAction
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, Signal
 from treeWidgetItem import TreeWidgetItem, ActionItem, ModuleItem
 
 class EditDock(QDockWidget):
     
+    # 自定义信号
+    operate_signal = Signal(str)
+
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
         
@@ -60,6 +63,7 @@ class EditDock(QDockWidget):
         # 运行按钮
         self.operation_btn = QPushButton(self, text='开始测试')
         center_widget_layout.addWidget(self.operation_btn)
+        self.operation_btn.clicked.connect(self.operate)
 
     def display_action_details(self, action_path:str):
         """ 
@@ -93,12 +97,17 @@ class EditDock(QDockWidget):
         self.tree.resizeColumnToContents(1)
         self.tree.resizeColumnToContents(2)
 
+    def operate(self):
+        """ 开始测试 """
+        self.operate_signal.emit('operate')
+        
+
 class TreeWidget(QTreeWidget):
     def __init__(self):
         super().__init__()
         self.setColumnCount(3) # 列数
         self.setHeaderLabels(['参数描述', '参数名称', '参数值'])
-        self.setDragEnabled(False) # 能否拖拽
+        self.setDragEnabled(True) # 能否拖拽
         self.setAcceptDrops(True) # 能否放置
         self.setDropIndicatorShown(True) # 是否启用放置指示器
         self.setDefaultDropAction(Qt.MoveAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
@@ -114,7 +123,9 @@ class TreeWidget(QTreeWidget):
         return False
     
     def on_item_double_clicked(self, item, column):
-        """ 树控件子项双击事件 """
+        """ 
+        树控件子项双击事件 
+        """
         try:
             if item.data(0, Qt.UserRole) == 'module':
                 self.item_double_clicked_signal.emit(item.data(1, Qt.UserRole)) # 发送信号
@@ -131,13 +142,15 @@ class TreeWidget(QTreeWidget):
         source = event.source()
         if isinstance(source, QTreeWidget):
             # 通过选择的项来识别被拖动的子项
-            dragged_item = source.currentItem()
-            dragged_item_type = dragged_item.data(0, Qt.UserRole)
-            if dragged_item_type == 'action':
+            draggedItem = source.currentItem()
+            draggedItemType = draggedItem.data(0, Qt.UserRole)
+            if draggedItemType == 'action':
                 event.accept()
 
     def dragMoveEvent(self, event):
-        """ 组件内移动事件 """
+        """ 
+        组件内移动事件 
+        """
         item = self.itemAt(event.pos())
         if item:
             can_accept = item.data(3, Qt.UserRole)
@@ -159,13 +172,62 @@ class TreeWidget(QTreeWidget):
         if item:
             can_accept = item.data(3, Qt.UserRole)
             if can_accept:
-                super().dropEvent(event)
+                # 获取拖动源(因为有跨组件拖拽)
+                source = event.source()
+                if isinstance(source, QTreeWidget):
+                    # 通过选择的项来识别被拖动的子项
+                    draggedItem = source.currentItem()
+                    draggedItemType = draggedItem.data(0, Qt.UserRole)
+                    if draggedItemType == 'action':
+                        # 获取 action 路径
+                        actionPath = draggedItem.data(1, Qt.UserRole)
+                        # 创建一个新的子项
+                        newItem = ActionItem(item, data=('action', actionPath), editable=True)
+                        if item.text(0) == '测试步骤':
+                            modulePath = item.parent().data(1, Qt.UserRole)
+                            # 将 action 信息写入 module
+                            self.add_action_to_module(actionPath, modulePath)
+                        # 确认并完成当前的拖放操作
+                        event.acceptProposedAction()
             else:
+                # 如果组件不接受放置，拒绝拖动操作
                 event.ignore()
         else:
             # 如果没有拖动目标项（即拖动到了空白区域），拒绝拖动操作
             event.ignore()
     
+    def add_action_to_module(self, action_file, module_file):
+        start_index = action_file.find('action_keywords') # 查找起始位置
+        action_RP = action_file[start_index:] # 提取相对路径
+        try:
+            # 读取源文件内容
+            with open(action_file, 'r', encoding='utf-8') as src:
+                action_content = yaml.safe_load(src)
+            action_content[0] = {'action_RP': action_RP} | action_content[0] #添加相对路径信息，'|' Operator (Python 3.9+)
+            # 读取目标文件内容
+            with open(module_file, 'r', encoding='utf-8') as tgt:
+                module_content = yaml.safe_load(tgt)
+            # 确保模块内容有 'step' 键
+            if 'step' not in module_content:
+                module_content['step'] = None
+            # 添加源内容到目标文件的 'step' 部分
+            if module_content['step'] is None:
+                module_content['step'] = action_content
+            else:
+                module_content['step'] = module_content['step'] + action_content
+            # 将更新后的内容写回目标文件
+            with open(module_file, 'w', encoding='utf-8') as tgt:
+                yaml.safe_dump(module_content, tgt, allow_unicode=True, sort_keys=False)
+            
+                print(f"源文件内容已成功添加到 {module_file} 的 'step' 部分")
+
+        except FileNotFoundError as e:
+            print(f"文件未找到: {e}")
+        except yaml.YAMLError as e:
+            print(f"YAML 解析错误: {e}")
+        except IOError as e:
+            print(f"文件操作失败: {e}")
+        
     def show_context_menu(self, pos: QPoint):
         """ 
         树控件子项右键菜单事件 
@@ -182,9 +244,9 @@ class TreeWidget(QTreeWidget):
             actionMoveUp = QAction("上移", self)
             actionMoveDown = QAction("下移", self)
             # 连接菜单项的触发信号
-            # actionDelete.triggered.connect()
-            # actionMoveUp.triggered.connect()
-            # actionMoveDown.triggered.connect()
+            actionDelete.triggered.connect(lambda: self.delete_item(item))
+            actionMoveUp.triggered.connect(lambda: self.move_item_up(item))
+            actionMoveDown.triggered.connect(lambda: self.move_item_down(item))
             # 将菜单项添加到上下文菜单
             context_menu.addAction(actionDelete)
             context_menu.addAction(actionMoveUp)
@@ -192,6 +254,39 @@ class TreeWidget(QTreeWidget):
             # 显示上下文菜单
             context_menu.exec(self.viewport().mapToGlobal(pos))
     
+    def delete_item(self, item):
+        """
+        删除选中的项
+        """
+        root = self.invisibleRootItem()
+        (item.parent() or root).removeChild(item)
+
+    def move_item_up(self, item):
+        """
+        上移选中的项
+        """
+        parent = item.parent() or self.invisibleRootItem()
+        index = parent.indexOfChild(item)
+        if index > 0:
+            parent.takeChild(index)
+            parent.insertChild(index - 1, item)
+            self.setCurrentItem(item)  # 重新选中该项
+            if item.data(0, Qt.UserRole) == 'action':
+                item.setFirstColumnSpanned(True)
+
+    def move_item_down(self, item):
+        """
+        下移选中的项
+        """
+        parent = item.parent() or self.invisibleRootItem()
+        index = parent.indexOfChild(item)
+        if index < parent.childCount() - 1:
+            parent.takeChild(index)
+            parent.insertChild(index + 1, item)
+            self.setCurrentItem(item)  # 重新选中该项
+            if item.data(0, Qt.UserRole) == 'action':
+                item.setFirstColumnSpanned(True)
+
     def on_item_changed(self, item, column):
         print(item)
         print(column)

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-31 16:27:59
+LastEditTime: 2024-09-02 08:55:49
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\mainWindow.py
 Description: 
 
@@ -127,6 +127,7 @@ class MainWindow(QMainWindow):
         self.action_dock.item_double_clicked_signal.connect(self.edit_dock.display_action_details)
         self.project_dock.item_double_clicked_signal.connect(self.edit_dock.display_module_details)
         self.load_project_signal.connect(self.project_dock.load_project)
+        self.edit_dock.operate_signal.connect(lambda: self.log_dock.setVisible(True))
 
     def viewMenu_clicked(self, checked):
         """ 视图菜单下子项的单击事件 """
