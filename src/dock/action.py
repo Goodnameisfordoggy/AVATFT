@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-08-31 12:46:30
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_project.py
+LastEditTime: 2024-09-04 23:42:20
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\action.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -19,100 +19,93 @@ import os
 import sys
 import subprocess
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QLabel, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, 
-    QMenu, QFileDialog
-	)
+    QApplication, QWidget, QTextEdit, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QLineEdit,
+    QTreeWidget, QMenu
+    )
 from PySide6.QtGui import QScreen, QAction
-from PySide6.QtCore import Qt, QPoint, Signal
-from treeWidgetItem import TreeWidgetItem
+from PySide6.QtCore import Qt, Signal, QPoint
+from ..treeWidgetItem import TreeWidgetItem
+from .. import ACTION_KEYWORDS_DIR
 
-PROJECTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'projects')
 
-class ProjectDock(QDockWidget):
+class ActionDock(QDockWidget):
     
     # 自定义信号
     item_double_clicked_signal = Signal(str)  # 信号携带一个字符串参数
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
-        self.setWindowTitle('项目')
+        self.setWindowTitle('行为关键字')
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
+        self.resize(400, 300)
         self.initUI()
-        self.load_project(r"D:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\projects\pro")
         
+    
     def initUI(self):
         self.center_widget = QWidget(self)
         self.setWidget(self.center_widget)
         center_widget_layout = QVBoxLayout(self.center_widget)
         
-
         # 搜索框
         self.search_box = QLineEdit(self)
+        center_widget_layout.addWidget(self.search_box)
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
         # self.search_box.textChanged.connect()
-        center_widget_layout.addWidget(self.search_box)
+        
 
         # 树控件
         self.tree = QTreeWidget()
         center_widget_layout.addWidget(self.tree)
         self.tree.setHeaderHidden(True) # 隐藏表头
+        # 拖拽功能
+        self.tree.setDragEnabled(True) # 能否拖拽
+        self.tree.setAcceptDrops(False) # 能否放置
+        self.tree.setDropIndicatorShown(True) # 是否启用放置指示器
+        self.tree.setDefaultDropAction(Qt.LinkAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
         self.tree.itemDoubleClicked.connect(self.on_item_double_clicked)
         # 连接右键菜单事件
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.show_context_menu)
-
-    def select_project(self) -> str:
-        directory_path = QFileDialog.getExistingDirectory(self, "选择项目目录", PROJECTS_PATH)
-        return directory_path
-    
-    def load_project(self, directory_path: str):
-        """ 加载项目 """
-        # 创建树控件子项
-        if directory_path:
-            projectItem = TreeWidgetItem(self.tree, [os.path.basename(directory_path)], ('project', directory_path))
-            first_iteration = True
-            for root, dirs, files in os.walk(os.path.join(directory_path, 'business')): # 项目目录下的business()
-                if first_iteration:
-                    first_iteration = False
-                    continue
-                packageItem = TreeWidgetItem(projectItem, [os.path.basename(root)], ('packageItem', root))
-                for file_name in files:
-                    moduleItem = TreeWidgetItem(packageItem, [os.path.splitext(file_name)[0]], ('module', os.path.join(root, file_name)))
-
+        # 子项
+        first_iteration = True
+        for root, dirs, files in os.walk(ACTION_KEYWORDS_DIR):
+            if first_iteration:
+                first_iteration = False
+                continue
+            rootItem = TreeWidgetItem(self.tree, [os.path.basename(root)], ('package', root))
+            # rootItem.setData(0, Qt.UserRole, {'type': 'package', 'path': root, })
+            for file_name in files:
+                childItem = TreeWidgetItem(rootItem, [os.path.splitext(file_name)[0]], ('action', os.path.join(root, file_name)))
+                # childItem.setData(0, Qt.UserRole, {'type': 'action', 'path': os.path.join(root, file_name), })
+            
     def on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件 """
         try:
-            if item.data(0, Qt.UserRole) == 'module':
+            if item.data(0, Qt.UserRole) == 'action':
                 self.item_double_clicked_signal.emit(item.data(1, Qt.UserRole)) # 发送信号
         except AttributeError:
             pass
     
     def show_context_menu(self, pos: QPoint):
-        """ 
-        树控件子项右键菜单事件 
-        
-        pos: 事件位置
-        """
+        """ 树控件子项右键菜单事件 """
         # 获取点击的项
         item = self.tree.itemAt(pos)
         if item:
             # 创建上下文菜单
             context_menu = QMenu(self)
+
             # 创建菜单项
             action_edit = QAction("打开文件(目录)", self)
+
             # 连接菜单项的触发信号
             action_edit.triggered.connect(lambda: self.open_file(item.data(1, Qt.UserRole)))
+
             # 将菜单项添加到上下文菜单
             context_menu.addAction(action_edit)
+
             # 显示上下文菜单
             context_menu.exec(self.tree.viewport().mapToGlobal(pos))
-        else:
-            context_menu = QMenu(self)
-            action_edit = QAction("将文件添加到工作区", self)
-            action_edit.triggered.connect(self.load_project)
-            context_menu.addAction(action_edit)
-            context_menu.exec(self.tree.viewport().mapToGlobal(pos))
-
+    
     def open_file(self, path: str):
         """ 调用系统默认程序打开文件 """
         if sys.platform == "win32":
@@ -121,10 +114,10 @@ class ProjectDock(QDockWidget):
             subprocess.Popen(["open", path])
         else:  # Linux
             subprocess.Popen(["xdg-open", path])
-    
+
 
 if __name__ == '__main__':
     app = QApplication([])
-    window = ProjectDock()
+    window = ActionDock()
     window.show()
     app.exec()

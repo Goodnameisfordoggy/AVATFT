@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-02 08:55:49
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\mainWindow.py
+LastEditTime: 2024-09-04 23:21:40
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\mainWindow.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -15,14 +15,14 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
-from PySide6.QtWidgets import QApplication, QLabel, QMainWindow, QDockWidget, QMenuBar, QMenu, QSplitter
-from PySide6.QtGui import QScreen, QAction
+from PySide6.QtWidgets import QApplication, QMainWindow, QDockWidget, QMenuBar, QMenu, QSplitter
+from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, Signal
 
-from dockWidget_edit import EditDock
-from dockWidget_action import ActionDock 
-from dockWidget_log import LogDock
-from dockWidget_project import ProjectDock
+from .dock.edit import EditDock
+from .dock.action import ActionDock 
+from .dock.log import LogDock
+from .dock.project import ProjectDock
 
 class MainWindow(QMainWindow):
     
@@ -30,7 +30,7 @@ class MainWindow(QMainWindow):
     new_project_signal = Signal(str)
     load_project_signal = Signal(str)
     
-    def __init__(self):
+    def __init__(self, app):
         super().__init__()
         self.setWindowTitle("可视化自动测试框架工具")
 

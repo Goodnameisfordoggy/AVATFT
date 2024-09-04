@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-04 20:57:04
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_edit.py
+LastEditTime: 2024-09-04 23:33:37
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -18,12 +18,12 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 import json
 import yaml
 from PySide6.QtWidgets import (
-    QApplication, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QWidget, QLineEdit, QTreeWidget,
+    QApplication, QLabel, QDockWidget, QVBoxLayout, QWidget, QLineEdit, QTreeWidget,
     QMenu, QPushButton
     )
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QPoint, Signal
-from treeWidgetItem import TreeWidgetItem, ActionItem, ModuleItem
+from ..treeWidgetItem import ActionItem, ModuleItem
 
 class EditDock(QDockWidget):
     
