@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-04 23:13:14
+LastEditTime: 2024-09-06 14:47:47
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\__init__.py
 Description: 
 
@@ -19,5 +19,3 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ACTION_KEYWORDS_DIR = os.path.join(BASE_DIR, 'action_keywords')
 PROJECTS_DIR = os.path.join(BASE_DIR, 'projects')
-
-print(ACTION_KEYWORDS_DIR)

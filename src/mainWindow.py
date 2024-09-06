@@ -124,8 +124,8 @@ class MainWindow(QMainWindow):
 
     def connect_signal(self): # QwQ: sender.signal.connect(receiver.func)
         """ 信号连接 """
-        self.action_dock.item_double_clicked_signal.connect(self.edit_dock.display_action_details)
-        self.project_dock.item_double_clicked_signal.connect(self.edit_dock.display_module_details)
+        self.action_dock.item_double_clicked_signal.connect(self.edit_dock.tree.display_action_details)
+        self.project_dock.item_double_clicked_signal.connect(self.edit_dock.tree.display_module_details)
         self.load_project_signal.connect(self.project_dock.load_project)
         self.edit_dock.operate_signal.connect(lambda: self.log_dock.setVisible(True))
 
