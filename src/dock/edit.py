@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-07 00:12:05
+LastEditTime: 2024-09-09 23:08:34
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QPoint, Signal
 from ..treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
+from .action import ActionDock
 
 class EditDock(QDockWidget):
     
@@ -80,7 +81,7 @@ class TreeWidget(QTreeWidget):
         self.setDragEnabled(True) # 能否拖拽
         self.setAcceptDrops(True) # 能否放置
         self.setDropIndicatorShown(True) # 是否启用放置指示器
-        self.setDefaultDropAction(Qt.MoveAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
+        self.setDefaultDropAction(Qt.CopyAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
         # 连接右键菜单事件
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
@@ -182,68 +183,71 @@ class TreeWidget(QTreeWidget):
             if can_accept:
                 # 获取拖动源(因为有跨组件拖拽)
                 source = event.source()
-                
-                if isinstance(source, QTreeWidget): # 拖动源为关键字区域
-                    print(True)
-                    # 通过选择的项来识别被拖动的子项
+                grandparent = source.parent().parent() # 根据 UI 结构获取祖父级组件
+                if isinstance(source, QTreeWidget) and isinstance(grandparent, ActionDock): # 拖动源为关键字区域
+                    # 通过当前选择的项来识别被拖动的子项
                     draggedItem = source.currentItem()
                     draggedItemType = draggedItem.data(0, Qt.UserRole)
                     if draggedItemType == 'action':
                         actionPath = draggedItem.data(1, Qt.UserRole) # 获取 action 路径
-                        if item.text(0) == '测试步骤': # 放置目标子项类型一
-                            newItem = ActionItem(item, data=('action', actionPath, False, True), editable=True, param_editable=True) # 创建一个新的子项
+                        if item.text(0) == '测试步骤': # 放置目标项类型一
+                            newItem = ActionItem(item, data=('action', actionPath, False, True), editable=True, param_editable=True) # 创建一个新的子项，放置到最后
                             self.add_action_to_module(actionPath, modulePath) # 将 action 信息写入 module
-                        elif itemType == 'action': # 放置目标子项类型二
+                        elif itemType == 'action': # 放置目标项类型二
                             itemIndex = item.parent().indexOfChild(item)
                             item.parent().insertChild(itemIndex + 1, ActionItem(None, data=('action', actionPath, False, True), editable=True, param_editable=True)) # 在放置目标子项的下方创建同级子项
-                            self.add_action_to_module(actionPath, modulePath) # 将 action 信息写入 module
+                            self.add_action_to_module(actionPath, modulePath, itemIndex + 1)
                         # 确认并完成当前的拖放操作
                         event.acceptProposedAction()
+                elif isinstance(source, QTreeWidget) and isinstance(grandparent, EditDock): # 拖动源为编辑区域
+                    # 通过当前选择的项来识别被拖动的子项
+                    draggedItem = source.currentItem()
+                    draggedItemType = draggedItem.data(0, Qt.UserRole)
+                    if draggedItemType == 'action': # 被允许放置的类型当前只有 action
+                        actionPath = draggedItem.data(1, Qt.UserRole)
+                        if item.text(0) == '测试步骤': # 放置目标项类型一
+                            draggedItemIndex = item.indexOfChild(draggedItem)
+                            tempItem = item.takeChild(draggedItemIndex)
+                            item.insertChild(0, tempItem) # 在第一项放置
+                            tempItem.setFirstColumnSpanned(True)
+                            self.delete_actionInfo(draggedItemIndex)
+                            self.add_action_to_module(actionPath, modulePath, 0)
+                        elif itemType == 'action': # 放置目标项类型二
+                            parent = item.parent() # 拖动项与放置目标项同级，故使用相同的父级
+                            itemIndex = parent.indexOfChild(item)
+                            draggedItemIndex = parent.indexOfChild(draggedItem)
+                            tempItem = parent.takeChild(draggedItemIndex) # 拿起拖动项
+                            self.delete_actionInfo(draggedItemIndex)
+                            # 计算删除拖拽项后，放置目标项的索引
+                            if draggedItemIndex < itemIndex: # 拖拽项在放置目标项的上方, 放置目标项此时上移 index - 1
+                                itemIndex = itemIndex - 1
+                            else: # 拖拽项在放置目标项的下方，放置目标项索引不变
+                                itemIndex = itemIndex
+                            # 放置子项
+                            if draggedItemIndex - itemIndex != 1:
+                                parent.insertChild(itemIndex + 1, tempItem) # 在放置目标子项的下方创建同级子项
+                                tempItem.setFirstColumnSpanned(True)
+                                self.add_action_to_module(actionPath, modulePath, itemIndex + 1)
+                            else: # 拖拽项在放置目标项下方，且两项相邻，则交换两项位置
+                                parent.insertChild(itemIndex, tempItem) # 在放置目标子项的下方创建同级子项
+                                tempItem.setFirstColumnSpanned(True)
+                                self.add_action_to_module(actionPath, modulePath, itemIndex)
+                        # 确认并完成当前的拖放操作
+                        event.acceptProposedAction()
+
             else:
-                # 如果组件不接受放置，拒绝拖动操作
+                # 如果组件不接受放置，拒绝放置操作
                 event.ignore()
         else:
-            # 如果没有拖动目标项（即拖动到了空白区域），拒绝拖动操作
+            # 如果没有拖动目标项（即拖动到了空白区域），拒绝放置操作
             event.ignore()
         self.itemChanged.connect(self.on_item_changed) # 重新开启
-    
-    def add_action_to_module(self, action_file, module_file):
-        start_index = action_file.find('action_keywords') # 查找起始位置
-        action_RP = action_file[start_index:] # 提取相对路径
-        try:
-            # 读取源文件内容
-            with open(action_file, 'r', encoding='utf-8') as f:
-                action_content = yaml.safe_load(f)
-            action_content[0] = {'action_RP': action_RP} | action_content[0] #添加相对路径信息，'|' Operator (Python 3.9+)
-            # 读取目标文件内容
-            with open(module_file, 'r', encoding='utf-8') as f:
-                module_content = yaml.safe_load(f)
-            # 确保模块内容有 'step' 键
-            if 'step' not in module_content:
-                module_content['step'] = None
-            # 添加源内容到目标文件的 'step' 部分
-            if module_content['step'] is None:
-                module_content['step'] = action_content
-            else:
-                module_content['step'] = module_content['step'] + action_content
-            # 将更新后的内容写回目标文件
-            with open(module_file, 'w', encoding='utf-8') as f:
-                yaml.safe_dump(module_content, f, allow_unicode=True, sort_keys=False)
-
-                print(f"源文件内容已成功添加到 {module_file} 的 'step' 部分")
-
-        except FileNotFoundError as e:
-            print(f"文件未找到: {e}")
-        except yaml.YAMLError as e:
-            print(f"YAML 解析错误: {e}")
-        except IOError as e:
-            print(f"文件操作失败: {e}")
     
     def display_action_details(self, action_path:str):
         """ 
         展示action的详细信息, 仅供预览 
         
-        action_path: 由信号携带
+        :param action_path: 由信号携带
         """
         # 关闭事件处理
         # self.itemChanged.disconnect(self.on_item_changed)
@@ -262,7 +266,7 @@ class TreeWidget(QTreeWidget):
         """ 
         展示module的详细信息, 提供编辑交互UI 
         
-        module_path: 由信号携带
+        :param module_path: 由信号携带
         """
         # 清空树控件
         self.clear()
@@ -279,7 +283,7 @@ class TreeWidget(QTreeWidget):
         """ 
         树控件子项右键菜单事件 
         
-        pos: 事件位置
+        :param pos: 事件位置
         """
         # 获取点击的项
         item = self.itemAt(pos)
@@ -302,16 +306,46 @@ class TreeWidget(QTreeWidget):
                 context_menu.addAction(actionMoveDown)
                 # 显示上下文菜单
                 context_menu.exec(self.viewport().mapToGlobal(pos))
-    
-    def delete_item(self, item):
+
+    def add_action_to_module(self, action_file, module_file, step_index: int | None = None):
+        """ 
+        将action文件信息添加到module文件, 拖拽放置事件的文件处理操作
+        
+        :param step_index: 向module文件(step)中插入action的索引
         """
-        删除选中的项
-        """
-        parent = item.parent() or self.invisibleRootItem()
-        parent = item.parent()
-        index = parent.indexOfChild(item)
-        parent.removeChild(item)
-        # 文件变动
+        start_index = action_file.find('action_keywords') # 查找起始位置
+        action_RP = action_file[start_index:] # 提取相对路径
+        try:
+            with open(action_file, 'r', encoding='utf-8') as f:
+                action_content = yaml.safe_load(f)
+            action_content[0] = {'action_RP': action_RP} | action_content[0] #添加相对路径信息，'|' Operator (Python 3.9+)
+            with open(module_file, 'r', encoding='utf-8') as f:
+                module_content = yaml.safe_load(f)
+            # 确保模块内容有 'step' 键
+            if 'step' not in module_content:
+                module_content['step'] = None
+            # 向 module 文件( step 字段)中插入 action
+            if module_content['step'] is None: # 不存在 action 时
+                module_content['step'] = action_content
+            else: # 存在 action 时
+                if isinstance(step_index, int):
+                    module_content['step'].insert(step_index, action_content[0])
+                else: # 默认插入到最后
+                    module_content['step'] = module_content['step'] + action_content
+            # 将更新后的内容写回目标文件
+            with open(module_file, 'w', encoding='utf-8') as f:
+                yaml.safe_dump(module_content, f, allow_unicode=True, sort_keys=False)
+                print(f"源文件内容已成功添加到 {module_file} 的 'step' 部分")
+
+        except FileNotFoundError as e:
+            print(f"文件未找到: {e}")
+        except yaml.YAMLError as e:
+            print(f"YAML 解析错误: {e}")
+        except IOError as e:
+            print(f"文件操作失败: {e}")
+
+    def delete_actionInfo(self, index: int):
+        """ 从 module 文件(step)中删除 action 信息"""
         moduleItem = self.topLevelItem(0)
         modulePath = moduleItem.data(1, Qt.UserRole)
         with open(modulePath, 'r', encoding='utf-8') as f:
@@ -320,9 +354,29 @@ class TreeWidget(QTreeWidget):
         with open(modulePath, 'w', encoding='utf-8') as f:
             yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
 
+    def swap_actionInfo(self, index_1: int, index_2: int):
+        """ 将 module 文件(step)中两个不同索引的 action 信息交换 """
+        moduleItem = self.topLevelItem(0)
+        modulePath = moduleItem.data(1, Qt.UserRole)
+        with open(modulePath, 'r', encoding='utf-8') as f:
+            content = yaml.safe_load(f)
+        content['step'][index_1], content['step'][index_2] = content['step'][index_2], content['step'][index_1] # 交换值
+        with open(modulePath, 'w', encoding='utf-8') as f:
+            yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
+        
+    def delete_item(self, item):
+        """
+        删除选中的项, 菜单操作
+        """
+        parent = item.parent() or self.invisibleRootItem()
+        parent = item.parent()
+        index = parent.indexOfChild(item)
+        parent.removeChild(item)
+        self.delete_actionInfo(index)
+
     def move_item_up(self, item):
         """
-        上移选中的项
+        上移选中的项, 菜单操作
         """
         parent = item.parent() or self.invisibleRootItem()
         index = parent.indexOfChild(item)
@@ -333,18 +387,11 @@ class TreeWidget(QTreeWidget):
             # 保持action子项所有列合并
             if item.data(0, Qt.UserRole) == 'action':
                 item.setFirstColumnSpanned(True)
-            # 文件变动
-            moduleItem = self.topLevelItem(0)
-            modulePath = moduleItem.data(1, Qt.UserRole)
-            with open(modulePath, 'r', encoding='utf-8') as f:
-                content = yaml.safe_load(f)
-            content['step'][index], content['step'][index - 1] = content['step'][index - 1], content['step'][index] # 交换值
-            with open(modulePath, 'w', encoding='utf-8') as f:
-                yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
+            self.swap_actionInfo(index, index - 1)
 
     def move_item_down(self, item):
         """
-        下移选中的项
+        下移选中的项, 菜单操作
         """
         parent = item.parent() or self.invisibleRootItem()
         index = parent.indexOfChild(item)
@@ -355,14 +402,7 @@ class TreeWidget(QTreeWidget):
             # 保持action子项所有列合并
             if item.data(0, Qt.UserRole) == 'action':
                 item.setFirstColumnSpanned(True)
-            # 文件变动
-            moduleItem = self.topLevelItem(0)
-            modulePath = moduleItem.data(1, Qt.UserRole)
-            with open(modulePath, 'r', encoding='utf-8') as f:
-                content = yaml.safe_load(f)
-            content['step'][index], content['step'][index + 1] = content['step'][index + 1], content['step'][index] # 交换值
-            with open(modulePath, 'w', encoding='utf-8') as f:
-                yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
+            self.swap_actionInfo(index, index + 1)
 
     
 if __name__ == '__main__':

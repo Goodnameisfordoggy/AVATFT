@@ -61,7 +61,7 @@ class ActionDock(QDockWidget):
         self.tree.setDragEnabled(True) # 能否拖拽
         self.tree.setAcceptDrops(False) # 能否放置
         self.tree.setDropIndicatorShown(True) # 是否启用放置指示器
-        self.tree.setDefaultDropAction(Qt.LinkAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
+        self.tree.setDefaultDropAction(Qt.CopyAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
         self.tree.itemDoubleClicked.connect(self.on_item_double_clicked)
         # 连接右键菜单事件
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -73,10 +73,8 @@ class ActionDock(QDockWidget):
                 first_iteration = False
                 continue
             rootItem = TreeWidgetItem(self.tree, [os.path.basename(root)], ('package', root))
-            # rootItem.setData(0, Qt.UserRole, {'type': 'package', 'path': root, })
             for file_name in files:
                 childItem = TreeWidgetItem(rootItem, [os.path.splitext(file_name)[0]], ('action', os.path.join(root, file_name)))
-                # childItem.setData(0, Qt.UserRole, {'type': 'action', 'path': os.path.join(root, file_name), })
             
     def on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件 """
