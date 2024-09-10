@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-07 00:07:32
+LastEditTime: 2024-09-11 00:34:02
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\treeWidgetItem.py
 Description: 
 
@@ -34,7 +34,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         2----draggable
         3----AcceptDrops
     """
-    def __init__(self, parent, text: list, data: tuple = (), icon_path: str = '', editable: bool = False):
+    def __init__(self, parent, text: list, data: tuple = (None, None, None, None), icon_path: str = '', editable: bool = False):
         super().__init__(parent, text)
         self.__data = data
         # 添加数据
@@ -49,6 +49,10 @@ class TreeWidgetItem(QTreeWidgetItem):
         # 只设置整个 item 可编辑，这会影响到所有列
         if editable:
             self.setFlags(self.flags() | Qt.ItemIsEditable)
+    
+    def change_UserData(self, column: int, value: any, role=Qt.UserRole):
+        self.setData(column, role, value)
+
 
 
 class ActionItem(TreeWidgetItem):
