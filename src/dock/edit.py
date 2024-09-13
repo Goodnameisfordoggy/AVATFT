@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-09 23:08:34
+LastEditTime: 2024-09-13 21:56:23
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
@@ -23,8 +23,8 @@ from PySide6.QtWidgets import (
     )
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QPoint, Signal
-from ..treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
-from .action import ActionDock
+from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
+from src.dock.action import ActionDock
 
 class EditDock(QDockWidget):
     

@@ -24,8 +24,8 @@ from PySide6.QtWidgets import (
     )
 from PySide6.QtGui import QScreen, QAction
 from PySide6.QtCore import Qt, Signal, QPoint
-from ..treeWidgetItem import TreeWidgetItem
-from .. import ACTION_KEYWORDS_DIR
+from src.treeWidgetItem import TreeWidgetItem
+from src import ACTION_KEYWORDS_DIR
 
 
 class ActionDock(QDockWidget):

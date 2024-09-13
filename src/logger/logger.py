@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-06 14:47:47
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\__init__.py
+LastEditTime: 2024-09-13 22:42:30
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\logger\logger.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -16,7 +16,14 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import os
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ACTION_KEYWORDS_DIR = os.path.join(BASE_DIR, 'action_keywords')
-PROJECTS_DIR = os.path.join(BASE_DIR, 'projects')
-LOG_DIR = os.path.join(BASE_DIR, 'log')
+import sys
+from loguru import logger
+from src import LOG_DIR
+
+logger.add(sys.stdout, level="TRACE")
+logger.add(os.path.join(LOG_DIR, "{time:YYYY-MM-DD}.log"), rotation="1 day", retention="1 month", level="INFO")
+
+def get_logger():
+    return logger
+
+

@@ -24,7 +24,7 @@ import yaml
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from . import BASE_DIR
+from src import BASE_DIR
 
 class TreeWidgetItem(QTreeWidgetItem):
     """

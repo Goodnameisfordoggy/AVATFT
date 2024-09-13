@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-11 01:24:15
+LastEditTime: 2024-09-13 21:55:56
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\project.py
 Description: 
 
@@ -25,10 +25,10 @@ from PySide6.QtWidgets import (
 	)
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QPoint, Signal
-from ..treeWidgetItem import TreeWidgetItem
-from ..dialogBox.input import NameInputDialogBox
-from ..dialogBox.reconfirm import ReconfirmDialogBox
-from .. import PROJECTS_DIR
+from src.treeWidgetItem import TreeWidgetItem
+from src.dialogBox.input import NameInputDialogBox
+from src.dialogBox.reconfirm import ReconfirmDialogBox
+from src import PROJECTS_DIR
 
 
 class ProjectDock(QDockWidget):
@@ -167,16 +167,12 @@ class ProjectDock(QDockWidget):
             targetPath = os.path.join(itemPath, baseName)
         if self.current_path:
             if os.path.exists(targetPath): # 目标位置存在文件
-                print("存在相同文件")
                 return
             # 剪切后的粘贴
             if self.cutEvent: 
-                # 移动文件或目录
-                shutil.move(self.current_path, targetPath)
-                # 移除子项
+                shutil.move(self.current_path, targetPath) # 移动文件或目录
                 print(self.tempItem)
-                tempItemIndex = self.tempItem.parent().indexOfChild(self.tempItem)
-                self.tempItem = self.tempItem.parent().takeChild(tempItemIndex)
+                self.tempItem.parent().removeChild(self.tempItem) # 移除子项
             # 复制后的粘贴
             else: 
                 # 拷贝文件或目录
@@ -187,12 +183,15 @@ class ProjectDock(QDockWidget):
                 else:
                     raise ValueError(f'路径 {self.current_path} 不是文件也不是目录')
             # 添加子项
+            self.tempItem.change_UserData(1, targetPath) # 子项携带的路径信息更改
             if itemType == 'module':
                 print(1)
-                item.parent().addChild(self.tempItem.change_UserData(1, targetPath))
+                item.parent().addChild(self.tempItem)
             else:
                 print(2)
-                item.addChild(self.tempItem.change_UserData(1, targetPath))
+                print(self.tempItem)
+                print(self.tempItem.data(0, Qt.UserRole))
+                item.addChild(self.tempItem)
 
             del self.current_path
             del self.cutEvent

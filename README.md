@@ -1,7 +1,7 @@
 # VATFT 
 Visual automatic test framework tool
 
-version: 0.0.10
+version: 0.0.11
 
 # 项目结构
 - projects
@@ -14,6 +14,7 @@ version: 0.0.10
 
 
 # Update log
+- 0.0.11: 项目构建中
 - 0.0.10: 项目构建中
 - 0.0.9: 项目构建中
 - 0.0.8: 项目构建中

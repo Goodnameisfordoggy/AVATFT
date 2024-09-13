@@ -19,10 +19,10 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QDockWidget, QMenuBar, 
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, Signal
 
-from .dock.edit import EditDock
-from .dock.action import ActionDock 
-from .dock.log import LogDock
-from .dock.project import ProjectDock
+from src.dock.edit import EditDock
+from src.dock.action import ActionDock 
+from src.dock.log import LogDock
+from src.dock.project import ProjectDock
 
 class MainWindow(QMainWindow):
     
