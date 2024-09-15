@@ -1,0 +1,27 @@
+info:
+  describe: 请填写用例信息
+  id: 1
+  title: 1
+config:
+- describe: 是否跳过此用例
+  params:
+    flag: false
+    reason: null
+  policy: skip
+- describe: 是否给用例打标签
+  params:
+    flag: false
+    markname: null
+  policy: mark
+- describe: 是否使用前置后置
+  params:
+    fixtures: null
+    flag: false
+  policy: usefixtures
+- describe: 是否使用数据驱动
+  params:
+    filename: null
+    flag: false
+    sheetname: null
+  policy: parametrize
+step: 

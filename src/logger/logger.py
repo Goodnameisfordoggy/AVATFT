@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-13 22:42:30
+LastEditTime: 2024-09-13 23:29:07
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\logger\logger.py
 Description: 
 
@@ -20,8 +20,18 @@ import sys
 from loguru import logger
 from src import LOG_DIR
 
+logger.remove()
+
 logger.add(sys.stdout, level="TRACE")
-logger.add(os.path.join(LOG_DIR, "{time:YYYY-MM-DD}.log"), rotation="1 day", retention="1 month", level="INFO")
+
+logger.add(
+    os.path.join(LOG_DIR, "{time:YYYY-MM-DD}.log"),
+    rotation="1 day",
+    retention="1 month",
+    level="TRACE",
+    format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
+    colorize=True
+)
 
 def get_logger():
     return logger

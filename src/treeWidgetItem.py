@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-11 00:34:02
+LastEditTime: 2024-09-15 00:41:09
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\treeWidgetItem.py
 Description: 
 
@@ -21,6 +21,7 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 import os
 import json
 import yaml
+import typing
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
@@ -34,8 +35,8 @@ class TreeWidgetItem(QTreeWidgetItem):
         2----draggable
         3----AcceptDrops
     """
-    def __init__(self, parent, text: list, data: tuple = (None, None, None, None), icon_path: str = '', editable: bool = False):
-        super().__init__(parent, text)
+    def __init__(self, parent, text: list, data: tuple = (None, None, None, None), icon_path: str = '', editable: bool = False, *args, **kwargs):
+        super().__init__(parent, text, *args, **kwargs)
         self.__data = data
         # 添加数据
         if self.__data:
@@ -43,16 +44,42 @@ class TreeWidgetItem(QTreeWidgetItem):
                 if self.__data[i]:
                     self.setData(i, Qt.UserRole, self.__data[i])
         # 添加图标
-        icon = QIcon(icon_path)
-        self.setIcon(0, icon)  # 在第一列添加图标
+        if icon_path:
+            icon = QIcon(icon_path)
+            self.setIcon(0, icon)  # 在第一列添加图标
         
         # 只设置整个 item 可编辑，这会影响到所有列
         if editable:
             self.setFlags(self.flags() | Qt.ItemIsEditable)
     
     def change_UserData(self, column: int, value: any, role=Qt.UserRole):
+        """
+        修改用户数据
+        :param column: 列索引
+        :param value: 要设置的数据
+        :param role: 数据的角色，默认是 Qt.UserRole
+        """
         self.setData(column, role, value)
 
+    @typing.override
+    def clone(self):
+        """
+        克隆当前的 TreeWidgetItem，包括文本、数据、图标等
+        """
+        # 创建一个新的 TreeWidgetItem 实例，传入相同的参数
+        cloned_item = TreeWidgetItem(
+            parent=None,  # clone 不应该有父项
+            text=[self.text(i) for i in range(self.columnCount())], 
+            data=self.__data,
+            icon_path='',  # icon 处理可以稍后进行
+            editable=self.flags() & Qt.ItemIsEditable
+        )
+        
+        # 如果有图标，需要手动复制
+        if not self.icon(0).isNull():
+            cloned_item.setIcon(0, self.icon(0))
+        
+        return cloned_item
 
 
 class ActionItem(TreeWidgetItem):
