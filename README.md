@@ -14,6 +14,7 @@ version: 0.0.12
 
 
 # Update log
+- 0.0.12: update .gitignore
 - 0.0.12: 项目构建中
 - 0.0.11: 项目构建中
 - 0.0.10: 项目构建中
