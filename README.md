@@ -1,19 +1,28 @@
 # VATFT 
 Visual automatic test framework tool
 
-version: 0.0.12
+version: 0.0.13
 
 # 项目结构
+
+- 等级划分：project > package > module > action
+
+projects目录结构
 - projects
-  - project
-    - package
-      - module
-        - action1
-        - action2
-        - ...
+  - project(Custom name)
+    - business
+      - package(Custom name)
+        - module(Custom name)
+          - action1
+          - action2
+          - ...
+    - config
+    - data
+    - log
 
 
 # Update log
+- 0.0.13: 项目构建中
 - 0.0.12: update .gitignore
 - 0.0.12: 项目构建中
 - 0.0.11: 项目构建中

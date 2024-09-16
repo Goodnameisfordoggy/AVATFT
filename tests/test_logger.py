@@ -3,7 +3,7 @@ import sys
 import pytest
 from loguru import logger
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.logger.logger import get_logger
+from utils.logger import get_logger
 
 # 测试 get_logger 函数是否返回一个 loguru logger 实例
 log = get_logger()

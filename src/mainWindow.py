@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-04 23:21:40
+LastEditTime: 2024-09-17 01:31:50
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\mainWindow.py
 Description: 
 
@@ -15,14 +15,51 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
-from PySide6.QtWidgets import QApplication, QMainWindow, QDockWidget, QMenuBar, QMenu, QSplitter
+import os
+import sys
+import typing
+from PySide6.QtWidgets import QApplication, QMainWindow, QDockWidget, QMenuBar, QMenu, QSplitter, QTextEdit 
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, Signal
 
+from utils import logger
 from src.dock.edit import EditDock
 from src.dock.action import ActionDock 
 from src.dock.log import LogDock
 from src.dock.project import ProjectDock
+from src.dialogBox.input import NameInputDialogBox
+from src import PROJECTS_DIR
+LOG = logger.get_logger()
+
+
+class ConsoleOutput:
+    """ 用于重定向控制台输出 """
+    def __init__(self, outputWidget: QTextEdit):
+        self.outputWidget = outputWidget
+
+    def write(self, message):
+        # 将信息追加到 QTextEdit 中
+        self.outputWidget.append(message)
+
+    def flush(self):
+        """ 清空缓冲区 """
+        # 一般情况下不需要处理 flush，保留空方法
+        pass
+
+
+class QTextEditLogger:
+    """ 用于将日志输出到 QTextEdit """
+    def __init__(self, outputWidget):
+        self.outputWidget = outputWidget
+        LOG.add(self, level="TRACE")
+		
+    def write(self, message):
+        # 将日志输出到 QTextEdit
+        self.outputWidget.append(message)
+
+    def flush(self):
+        pass  # 不需要特殊的 flush 处理
+    
 
 class MainWindow(QMainWindow):
     
@@ -47,6 +84,12 @@ class MainWindow(QMainWindow):
         self.initialize_layout()
         self.connect_signal()
 
+        # 重定向标准输出和标准错误到自定义输出类
+        sys.stdout = ConsoleOutput(self.log_dock.logTextWidget)
+        sys.stderr = ConsoleOutput(self.log_dock.logTextWidget)
+        # 将日志输出到自定义输出类
+        textEditLogger = QTextEditLogger(self.log_dock.logTextWidget)
+
     def build_menu(self):
         # 创建菜单栏
         self.menuBar = self.menuBar()
@@ -57,17 +100,15 @@ class MainWindow(QMainWindow):
         self.helpMenu = QMenu("帮助", self)
 
         # fileMenu动作
-        self.newAction = QAction("新建工程", self)
-        # self.newAction.triggered.connect(self.project_dock.)
-        self.openAction = QAction("打开工程", self)
-        self.openAction.triggered.connect(lambda: self.load_project_signal.emit('load_project'))
-        # self.saveAction = QAction("保存", self)
+        self.newProjectAction = QAction("新建工程", self)
+        self.newProjectAction.triggered.connect(self.creat_project)
+        self.openProjectAction = QAction("打开工程", self)
+        self.openProjectAction.triggered.connect(lambda: self.load_project_signal.emit('load_project'))
         self.exitAction = QAction("退出", self)
         self.exitAction.triggered.connect(self.close)  # 连接退出动作到窗口的关闭功能
 
-        self.fileMenu.addAction(self.newAction)
-        self.fileMenu.addAction(self.openAction)
-        # self.fileMenu.addAction(self.saveAction)
+        self.fileMenu.addAction(self.newProjectAction)
+        self.fileMenu.addAction(self.openProjectAction)
         self.fileMenu.addSeparator()  # 分隔符
         self.fileMenu.addAction(self.exitAction)
         
@@ -89,8 +130,11 @@ class MainWindow(QMainWindow):
         self.logDockAction.triggered.connect(self.viewMenu_clicked)
 
         self.viewMenu.addAction(self.actionDockAction)
+        self.viewMenu.addSeparator()  # 分隔符
         self.viewMenu.addAction(self.editDockAction)
+        self.viewMenu.addSeparator()  # 分隔符
         self.viewMenu.addAction(self.projectDockAction)
+        self.viewMenu.addSeparator()  # 分隔符
         self.viewMenu.addAction(self.logDockAction)
 
         self.menuBar.addMenu(self.fileMenu)
@@ -126,9 +170,18 @@ class MainWindow(QMainWindow):
         """ 信号连接 """
         self.action_dock.item_double_clicked_signal.connect(self.edit_dock.tree.display_action_details)
         self.project_dock.item_double_clicked_signal.connect(self.edit_dock.tree.display_module_details)
-        self.load_project_signal.connect(self.project_dock.load_project)
+        self.load_project_signal.connect(lambda: self.project_dock.load_project(self.project_dock.select_project()))
         self.edit_dock.operate_signal.connect(lambda: self.log_dock.setVisible(True))
-
+    
+    @typing.override
+    def closeEvent(self, event):
+        # 恢复标准输出和标准错误，保持良好的编程习惯Qwq。
+        # 程序结束时，操作系统会自动释放所有资源，包括标准输出和标准错误的重定向。
+        # 因此，这种重定向不会影响其他正在运行的程序，也不会影响外部的终端或控制台。
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
+        super().closeEvent(event)
+    
     def viewMenu_clicked(self, checked):
         """ 视图菜单下子项的单击事件 """
         sender = self.sender()  # 获取信号发送者
@@ -149,6 +202,23 @@ class MainWindow(QMainWindow):
             dock.setVisible(True)
         else:
             dock.setVisible(False)
+
+    def creat_project(self):
+        """ 创建新工程目录，菜单操作"""
+        nameInputDialogBox = NameInputDialogBox(self, '新建工程', '请输入新工程的名称：')
+        if nameInputDialogBox.exec():
+            projectName = nameInputDialogBox.nameInput() # 要创建的顶级目录名称
+            projectPath = os.path.join(PROJECTS_DIR, projectName)
+            try:
+                # 创建完整的目录结构
+                os.makedirs(f"{projectPath}/business")
+                os.makedirs(f"{projectPath}/config")
+                os.makedirs(f"{projectPath}/data")
+                os.makedirs(f"{projectPath}/log")
+                LOG.success(f'Project {projectName} create successfully')
+            except Exception as err:
+                LOG.debug(f'Exception: {err}')
+
 
 if __name__ == '__main__':
     app = QApplication([])

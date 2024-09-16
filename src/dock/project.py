@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-16 01:06:29
+LastEditTime: 2024-09-17 01:37:21
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\project.py
 Description: 
 
@@ -19,19 +19,22 @@ import os
 import sys
 import yaml
 import shutil
-import subprocess
 from PySide6.QtWidgets import (
     QApplication, QWidget, QLabel, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QTreeWidgetItem,
-    QMenu, QFileDialog, QMessageBox
+    QMenu, QFileDialog
 	)
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QPoint, Signal
+
+from utils.file import open_file
+from utils.filter import filter_item
+from utils import logger
 from src.treeWidgetItem import TreeWidgetItem
 from src.dialogBox.input import NameInputDialogBox
 from src.dialogBox.reconfirm import ReconfirmDialogBox
-from src.logger import logger
 from src import PROJECTS_DIR, CONFIG_DIR
 LOG = logger.get_logger()
+
 
 class ProjectDock(QDockWidget):
     
@@ -50,11 +53,10 @@ class ProjectDock(QDockWidget):
         self.setWidget(self.center_widget)
         center_widget_layout = QVBoxLayout(self.center_widget)
         
-
         # 搜索框
         self.search_box = QLineEdit(self)
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
-        # self.search_box.textChanged.connect()
+        self.search_box.textChanged.connect(self.search_tree_items)
         center_widget_layout.addWidget(self.search_box)
 
         # 树控件
@@ -85,8 +87,14 @@ class ProjectDock(QDockWidget):
                     moduleItem = TreeWidgetItem(packageItem, [os.path.splitext(file_name)[0]], ('module', os.path.join(root, file_name)))
             LOG.info(f'Load project from {directory_path}')
 
+    def search_tree_items(self):
+        """ 搜索树控件子项，搜索框绑定操作"""
+        search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
+        root = self.tree.invisibleRootItem() # 获取根项
+        filter_item(root, search_text)
+
     def on_item_double_clicked(self, item, column):
-        """ 树控件子项双击事件 """
+        """ 树控件子项双击事件，树控件绑定操作 """
         try:
             if item.data(0, Qt.UserRole) == 'module':
                 self.item_double_clicked_signal.emit(item.data(1, Qt.UserRole)) # 发送信号
@@ -95,7 +103,7 @@ class ProjectDock(QDockWidget):
     
     def show_context_menu(self, pos: QPoint):
         """ 
-        树控件子项右键菜单事件 
+        树控件子项右键菜单事件，树控件绑定操作
         
         :pos: 事件位置
         """
@@ -120,7 +128,7 @@ class ProjectDock(QDockWidget):
                 # 连接菜单项的触发信号
                 newModuleAction.triggered.connect(lambda: self.new_module_item(item))
                 newPackageAction.triggered.connect(lambda: self.new_package_item(item))
-                openAction.triggered.connect(lambda: ProjectDock.open_file(item.data(1, Qt.UserRole)))
+                openAction.triggered.connect(lambda: open_file(item.data(1, Qt.UserRole)))
                 copyAction.triggered.connect(lambda: self.copy_item(item))
                 cutAction.triggered.connect(lambda: self.cut_item(item))
                 pasteAction.triggered.connect(lambda: self.paste_item(item))
@@ -131,7 +139,9 @@ class ProjectDock(QDockWidget):
                 context_menu.addMenu(newMenu)
                 newMenu.addAction(newModuleAction)
                 newMenu.addAction(newPackageAction)
+                context_menu.addSeparator()  # 分隔符
                 context_menu.addAction(openAction)
+                context_menu.addSeparator()  # 分隔符
                 context_menu.addAction(copyAction)
                 context_menu.addAction(cutAction)
                 context_menu.addAction(pasteAction)
@@ -150,12 +160,13 @@ class ProjectDock(QDockWidget):
                 # 连接菜单项的触发信号
                 newModuleAction.triggered.connect(lambda: self.new_module_item(item))
                 newPackageAction.triggered.connect(lambda: self.new_package_item(item))
-                openAction.triggered.connect(lambda: ProjectDock.open_file(item.data(1, Qt.UserRole)))
+                openAction.triggered.connect(lambda: open_file(item.data(1, Qt.UserRole)))
 
                 # 将菜单项添加到上下文菜单
                 context_menu.addMenu(newMenu)
                 newMenu.addAction(newModuleAction)
                 newMenu.addAction(newPackageAction)
+                context_menu.addSeparator()  # 分隔符
                 context_menu.addAction(openAction)
                 context_menu.exec(self.tree.viewport().mapToGlobal(pos)) # 显示上下文菜单
 
@@ -422,17 +433,6 @@ class ProjectDock(QDockWidget):
                 LOG.error(f'An error occurred while renaming a directory or file: {e}')
         else:
             LOG.warning(f"{path} does not exist")
-
-    @staticmethod
-    def open_file(path: str):
-        """ 调用系统默认程序打开文件 """
-        if sys.platform == "win32":
-            subprocess.Popen(["start", path], shell=True)
-        elif sys.platform == "darwin":
-            subprocess.Popen(["open", path])
-        else:  # Linux
-            subprocess.Popen(["xdg-open", path])
-    
 
 if __name__ == '__main__':
     app = QApplication([])

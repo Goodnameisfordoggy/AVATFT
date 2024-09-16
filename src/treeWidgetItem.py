@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-15 00:41:09
+LastEditTime: 2024-09-17 01:37:52
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\treeWidgetItem.py
 Description: 
 
@@ -25,7 +25,11 @@ import typing
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
+
+from utils import logger
 from src import BASE_DIR
+LOG = logger.get_logger()
+
 
 class TreeWidgetItem(QTreeWidgetItem):
     """
@@ -101,7 +105,7 @@ class ActionItem(TreeWidgetItem):
         try:
             parameterItemsText = [[self.config[0]['params_describe'][key], key, value] for key, value in self.config[0]['params'].items()]
         except KeyError as err:
-            print(f'文件参数缺失：{err}--{self.action_path}')
+            LOG.error(f'Missing file parameters: {err}--{self.action_path}')
             return
             
         for parameterItemText in parameterItemsText:
@@ -163,7 +167,7 @@ class ModuleItem(TreeWidgetItem):
                 try:
                     parameterItemsText = [[action['params_describe'][key], key, value] for key, value in action['params'].items()]
                 except KeyError as err:
-                    print(f'文件缺失参数 {err}')
+                    LOG.error(f'Missing file parameters: {err}--{self.action_path}')
                     return
                     
                 for parameterItemText in parameterItemsText:

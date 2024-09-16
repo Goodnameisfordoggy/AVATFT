@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-13 21:56:23
+LastEditTime: 2024-09-17 01:05:12
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
@@ -17,14 +17,20 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 '''
 import json
 import yaml
+import typing
 from PySide6.QtWidgets import (
     QApplication, QLabel, QDockWidget, QVBoxLayout, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem,
     QMenu, QPushButton
     )
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QPoint, Signal
+
+from utils.filter import filter_item
+from utils import logger
 from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
 from src.dock.action import ActionDock
+LOG = logger.get_logger()
+
 
 class EditDock(QDockWidget):
     
@@ -43,6 +49,7 @@ class EditDock(QDockWidget):
         # QDockWidget.DockWidgetFloatable         允许停靠窗口浮动，使其可以脱离主窗口作为独立的浮动窗口显示。
         # QDockWidget.DockWidgetMovable           允许停靠窗口在主窗口中进行移动。
         self.setFeatures(QDockWidget.NoDockWidgetFeatures | QDockWidget.DockWidgetClosable)
+        self.setWindowTitle('测试用例编辑区')
         self.setTitleBarWidget(QLabel('   测试用例编辑区'))
         self.initUI()
     
@@ -54,7 +61,7 @@ class EditDock(QDockWidget):
         # 搜索框
         self.search_box = QLineEdit(self)
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
-        # self.search_box.textChanged.connect()
+        self.search_box.textChanged.connect(self.search_tree_items)
         center_widget_layout.addWidget(self.search_box)
 
         # 树状控件
@@ -67,6 +74,11 @@ class EditDock(QDockWidget):
         self.operation_btn.clicked.connect(self.operate)
 
     
+    def search_tree_items(self):
+        """ 搜索树控件子项，搜索框绑定操作"""
+        search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
+        root = self.tree.invisibleRootItem() # 获取根项
+        filter_item(root, search_text)
 
     def operate(self):
         """ 开始测试 """
@@ -86,15 +98,16 @@ class TreeWidget(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
+    @typing.override
     def edit(self, index, trigger, event):
         """ 仅允许编辑第3列的文本 """
         if index.column() == 2:
             return super().edit(index, trigger, event)
         return False
-    
+
     def on_item_changed(self, item, column):
         """
-        子项完成编辑
+        子项完成编辑, 树控件事件绑定操作
 
         :param item: 发生变动的子项，即完成编辑的子项
         :param column: 发生变动的列
@@ -249,8 +262,6 @@ class TreeWidget(QTreeWidget):
         
         :param action_path: 由信号携带
         """
-        # 关闭事件处理
-        # self.itemChanged.disconnect(self.on_item_changed)
         # 清空树控件
         self.clear()
         # 创建action子项
@@ -276,8 +287,6 @@ class TreeWidget(QTreeWidget):
         self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)
         self.resizeColumnToContents(2)
-        # 开启事件处理
-        # self.itemChanged.connect(self.on_item_changed)
 
     def show_context_menu(self, pos: QPoint):
         """ 
@@ -335,14 +344,13 @@ class TreeWidget(QTreeWidget):
             # 将更新后的内容写回目标文件
             with open(module_file, 'w', encoding='utf-8') as f:
                 yaml.safe_dump(module_content, f, allow_unicode=True, sort_keys=False)
-                print(f"源文件内容已成功添加到 {module_file} 的 'step' 部分")
-
+                LOG.trace(f'Add action info to the "step" section of the {module_file}')
         except FileNotFoundError as e:
-            print(f"文件未找到: {e}")
+            LOG.warning(f"File not found : {e}")
         except yaml.YAMLError as e:
-            print(f"YAML 解析错误: {e}")
+            LOG.error(f"YAML parse error: {e}")
         except IOError as e:
-            print(f"文件操作失败: {e}")
+            LOG.error(f"File IO failed: {e}")
 
     def delete_actionInfo(self, index: int):
         """ 从 module 文件(step)中删除 action 信息"""
@@ -353,7 +361,8 @@ class TreeWidget(QTreeWidget):
         removed_action = content['step'].pop(index) # 根据子项索引在文件中删除对应位置上的信息
         with open(modulePath, 'w', encoding='utf-8') as f:
             yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
-
+        LOG.trace(f'Action info at "step" index {index} delete successfully at {modulePath}')
+        
     def swap_actionInfo(self, index_1: int, index_2: int):
         """ 将 module 文件(step)中两个不同索引的 action 信息交换 """
         moduleItem = self.topLevelItem(0)
@@ -363,6 +372,7 @@ class TreeWidget(QTreeWidget):
         content['step'][index_1], content['step'][index_2] = content['step'][index_2], content['step'][index_1] # 交换值
         with open(modulePath, 'w', encoding='utf-8') as f:
             yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
+        LOG.trace(f'Action info at "step" index {index_1} and {index_2} swap successfully at {modulePath}')
         
     def delete_item(self, item):
         """

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-04 23:42:20
+LastEditTime: 2024-09-17 01:25:34
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\action.py
 Description: 
 
@@ -24,8 +24,13 @@ from PySide6.QtWidgets import (
     )
 from PySide6.QtGui import QScreen, QAction
 from PySide6.QtCore import Qt, Signal, QPoint
+
+from utils.file import open_file
+from utils.filter import filter_item
+from utils import logger
 from src.treeWidgetItem import TreeWidgetItem
 from src import ACTION_KEYWORDS_DIR
+LOG = logger.get_logger()
 
 
 class ActionDock(QDockWidget):
@@ -50,7 +55,7 @@ class ActionDock(QDockWidget):
         self.search_box = QLineEdit(self)
         center_widget_layout.addWidget(self.search_box)
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
-        # self.search_box.textChanged.connect()
+        self.search_box.textChanged.connect(self.search_tree_items)
         
 
         # 树控件
@@ -75,7 +80,13 @@ class ActionDock(QDockWidget):
             rootItem = TreeWidgetItem(self.tree, [os.path.basename(root)], ('package', root))
             for file_name in files:
                 childItem = TreeWidgetItem(rootItem, [os.path.splitext(file_name)[0]], ('action', os.path.join(root, file_name)))
-            
+    
+    def search_tree_items(self):
+        """ 搜索树控件子项，搜索框绑定操作"""
+        search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
+        root = self.tree.invisibleRootItem() # 获取根项
+        filter_item(root, search_text)
+
     def on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件 """
         try:
@@ -96,7 +107,7 @@ class ActionDock(QDockWidget):
             action_edit = QAction("打开文件(目录)", self)
 
             # 连接菜单项的触发信号
-            action_edit.triggered.connect(lambda: self.open_file(item.data(1, Qt.UserRole)))
+            action_edit.triggered.connect(lambda: open_file(item.data(1, Qt.UserRole)))
 
             # 将菜单项添加到上下文菜单
             context_menu.addAction(action_edit)
@@ -104,15 +115,6 @@ class ActionDock(QDockWidget):
             # 显示上下文菜单
             context_menu.exec(self.tree.viewport().mapToGlobal(pos))
     
-    def open_file(self, path: str):
-        """ 调用系统默认程序打开文件 """
-        if sys.platform == "win32":
-            subprocess.Popen(["start", path], shell=True)
-        elif sys.platform == "darwin":
-            subprocess.Popen(["open", path])
-        else:  # Linux
-            subprocess.Popen(["xdg-open", path])
-
 
 if __name__ == '__main__':
     app = QApplication([])

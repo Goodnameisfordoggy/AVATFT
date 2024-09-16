@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-02 09:05:24
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\dockWidget_log.py
+LastEditTime: 2024-09-17 00:36:37
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\log.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -16,10 +16,11 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QLineEdit, QTextEdit
+    QApplication, QWidget, QLabel, QDockWidget, QVBoxLayout, QLineEdit, QTextEdit
 	)
 from PySide6.QtGui import QScreen
 from PySide6.QtCore import Qt
+
 
 class LogDock(QDockWidget):
     
@@ -34,7 +35,6 @@ class LogDock(QDockWidget):
         self.setWidget(self.center_widget)
         center_widget_layout = QVBoxLayout(self.center_widget)
         
-
         # 搜索框
         self.search_box = QLineEdit(self)
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
@@ -42,8 +42,8 @@ class LogDock(QDockWidget):
         center_widget_layout.addWidget(self.search_box)
 
         # 日志区
-        self.logText = QTextEdit(self)
-        center_widget_layout.addWidget(self.logText)
+        self.logTextWidget = QTextEdit(self)
+        center_widget_layout.addWidget(self.logTextWidget)
 
 
 if __name__ == '__main__':
