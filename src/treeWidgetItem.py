@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-17 01:37:52
+LastEditTime: 2024-09-19 22:37:29
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\treeWidgetItem.py
 Description: 
 
@@ -39,7 +39,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         2----draggable
         3----AcceptDrops
     """
-    def __init__(self, parent, text: list, data: tuple = (None, None, None, None), icon_path: str = '', editable: bool = False, *args, **kwargs):
+    def __init__(self, parent, text: list, data: tuple = (None, None, None, None), icon_path: str = '', editable: bool = False, checkbox: bool = False, *args, **kwargs):
         super().__init__(parent, text, *args, **kwargs)
         self.__data = data
         # 添加数据
@@ -55,6 +55,10 @@ class TreeWidgetItem(QTreeWidgetItem):
         # 只设置整个 item 可编辑，这会影响到所有列
         if editable:
             self.setFlags(self.flags() | Qt.ItemIsEditable)
+
+        # 设置复选框
+        if checkbox:
+            self.setCheckState(0, Qt.Unchecked)
     
     def change_UserData(self, column: int, value: any, role=Qt.UserRole):
         """
@@ -89,7 +93,7 @@ class TreeWidgetItem(QTreeWidgetItem):
 class ActionItem(TreeWidgetItem):
     """ 在编辑区使用的行为关键字项 """
     def __init__(self, parent, text: list = [], data: tuple = (), icon_path: str = '', editable: bool = False, param_editable: bool = False):
-        super().__init__(parent, text, data, icon_path, editable)
+        super().__init__(parent, text, data, icon_path, editable, checkbox=False)
         self.action_path = self.data(1, Qt.UserRole)
         self.param_editable = param_editable
         # 读取 YAML 文件
@@ -98,9 +102,9 @@ class ActionItem(TreeWidgetItem):
         self.setFirstColumnSpanned(True)  # 合并所有列
         self.setText(0, self.config[0]['describe'])
         
-        self.create_childItem()
+        self.__search_tree_items()
 
-    def create_childItem(self):
+    def __search_tree_items(self):
         # 创建子项
         try:
             parameterItemsText = [[self.config[0]['params_describe'][key], key, value] for key, value in self.config[0]['params'].items()]
@@ -118,22 +122,21 @@ class ActionItem(TreeWidgetItem):
 class ModuleItem(TreeWidgetItem):
     """ 在编辑区使用的模块项 """
     def __init__(self, parent: QTreeWidget, text: list = [], data: tuple = (), icon_path: str = '', editable: bool = False):
-        super().__init__(parent, text, data, icon_path, editable)
+        super().__init__(parent, text, data, icon_path, editable, checkbox=False)
         self.__parent = parent
         self.module_path = self.data(1, Qt.UserRole)
         # 读取 YAML 文件
         with open(self.module_path, 'r', encoding='utf-8') as file:
             self.config = yaml.safe_load(file)
-            # print(json.dumps(self.config, indent=4, ensure_ascii=False))
         self.setFirstColumnSpanned(True)
         self.setText(0, os.path.splitext(os.path.basename(self.module_path))[0])
-        self.create_childItem()
+        self.__search_tree_items()
         self.__parent.itemChanged.connect(self.__parent.on_item_changed) # 连接父组件（QTreeWidget）的子项编辑事件，该操作必须位于ModuleItem所有子项初始化之后，以防初始化时触发该事件
     
     def __del__(self):
         self.__parent.itemChanged.disconnect(self.__parent.on_item_changed) # 析构时取消连接
 
-    def create_childItem(self):
+    def __search_tree_items(self):
         # 固定的action子项
         rootAction1 = TreeWidgetItem(self, ['用例信息'])
         rootAction1.setFirstColumnSpanned(True)

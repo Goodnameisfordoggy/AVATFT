@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-17 01:31:50
+LastEditTime: 2024-09-19 23:37:35
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\mainWindow.py
 Description: 
 
@@ -169,9 +169,10 @@ class MainWindow(QMainWindow):
     def connect_signal(self): # QwQ: sender.signal.connect(receiver.func)
         """ 信号连接 """
         self.action_dock.item_double_clicked_signal.connect(self.edit_dock.tree.display_action_details)
-        self.project_dock.item_double_clicked_signal.connect(self.edit_dock.tree.display_module_details)
+        self.project_dock.tree.item_double_clicked_signal.connect(self.edit_dock.tree.display_module_details)
         self.load_project_signal.connect(lambda: self.project_dock.load_project(self.project_dock.select_project()))
         self.edit_dock.operate_signal.connect(lambda: self.log_dock.setVisible(True))
+        # self.edit_dock.operate_signal.connect(self.project_dock.get_checked_modules())
     
     @typing.override
     def closeEvent(self, event):

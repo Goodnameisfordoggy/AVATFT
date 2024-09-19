@@ -1,7 +1,7 @@
 # VATFT 
 Visual automatic test framework tool
 
-version: 0.0.13
+version: 0.0.14
 
 # 项目结构
 
@@ -22,6 +22,7 @@ projects目录结构
 
 
 # Update log
+- 0.0.14: 项目构建中
 - 0.0.13: 项目构建中
 - 0.0.12: update .gitignore
 - 0.0.12: 项目构建中

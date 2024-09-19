@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-17 01:05:12
+LastEditTime: 2024-09-19 23:39:13
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (
     QMenu, QPushButton
     )
 from PySide6.QtGui import QAction
-from PySide6.QtCore import Qt, QPoint, Signal
+from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
 from utils.filter import filter_item
 from utils import logger
@@ -72,7 +72,6 @@ class EditDock(QDockWidget):
         self.operation_btn = QPushButton(self, text='开始测试')
         center_widget_layout.addWidget(self.operation_btn)
         self.operation_btn.clicked.connect(self.operate)
-
     
     def search_tree_items(self):
         """ 搜索树控件子项，搜索框绑定操作"""
@@ -104,7 +103,7 @@ class TreeWidget(QTreeWidget):
         if index.column() == 2:
             return super().edit(index, trigger, event)
         return False
-
+    
     def on_item_changed(self, item, column):
         """
         子项完成编辑, 树控件事件绑定操作
@@ -133,7 +132,6 @@ class TreeWidget(QTreeWidget):
                 pass
             with open(moudulePath, 'w', encoding='utf-8') as f:
                 yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
-            
     
     def find_parent_item(self, item, condition):
         """
@@ -149,8 +147,7 @@ class TreeWidget(QTreeWidget):
                 return current_item
             current_item = current_item.parent()
         return None
-        
-
+    
     def dragEnterEvent(self, event):
         """ 
         接受拖拽操作事件，拖动进入组件时触发。
@@ -165,7 +162,7 @@ class TreeWidget(QTreeWidget):
             draggedItemType = draggedItem.data(0, Qt.UserRole)
             if draggedItemType == 'action':
                 event.accept()
-
+    
     def dragMoveEvent(self, event):
         """ 
         组件内移动事件 
@@ -180,7 +177,7 @@ class TreeWidget(QTreeWidget):
         else:
             # 如果没有拖动目标项（即拖动到了空白区域），拒绝拖动操作
             event.ignore()
-
+    
     def dropEvent(self, event):
         """ 
         放置事件，当拖动放置时触发。 
@@ -256,6 +253,7 @@ class TreeWidget(QTreeWidget):
             event.ignore()
         self.itemChanged.connect(self.on_item_changed) # 重新开启
     
+    @Slot(str)
     def display_action_details(self, action_path:str):
         """ 
         展示action的详细信息, 仅供预览 
@@ -273,6 +271,7 @@ class TreeWidget(QTreeWidget):
         self.resizeColumnToContents(1)
         self.resizeColumnToContents(2)
     
+    @Slot(str)
     def display_module_details(self, module_path:str):
         """ 
         展示module的详细信息, 提供编辑交互UI 
@@ -287,7 +286,7 @@ class TreeWidget(QTreeWidget):
         self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)
         self.resizeColumnToContents(2)
-
+    
     def show_context_menu(self, pos: QPoint):
         """ 
         树控件子项右键菜单事件 
@@ -315,7 +314,7 @@ class TreeWidget(QTreeWidget):
                 context_menu.addAction(actionMoveDown)
                 # 显示上下文菜单
                 context_menu.exec(self.viewport().mapToGlobal(pos))
-
+    
     def add_action_to_module(self, action_file, module_file, step_index: int | None = None):
         """ 
         将action文件信息添加到module文件, 拖拽放置事件的文件处理操作
@@ -351,7 +350,7 @@ class TreeWidget(QTreeWidget):
             LOG.error(f"YAML parse error: {e}")
         except IOError as e:
             LOG.error(f"File IO failed: {e}")
-
+    
     def delete_actionInfo(self, index: int):
         """ 从 module 文件(step)中删除 action 信息"""
         moduleItem = self.topLevelItem(0)
@@ -362,7 +361,7 @@ class TreeWidget(QTreeWidget):
         with open(modulePath, 'w', encoding='utf-8') as f:
             yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
         LOG.trace(f'Action info at "step" index {index} delete successfully at {modulePath}')
-        
+    
     def swap_actionInfo(self, index_1: int, index_2: int):
         """ 将 module 文件(step)中两个不同索引的 action 信息交换 """
         moduleItem = self.topLevelItem(0)
@@ -373,7 +372,7 @@ class TreeWidget(QTreeWidget):
         with open(modulePath, 'w', encoding='utf-8') as f:
             yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
         LOG.trace(f'Action info at "step" index {index_1} and {index_2} swap successfully at {modulePath}')
-        
+    
     def delete_item(self, item):
         """
         删除选中的项, 菜单操作
@@ -383,7 +382,7 @@ class TreeWidget(QTreeWidget):
         index = parent.indexOfChild(item)
         parent.removeChild(item)
         self.delete_actionInfo(index)
-
+    
     def move_item_up(self, item):
         """
         上移选中的项, 菜单操作
@@ -398,7 +397,7 @@ class TreeWidget(QTreeWidget):
             if item.data(0, Qt.UserRole) == 'action':
                 item.setFirstColumnSpanned(True)
             self.swap_actionInfo(index, index - 1)
-
+    
     def move_item_down(self, item):
         """
         下移选中的项, 菜单操作
@@ -414,7 +413,7 @@ class TreeWidget(QTreeWidget):
                 item.setFirstColumnSpanned(True)
             self.swap_actionInfo(index, index + 1)
 
-    
+
 if __name__ == '__main__':
     app = QApplication([])
     window = EditDock()
