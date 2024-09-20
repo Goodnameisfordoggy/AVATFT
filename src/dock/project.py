@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-20 11:59:33
+LastEditTime: 2024-09-20 23:56:37
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\project.py
 Description: 
 
@@ -251,7 +251,6 @@ class TreeWidget(QTreeWidget):
         """ 树控件子项变化处理，树控件绑定操作"""
         # 暂时禁用信号处理，避免递归触发
         self.blockSignals(True)
-        
         # 获取当前复选框的状态
         check_state = item.checkState(0)
         self.__update_child_items_check_state(item, check_state)
@@ -384,7 +383,7 @@ class TreeWidget(QTreeWidget):
                 LOG.critical('This item or item type does not have that functionality')
             # 创建新文件，并创建新子项
             if ProjectDock.new_module_file(targetPath):
-                moduleItem = TreeWidgetItem(None, [name], ('module', targetPath))
+                moduleItem = TreeWidgetItem(None, [name], ('module', targetPath), checkbox=True)
                 if itemType in ('project', 'package'):
                     item.addChild(moduleItem)
                     LOG.trace('Module item create successfully')
@@ -413,7 +412,7 @@ class TreeWidget(QTreeWidget):
                 LOG.critical('This item or item type does not have that functionality')
             # 创建新目录，并创建新子项
             if ProjectDock.new_package_file(targetPath):
-                packageItem = TreeWidgetItem(None, [name], ('package', targetPath))
+                packageItem = TreeWidgetItem(None, [name], ('package', targetPath), checkbox=True)
                 if itemType in ('project', 'package'):
                     item.addChild(packageItem)
                     LOG.trace('Package item create successfully')
@@ -428,7 +427,7 @@ class TreeWidget(QTreeWidget):
         itemPath = item.data(1, Qt.UserRole)
         self.__current_path = itemPath
         self.__tempItem = item
-        self.__current_path = False
+        self.__cutEvent = False
         LOG.trace(f'Item {item.text(0)} was copied')
     
     def __cut_item(self, item: TreeWidgetItem):
@@ -436,7 +435,7 @@ class TreeWidget(QTreeWidget):
         itemPath = item.data(1, Qt.UserRole)
         self.__current_path = itemPath
         self.__tempItem = item
-        self.__current_path = True
+        self.__cutEvent = True
         LOG.trace(f'Item {item.text(0)} was cut')
     
     def __paste_item(self, item: TreeWidgetItem):
@@ -455,7 +454,7 @@ class TreeWidget(QTreeWidget):
             targetPath = os.path.join(itemPath, baseName)
         # 处理原子项
         itemIndex = self.__tempItem.parent().indexOfChild(self.__tempItem)
-        if self.__current_path:
+        if self.__cutEvent:
             if ProjectDock.paste_file(self.__current_path, targetPath, 'CUT'):
                 self.__tempItem = self.__tempItem.parent().takeChild(itemIndex)
         else:
@@ -471,7 +470,7 @@ class TreeWidget(QTreeWidget):
             LOG.trace('Item paste successfully')
             
         del self.__current_path
-        del self.__current_path
+        del self.__cutEvent
     
     def __delete_item(self, item: TreeWidgetItem):
         """ 删除文件项或目录项，菜单操作 """

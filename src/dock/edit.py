@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-20 00:15:35
+LastEditTime: 2024-09-21 00:40:37
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
@@ -205,8 +205,10 @@ class TreeWidget(QTreeWidget):
                             newItem = ActionItem(item, data=('action', actionPath, False, True), editable=True, param_editable=True) # 创建一个新的子项，放置到最后
                             self.add_action_to_module(actionPath, modulePath) # 将 action 信息写入 module
                         elif itemType == 'action': # 放置目标项类型二
-                            itemIndex = item.parent().indexOfChild(item)
-                            item.parent().insertChild(itemIndex + 1, ActionItem(None, data=('action', actionPath, False, True), editable=True, param_editable=True)) # 在放置目标子项的下方创建同级子项
+                            parentItem = item.parent()
+                            itemIndex = parentItem.indexOfChild(item)
+                            newItem = ActionItem(parentItem, data=('action', actionPath, False, True), editable=True, param_editable=True)
+                            parentItem.insertChild(itemIndex + 1, newItem) # 在放置目标子项的下方插入
                             self.add_action_to_module(actionPath, modulePath, itemIndex + 1)
                         # 确认并完成当前的拖放操作
                         event.acceptProposedAction()
@@ -224,10 +226,10 @@ class TreeWidget(QTreeWidget):
                             self.delete_actionInfo(draggedItemIndex)
                             self.add_action_to_module(actionPath, modulePath, 0)
                         elif itemType == 'action': # 放置目标项类型二
-                            parent = item.parent() # 拖动项与放置目标项同级，故使用相同的父级
-                            itemIndex = parent.indexOfChild(item)
-                            draggedItemIndex = parent.indexOfChild(draggedItem)
-                            tempItem = parent.takeChild(draggedItemIndex) # 拿起拖动项
+                            parentItem = item.parent() # 拖动项与放置目标项同级，故使用相同的父级
+                            itemIndex = parentItem.indexOfChild(item)
+                            draggedItemIndex = parentItem.indexOfChild(draggedItem)
+                            tempItem = parentItem.takeChild(draggedItemIndex) # 拿起拖动项
                             self.delete_actionInfo(draggedItemIndex)
                             # 计算删除拖拽项后，放置目标项的索引
                             if draggedItemIndex < itemIndex: # 拖拽项在放置目标项的上方, 放置目标项此时上移 index - 1
@@ -236,16 +238,15 @@ class TreeWidget(QTreeWidget):
                                 itemIndex = itemIndex
                             # 放置子项
                             if draggedItemIndex - itemIndex != 1:
-                                parent.insertChild(itemIndex + 1, tempItem) # 在放置目标子项的下方创建同级子项
+                                parentItem.insertChild(itemIndex + 1, tempItem) # 在放置目标子项的下方创建同级子项
                                 tempItem.setFirstColumnSpanned(True)
                                 self.add_action_to_module(actionPath, modulePath, itemIndex + 1)
                             else: # 拖拽项在放置目标项下方，且两项相邻，则交换两项位置
-                                parent.insertChild(itemIndex, tempItem) # 在放置目标子项的下方创建同级子项
+                                parentItem.insertChild(itemIndex, tempItem) # 在放置目标子项的下方创建同级子项
                                 tempItem.setFirstColumnSpanned(True)
                                 self.add_action_to_module(actionPath, modulePath, itemIndex)
                         # 确认并完成当前的拖放操作
                         event.acceptProposedAction()
-
             else:
                 # 如果组件不接受放置，拒绝放置操作
                 event.ignore()

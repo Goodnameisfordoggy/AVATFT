@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-20 00:03:05
+LastEditTime: 2024-09-20 23:07:11
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\action.py
 Description: 
 
@@ -69,7 +69,7 @@ class ActionDock(QDockWidget):
         self.tree.itemDoubleClicked.connect(self.__on_item_double_clicked)
         # 连接右键菜单事件
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tree.customContextMenuRequested.connect(self.__on_item_double_clicked)
+        self.tree.customContextMenuRequested.connect(self.__show_context_menu)
         # 子项
         first_iteration = True
         for root, dirs, files in os.walk(ACTION_KEYWORDS_DIR):
@@ -94,7 +94,7 @@ class ActionDock(QDockWidget):
         except AttributeError:
             pass
     
-    def __on_item_double_clicked(self, pos: QPoint):
+    def __show_context_menu(self, pos: QPoint):
         """ 树控件子项右键菜单事件 """
         # 获取点击的项
         item = self.tree.itemAt(pos)
