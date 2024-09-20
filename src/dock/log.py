@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-17 00:36:37
+LastEditTime: 2024-09-20 00:16:24
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\log.py
 Description: 
 
@@ -28,9 +28,9 @@ class LogDock(QDockWidget):
         super().__init__(title, parent)
         self.setWindowTitle('日志')
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
-        self.initUI()
+        self.__initUI()
         
-    def initUI(self):
+    def __initUI(self):
         self.center_widget = QWidget(self)
         self.setWidget(self.center_widget)
         center_widget_layout = QVBoxLayout(self.center_widget)

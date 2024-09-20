@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-19 23:36:52
+LastEditTime: 2024-09-20 11:59:33
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\project.py
 Description: 
 
@@ -100,7 +100,7 @@ class ProjectDock(QDockWidget):
         return checked_items
     
     @staticmethod
-    def new_module_file(path: str):
+    def new_module_file(path: str) -> bool:
         """ 
         创建 module 级配置文件 
         
@@ -118,7 +118,7 @@ class ProjectDock(QDockWidget):
             LOG.warning('A file with the same name exists in the destination location, and the new operation has been canceled')    
     
     @staticmethod
-    def new_package_file(path: str):
+    def new_package_file(path: str) -> bool:
         """ 
         创建 package 目录
         
@@ -203,6 +203,7 @@ class ProjectDock(QDockWidget):
         
         :param path: 目标文件路径
         :param name: 要更改的名称
+        :return: 更改完名称的文件绝对路径
         """
         if os.path.exists(path):  # 检查路径是否存在
             dirname = os.path.dirname(path)
@@ -240,7 +241,6 @@ class TreeWidget(QTreeWidget):
     
     def __on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件，树控件绑定操作 """
-        print('__on_item_double_clicked')
         try:
             if item.data(0, Qt.UserRole) == 'module':
                 self.item_double_clicked_signal.emit(item.data(1, Qt.UserRole)) # 发送信号

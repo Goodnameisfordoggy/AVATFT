@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-17 01:25:34
+LastEditTime: 2024-09-20 00:03:05
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\action.py
 Description: 
 
@@ -43,10 +43,9 @@ class ActionDock(QDockWidget):
         self.setWindowTitle('行为关键字')
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.resize(400, 300)
-        self.initUI()
+        self.__initUI()
         
-    
-    def initUI(self):
+    def __initUI(self):
         self.center_widget = QWidget(self)
         self.setWidget(self.center_widget)
         center_widget_layout = QVBoxLayout(self.center_widget)
@@ -55,7 +54,7 @@ class ActionDock(QDockWidget):
         self.search_box = QLineEdit(self)
         center_widget_layout.addWidget(self.search_box)
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
-        self.search_box.textChanged.connect(self.search_tree_items)
+        self.search_box.textChanged.connect(self.__search_tree_items)
         
 
         # 树控件
@@ -67,10 +66,10 @@ class ActionDock(QDockWidget):
         self.tree.setAcceptDrops(False) # 能否放置
         self.tree.setDropIndicatorShown(True) # 是否启用放置指示器
         self.tree.setDefaultDropAction(Qt.CopyAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
-        self.tree.itemDoubleClicked.connect(self.on_item_double_clicked)
+        self.tree.itemDoubleClicked.connect(self.__on_item_double_clicked)
         # 连接右键菜单事件
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tree.customContextMenuRequested.connect(self.show_context_menu)
+        self.tree.customContextMenuRequested.connect(self.__on_item_double_clicked)
         # 子项
         first_iteration = True
         for root, dirs, files in os.walk(ACTION_KEYWORDS_DIR):
@@ -81,13 +80,13 @@ class ActionDock(QDockWidget):
             for file_name in files:
                 childItem = TreeWidgetItem(rootItem, [os.path.splitext(file_name)[0]], ('action', os.path.join(root, file_name)))
     
-    def search_tree_items(self):
+    def __search_tree_items(self):
         """ 搜索树控件子项，搜索框绑定操作"""
         search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
         root = self.tree.invisibleRootItem() # 获取根项
         filter_item(root, search_text)
-
-    def on_item_double_clicked(self, item, column):
+    
+    def __on_item_double_clicked(self, item: TreeWidgetItem, column):
         """ 树控件子项双击事件 """
         try:
             if item.data(0, Qt.UserRole) == 'action':
@@ -95,7 +94,7 @@ class ActionDock(QDockWidget):
         except AttributeError:
             pass
     
-    def show_context_menu(self, pos: QPoint):
+    def __on_item_double_clicked(self, pos: QPoint):
         """ 树控件子项右键菜单事件 """
         # 获取点击的项
         item = self.tree.itemAt(pos)

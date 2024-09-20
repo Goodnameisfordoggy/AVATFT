@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-19 23:39:13
+LastEditTime: 2024-09-20 00:15:35
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
@@ -51,40 +51,38 @@ class EditDock(QDockWidget):
         self.setFeatures(QDockWidget.NoDockWidgetFeatures | QDockWidget.DockWidgetClosable)
         self.setWindowTitle('测试用例编辑区')
         self.setTitleBarWidget(QLabel('   测试用例编辑区'))
-        self.initUI()
+        self.__initUI()
     
-    def initUI(self):
+    def __initUI(self):
         self.center_widget = QWidget(self)
         self.setWidget(self.center_widget)
         center_widget_layout = QVBoxLayout(self.center_widget)
-        
         # 搜索框
         self.search_box = QLineEdit(self)
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
-        self.search_box.textChanged.connect(self.search_tree_items)
+        self.search_box.textChanged.connect(self.__search_tree_items)
         center_widget_layout.addWidget(self.search_box)
-
         # 树状控件
         self.tree = TreeWidget()
         center_widget_layout.addWidget(self.tree)
-
         # 运行按钮
         self.operation_btn = QPushButton(self, text='开始测试')
         center_widget_layout.addWidget(self.operation_btn)
-        self.operation_btn.clicked.connect(self.operate)
+        self.operation_btn.clicked.connect(self.__operate)
     
-    def search_tree_items(self):
+    def __search_tree_items(self):
         """ 搜索树控件子项，搜索框绑定操作"""
         search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
         root = self.tree.invisibleRootItem() # 获取根项
         filter_item(root, search_text)
-
-    def operate(self):
-        """ 开始测试 """
+    
+    def __operate(self):
+        """ 开始测试,按钮绑定操作 """
         self.operate_signal.emit('operate')
         
 
 class TreeWidget(QTreeWidget):
+    
     def __init__(self):
         super().__init__()
         self.setColumnCount(3) # 列数
@@ -96,7 +94,7 @@ class TreeWidget(QTreeWidget):
         # 连接右键菜单事件
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
-
+    
     @typing.override
     def edit(self, index, trigger, event):
         """ 仅允许编辑第3列的文本 """
@@ -104,7 +102,7 @@ class TreeWidget(QTreeWidget):
             return super().edit(index, trigger, event)
         return False
     
-    def on_item_changed(self, item, column):
+    def on_item_changed(self, item: TreeWidgetItem, column):
         """
         子项完成编辑, 树控件事件绑定操作
 
@@ -133,7 +131,7 @@ class TreeWidget(QTreeWidget):
             with open(moudulePath, 'w', encoding='utf-8') as f:
                 yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
     
-    def find_parent_item(self, item, condition):
+    def find_parent_item(self, item: TreeWidgetItem, condition: typing.Callable):
         """
         从子项开始，向上递归查找符合条件的父项。
         
@@ -148,6 +146,7 @@ class TreeWidget(QTreeWidget):
             current_item = current_item.parent()
         return None
     
+    @typing.override
     def dragEnterEvent(self, event):
         """ 
         接受拖拽操作事件，拖动进入组件时触发。
@@ -163,6 +162,7 @@ class TreeWidget(QTreeWidget):
             if draggedItemType == 'action':
                 event.accept()
     
+    @typing.override
     def dragMoveEvent(self, event):
         """ 
         组件内移动事件 
@@ -178,6 +178,7 @@ class TreeWidget(QTreeWidget):
             # 如果没有拖动目标项（即拖动到了空白区域），拒绝拖动操作
             event.ignore()
     
+    @typing.override
     def dropEvent(self, event):
         """ 
         放置事件，当拖动放置时触发。 
@@ -315,7 +316,7 @@ class TreeWidget(QTreeWidget):
                 # 显示上下文菜单
                 context_menu.exec(self.viewport().mapToGlobal(pos))
     
-    def add_action_to_module(self, action_file, module_file, step_index: int | None = None):
+    def add_action_to_module(self, action_file: str, module_file: str, step_index: int | None = None):
         """ 
         将action文件信息添加到module文件, 拖拽放置事件的文件处理操作
         
@@ -373,7 +374,7 @@ class TreeWidget(QTreeWidget):
             yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
         LOG.trace(f'Action info at "step" index {index_1} and {index_2} swap successfully at {modulePath}')
     
-    def delete_item(self, item):
+    def delete_item(self, item: TreeWidgetItem):
         """
         删除选中的项, 菜单操作
         """
@@ -383,7 +384,7 @@ class TreeWidget(QTreeWidget):
         parent.removeChild(item)
         self.delete_actionInfo(index)
     
-    def move_item_up(self, item):
+    def move_item_up(self, item: TreeWidgetItem):
         """
         上移选中的项, 菜单操作
         """
@@ -398,7 +399,7 @@ class TreeWidget(QTreeWidget):
                 item.setFirstColumnSpanned(True)
             self.swap_actionInfo(index, index - 1)
     
-    def move_item_down(self, item):
+    def move_item_down(self, item: TreeWidgetItem):
         """
         下移选中的项, 菜单操作
         """

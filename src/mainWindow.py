@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-19 23:37:35
+LastEditTime: 2024-09-20 00:29:43
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\mainWindow.py
 Description: 
 
@@ -20,7 +20,7 @@ import sys
 import typing
 from PySide6.QtWidgets import QApplication, QMainWindow, QDockWidget, QMenuBar, QMenu, QSplitter, QTextEdit 
 from PySide6.QtGui import QAction
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, Slot
 
 from utils import logger
 from src.dock.edit import EditDock
@@ -40,11 +40,14 @@ class ConsoleOutput:
     def write(self, message):
         # 将信息追加到 QTextEdit 中
         self.outputWidget.append(message)
+        # 输出到控制台
+        sys.__stdout__.write(message)
+        sys.__stdout__.flush()
 
     def flush(self):
         """ 清空缓冲区 """
-        # 一般情况下不需要处理 flush，保留空方法
-        pass
+        # 需要实现这个方法以避免报错
+        sys.__stdout__.flush()
 
 
 class QTextEditLogger:
@@ -79,18 +82,18 @@ class MainWindow(QMainWindow):
         self.resize(self.screen_width - 100, self.screen_height - 100)
         # self.maximumSize()        
 
-        self.build_menu()
-        self.create_dock_widgets()
-        self.initialize_layout()
-        self.connect_signal()
+        self.__build_menu()
+        self.__create_dock_widgets()
+        self.__initialize_layout()
+        self.__connect_signal()
 
         # 重定向标准输出和标准错误到自定义输出类
         sys.stdout = ConsoleOutput(self.log_dock.logTextWidget)
         sys.stderr = ConsoleOutput(self.log_dock.logTextWidget)
         # 将日志输出到自定义输出类
         textEditLogger = QTextEditLogger(self.log_dock.logTextWidget)
-
-    def build_menu(self):
+    
+    def __build_menu(self):
         # 创建菜单栏
         self.menuBar = self.menuBar()
 
@@ -116,18 +119,18 @@ class MainWindow(QMainWindow):
         self.actionDockAction = QAction("自动化测试关键字窗口", self)
         self.actionDockAction.setCheckable(True)  # 设置菜单项可勾选
         self.actionDockAction.setChecked(True) # 初始勾选
-        self.actionDockAction.triggered.connect(self.viewMenu_clicked)
+        self.actionDockAction.triggered.connect(self.__viewMenu_clicked)
         self.editDockAction = QAction("自动化测试编辑窗口", self)
         self.editDockAction.setCheckable(True)
         self.editDockAction.setChecked(True)
-        self.editDockAction.triggered.connect(self.viewMenu_clicked)
+        self.editDockAction.triggered.connect(self.__viewMenu_clicked)
         self.projectDockAction = QAction("自动化测试项目窗口", self)
         self.projectDockAction.setCheckable(True)
         self.projectDockAction.setChecked(True)
-        self.projectDockAction.triggered.connect(self.viewMenu_clicked)
+        self.projectDockAction.triggered.connect(self.__viewMenu_clicked)
         self.logDockAction = QAction("自动化测试日志窗口", self)
         self.logDockAction.setCheckable(True)
-        self.logDockAction.triggered.connect(self.viewMenu_clicked)
+        self.logDockAction.triggered.connect(self.__viewMenu_clicked)
 
         self.viewMenu.addAction(self.actionDockAction)
         self.viewMenu.addSeparator()  # 分隔符
@@ -140,8 +143,8 @@ class MainWindow(QMainWindow):
         self.menuBar.addMenu(self.fileMenu)
         self.menuBar.addMenu(self.viewMenu)
         self.menuBar.addMenu(self.helpMenu)
-
-    def create_dock_widgets(self):
+    
+    def __create_dock_widgets(self):
         # 关键词区域
         self.action_dock = ActionDock('', self)
         self.addDockWidget(Qt.RightDockWidgetArea, self.action_dock)
@@ -158,15 +161,14 @@ class MainWindow(QMainWindow):
         self.log_dock = LogDock('', self)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.log_dock)
         self.log_dock.setVisible(False)
-
     
-    def initialize_layout(self):
+    def __initialize_layout(self):
         
         # 分割 Horizontal Vertical
         self.splitDockWidget(self.action_dock, self.edit_dock, Qt.Horizontal)
         self.splitDockWidget(self.edit_dock, self.project_dock, Qt.Horizontal)
-
-    def connect_signal(self): # QwQ: sender.signal.connect(receiver.func)
+    
+    def __connect_signal(self): # QwQ: sender.signal.connect(receiver.func)
         """ 信号连接 """
         self.action_dock.item_double_clicked_signal.connect(self.edit_dock.tree.display_action_details)
         self.project_dock.tree.item_double_clicked_signal.connect(self.edit_dock.tree.display_module_details)
@@ -183,7 +185,8 @@ class MainWindow(QMainWindow):
         sys.stderr = sys.__stderr__
         super().closeEvent(event)
     
-    def viewMenu_clicked(self, checked):
+    @Slot(bool)
+    def __viewMenu_clicked(self, checked: bool):
         """ 视图菜单下子项的单击事件 """
         sender = self.sender()  # 获取信号发送者
         actionText = sender.text()
@@ -203,7 +206,7 @@ class MainWindow(QMainWindow):
             dock.setVisible(True)
         else:
             dock.setVisible(False)
-
+    
     def creat_project(self):
         """ 创建新工程目录，菜单操作"""
         nameInputDialogBox = NameInputDialogBox(self, '新建工程', '请输入新工程的名称：')
