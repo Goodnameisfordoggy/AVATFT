@@ -1,7 +1,7 @@
 # VATFT 
 Visual automatic test framework tool
 
-version: 0.0.15
+version: 0.1.15
 
 # 项目结构
 
@@ -22,6 +22,7 @@ projects目录结构
 
 
 # Update log
+- 0.1.15: 项目构建中，基础UI以及UI主要逻辑构建完成。
 - 0.0.15: 修复了一些错误
 - 0.0.14: 项目构建中
 - 0.0.14: 项目构建中

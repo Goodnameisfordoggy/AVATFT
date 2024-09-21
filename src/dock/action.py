@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-20 23:07:11
+LastEditTime: 2024-09-21 23:01:01
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\action.py
 Description: 
 
@@ -17,6 +17,7 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 '''
 import os
 import sys
+import typing
 import subprocess
 from PySide6.QtWidgets import (
     QApplication, QWidget, QTextEdit, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QLineEdit,
@@ -36,7 +37,8 @@ LOG = logger.get_logger()
 class ActionDock(QDockWidget):
     
     # 自定义信号
-    item_double_clicked_signal = Signal(str)  # 信号携带一个字符串参数
+    closeSignal = Signal(str)
+    itemDoubleClickedSignal = Signal(str)  # 信号携带一个字符串参数
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
@@ -89,8 +91,8 @@ class ActionDock(QDockWidget):
     def __on_item_double_clicked(self, item: TreeWidgetItem, column):
         """ 树控件子项双击事件 """
         try:
-            if item.data(0, Qt.UserRole) == 'action':
-                self.item_double_clicked_signal.emit(item.data(1, Qt.UserRole)) # 发送信号
+            if item.type == 'action':
+                self.itemDoubleClickedSignal.emit(item.path) # 发送信号
         except AttributeError:
             pass
     
@@ -106,13 +108,18 @@ class ActionDock(QDockWidget):
             action_edit = QAction("打开文件(目录)", self)
 
             # 连接菜单项的触发信号
-            action_edit.triggered.connect(lambda: open_file(item.data(1, Qt.UserRole)))
+            action_edit.triggered.connect(lambda: open_file(item.path))
 
             # 将菜单项添加到上下文菜单
             context_menu.addAction(action_edit)
 
             # 显示上下文菜单
             context_menu.exec(self.tree.viewport().mapToGlobal(pos))
+    
+    @typing.override
+    def closeEvent(self, event) -> None:
+        self.closeSignal.emit('close')
+        return super().closeEvent(event)
     
 
 if __name__ == '__main__':

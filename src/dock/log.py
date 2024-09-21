@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-20 00:16:24
+LastEditTime: 2024-09-21 22:58:14
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\log.py
 Description: 
 
@@ -15,14 +15,18 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
+import typing
 from PySide6.QtWidgets import (
     QApplication, QWidget, QLabel, QDockWidget, QVBoxLayout, QLineEdit, QTextEdit
 	)
 from PySide6.QtGui import QScreen
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 
 
 class LogDock(QDockWidget):
+    
+    # 自定义信号
+    closeSignal = Signal(str)  
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
@@ -44,6 +48,11 @@ class LogDock(QDockWidget):
         # 日志区
         self.logTextWidget = QTextEdit(self)
         center_widget_layout.addWidget(self.logTextWidget)
+    
+    @typing.override
+    def closeEvent(self, event) -> None:
+        self.closeSignal.emit('close')
+        return super().closeEvent(event)
 
 
 if __name__ == '__main__':

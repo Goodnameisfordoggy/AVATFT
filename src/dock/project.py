@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-20 23:56:37
+LastEditTime: 2024-09-22 01:07:45
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\project.py
 Description: 
 
@@ -18,12 +18,13 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 import os
 import sys
 import yaml
+import typing
 import shutil
 from PySide6.QtWidgets import (
     QApplication, QWidget, QLabel, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QTreeWidgetItem,
     QMenu, QFileDialog
 	)
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
 from utils.file import open_file
@@ -37,6 +38,10 @@ LOG = logger.get_logger()
 
 
 class ProjectDock(QDockWidget):
+    
+    # 自定义信号
+    closeSignal = Signal(str)
+    operateResponseSignal = Signal(list)
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
@@ -59,8 +64,13 @@ class ProjectDock(QDockWidget):
         # 树控件
         self.tree = TreeWidget(self)
         center_widget_layout.addWidget(self.tree)
-        
-
+    
+    def __search_tree_items(self):
+        """ 搜索树控件子项，搜索框绑定操作"""
+        search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
+        root = self.tree.invisibleRootItem() # 获取根项
+        filter_item(root, search_text)
+    
     def select_project(self) -> str:
         directory_path = QFileDialog.getExistingDirectory(self, "选择项目目录", PROJECTS_DIR)
         return directory_path
@@ -84,20 +94,23 @@ class ProjectDock(QDockWidget):
             LOG.info(f'Load project from {directory_path}')
         # 启用信号
         self.tree.blockSignals(False)
-
-    def __search_tree_items(self):
-        """ 搜索树控件子项，搜索框绑定操作"""
-        search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
-        root = self.tree.invisibleRootItem() # 获取根项
-        filter_item(root, search_text)
-
-    def get_checked_modules(self):
-        """ 获取所有复选框状态为Checked的module子项，并返回对应的文件路径 """
+    
+    @Slot(str)
+    def get_checked_modules(self, msg: str):
+        """ 
+        获取所有复选框状态为 Checked 的 module 级子项，使用信号将对应的文件路径列表 response
+        
+        """
         checked_items = []
         root = self.tree.invisibleRootItem()  # 获取树的根项
-        self.tree.__find_checked_items(root, checked_items)
-        print(checked_items)
-        return checked_items
+        self.tree.find_checked_items(root, checked_items)
+        modulePaths = [item.path for item in checked_items if item.type == 'module']
+        self.operateResponseSignal.emit(modulePaths)
+    
+    @typing.override
+    def closeEvent(self, event) -> None:
+        self.closeSignal.emit('close')
+        return super().closeEvent(event)
     
     @staticmethod
     def new_module_file(path: str) -> bool:
@@ -228,7 +241,7 @@ class ProjectDock(QDockWidget):
 class TreeWidget(QTreeWidget):
     
     # 自定义信号
-    item_double_clicked_signal = Signal(str)  # 信号携带一个字符串参数
+    itemDoubleClickedSignal = Signal(str)  # 信号携带一个字符串参数
     
     def __init__(self, parent: QWidget | None = ...) -> None:
         super().__init__(parent)
@@ -242,8 +255,8 @@ class TreeWidget(QTreeWidget):
     def __on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件，树控件绑定操作 """
         try:
-            if item.data(0, Qt.UserRole) == 'module':
-                self.item_double_clicked_signal.emit(item.data(1, Qt.UserRole)) # 发送信号
+            if item.type == 'module':
+                self.itemDoubleClickedSignal.emit(item.path) # 发送信号
         except AttributeError:
             pass
     
@@ -267,7 +280,7 @@ class TreeWidget(QTreeWidget):
         # 获取点击的项
         item = self.itemAt(pos)
         if item:
-            itemType = item.data(0, Qt.UserRole)
+            itemType = item.type
             if itemType in ('module', 'package'):
                 # 创建上下文菜单
                 context_menu = QMenu(self)
@@ -285,7 +298,7 @@ class TreeWidget(QTreeWidget):
                 # 连接菜单项的触发信号
                 newModuleAction.triggered.connect(lambda: self.__new_module_item(item))
                 newPackageAction.triggered.connect(lambda: self.__new_package_item(item))
-                openAction.triggered.connect(lambda: open_file(item.data(1, Qt.UserRole)))
+                openAction.triggered.connect(lambda: open_file(item.path))
                 copyAction.triggered.connect(lambda: self.__copy_item(item))
                 cutAction.triggered.connect(lambda: self.__cut_item(item))
                 pasteAction.triggered.connect(lambda: self.__paste_item(item))
@@ -317,7 +330,7 @@ class TreeWidget(QTreeWidget):
                 # 连接菜单项的触发信号
                 newModuleAction.triggered.connect(lambda: self.__new_module_item(item))
                 newPackageAction.triggered.connect(lambda: self.__new_package_item(item))
-                openAction.triggered.connect(lambda: open_file(item.data(1, Qt.UserRole)))
+                openAction.triggered.connect(lambda: open_file(item.path))
 
                 # 将菜单项添加到上下文菜单
                 context_menu.addMenu(newMenu)
@@ -356,7 +369,7 @@ class TreeWidget(QTreeWidget):
                 parent_item.setCheckState(0, Qt.PartiallyChecked) # 部分子项被选中
             self.__update_parent_item_check_state(parent_item)
     
-    def find_checked_items(self, current_item: TreeWidgetItem, checked_items: list):
+    def find_checked_items(self, current_item: TreeWidgetItem, checked_items: typing.List[TreeWidgetItem | None]):
         """ 递归查找所有选中的子项 """
         for i in range(current_item.childCount()):
             child_item = current_item.child(i)
@@ -366,8 +379,8 @@ class TreeWidget(QTreeWidget):
     
     def __new_module_item(self, item: TreeWidgetItem):
         """ 创建 module 级子项，菜单操作"""
-        itemType = item.data(0, Qt.UserRole)
-        itemPath = item.data(1, Qt.UserRole)
+        itemType = item.type
+        itemPath = item.path
         nameInputDialogBox = NameInputDialogBox(self, '新建模版', '请输入新的测试用例名称：')
         if nameInputDialogBox.exec():
             name = nameInputDialogBox.nameInput()
@@ -395,8 +408,8 @@ class TreeWidget(QTreeWidget):
     
     def __new_package_item(self, item: TreeWidgetItem):
         """ 创建 package 级子项，菜单操作"""
-        itemType = item.data(0, Qt.UserRole)
-        itemPath = item.data(1, Qt.UserRole)
+        itemType = item.type
+        itemPath = item.path
         nameInputDialogBox = NameInputDialogBox(self, '新建目录', '请输入新的目录名称：')
         if nameInputDialogBox.exec():
             name = nameInputDialogBox.nameInput()
@@ -424,7 +437,7 @@ class TreeWidget(QTreeWidget):
     
     def __copy_item(self, item: TreeWidgetItem):
         """ 复制文件项或目录项，菜单操作 """
-        itemPath = item.data(1, Qt.UserRole)
+        itemPath = item.path
         self.__current_path = itemPath
         self.__tempItem = item
         self.__cutEvent = False
@@ -432,7 +445,7 @@ class TreeWidget(QTreeWidget):
     
     def __cut_item(self, item: TreeWidgetItem):
         """ 剪切文件项或目录项，菜单操作 """
-        itemPath = item.data(1, Qt.UserRole)
+        itemPath = item.path
         self.__current_path = itemPath
         self.__tempItem = item
         self.__cutEvent = True
@@ -440,8 +453,8 @@ class TreeWidget(QTreeWidget):
     
     def __paste_item(self, item: TreeWidgetItem):
         """ 粘贴文件项或目录项，菜单操作 """
-        itemPath = item.data(1, Qt.UserRole)
-        itemType = item.data(0, Qt.UserRole)
+        itemPath = item.path
+        itemType = item.type
         try:
             baseName = os.path.basename(self.__current_path)
         except AttributeError: # current_path
@@ -474,7 +487,7 @@ class TreeWidget(QTreeWidget):
     
     def __delete_item(self, item: TreeWidgetItem):
         """ 删除文件项或目录项，菜单操作 """
-        itemPath = item.data(1, Qt.UserRole)
+        itemPath = item.path
         if ReconfirmDialogBox(self, '删除', '确定要删除该文件吗？').exec():
             if ProjectDock.delete_file(itemPath):
                 item.parent().removeChild(item)
@@ -482,7 +495,7 @@ class TreeWidget(QTreeWidget):
 
     def __rename_item(self, item: TreeWidgetItem):
         """ 重命名文件项或目录项，菜单操作 """
-        itemPath = item.data(1, Qt.UserRole)
+        itemPath = item.path
         nameInputDialogBox = NameInputDialogBox(self, '重命名', '请输入新的文件名称：')
         nameInputDialogBox.set_default_name(item.text(0))
         if nameInputDialogBox.exec():

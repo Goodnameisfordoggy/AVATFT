@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-21 00:20:52
+LastEditTime: 2024-09-22 01:00:06
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\treeWidgetItem.py
 Description: 
 
@@ -37,7 +37,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         0----type
         1----path
         2----draggable
-        3----AcceptDrops
+        3----acceptDrops
     """
     def __init__(self, parent, text: list, data: tuple = (None, None, None, None), icon_path: str = '', editable: bool = False, checkbox: bool = False, *args, **kwargs):
         super().__init__(parent, text, *args, **kwargs)
@@ -60,6 +60,34 @@ class TreeWidgetItem(QTreeWidgetItem):
         if checkbox:
             self.setCheckState(0, Qt.Unchecked)
     
+    @property
+    def type(self):
+        return self.data(0, Qt.UserRole)
+    @type.setter
+    def type(self, value):
+        self.setData(0, Qt.UserRole, value)
+    
+    @property
+    def path(self):
+        return self.data(1, Qt.UserRole)
+    @path.setter
+    def path(self, value):
+        self.setData(1, Qt.UserRole, value)
+
+    @property
+    def draggable(self):
+        return self.data(2, Qt.UserRole)
+    @draggable.setter
+    def draggable(self, value):
+        self.setData(2, Qt.UserRole, value)
+    
+    @property
+    def acceptDrops(self):
+        return self.data(3, Qt.UserRole)
+    @acceptDrops.setter
+    def acceptDrops(self, value):
+        self.setData(3, Qt.UserRole, value)
+
     def change_UserData(self, column: int, value: any, role=Qt.UserRole):
         """
         修改用户数据

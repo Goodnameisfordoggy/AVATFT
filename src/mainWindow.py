@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-20 00:29:43
+LastEditTime: 2024-09-22 00:31:10
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\mainWindow.py
 Description: 
 
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
     
     # 自定义信号
     new_project_signal = Signal(str)
-    load_project_signal = Signal(str)
+    loadProjectSignal = Signal(str)
     
     def __init__(self, app):
         super().__init__()
@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
         self.__build_menu()
         self.__create_dock_widgets()
         self.__initialize_layout()
-        self.__connect_signal()
+        self.__connect_signals()
 
         # 重定向标准输出和标准错误到自定义输出类
         sys.stdout = ConsoleOutput(self.log_dock.logTextWidget)
@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
         self.newProjectAction = QAction("新建工程", self)
         self.newProjectAction.triggered.connect(self.creat_project)
         self.openProjectAction = QAction("打开工程", self)
-        self.openProjectAction.triggered.connect(lambda: self.load_project_signal.emit('load_project'))
+        self.openProjectAction.triggered.connect(lambda: self.loadProjectSignal.emit('load_project'))
         self.exitAction = QAction("退出", self)
         self.exitAction.triggered.connect(self.close)  # 连接退出动作到窗口的关闭功能
 
@@ -168,13 +168,19 @@ class MainWindow(QMainWindow):
         self.splitDockWidget(self.action_dock, self.edit_dock, Qt.Horizontal)
         self.splitDockWidget(self.edit_dock, self.project_dock, Qt.Horizontal)
     
-    def __connect_signal(self): # QwQ: sender.signal.connect(receiver.func)
+    def __connect_signals(self): # QwQ: sender.signal.connect(receiver.func)
         """ 信号连接 """
-        self.action_dock.item_double_clicked_signal.connect(self.edit_dock.tree.display_action_details)
-        self.project_dock.tree.item_double_clicked_signal.connect(self.edit_dock.tree.display_module_details)
-        self.load_project_signal.connect(lambda: self.project_dock.load_project(self.project_dock.select_project()))
-        self.edit_dock.operate_signal.connect(lambda: self.log_dock.setVisible(True))
-        # self.edit_dock.operate_signal.connect(self.project_dock.get_checked_modules())
+        self.loadProjectSignal.connect(lambda: self.project_dock.load_project(self.project_dock.select_project()))
+        self.action_dock.closeSignal.connect(lambda: self.actionDockAction.setChecked(False))
+        self.action_dock.itemDoubleClickedSignal.connect(self.edit_dock.tree.display_action_details)
+        self.project_dock.closeSignal.connect(lambda: self.projectDockAction.setChecked(False))
+        self.project_dock.operateResponseSignal.connect(self.edit_dock.operate)
+        self.project_dock.tree.itemDoubleClickedSignal.connect(self.edit_dock.tree.display_module_details)
+        self.edit_dock.closeSignal.connect(lambda: self.editDockAction.setChecked(False))
+        self.edit_dock.operateSignal.connect(lambda: self.log_dock.setVisible(True))
+        self.edit_dock.operateSignal.connect(self.project_dock.get_checked_modules)
+        self.log_dock.closeSignal.connect(lambda: self.logDockAction.setChecked(False))
+        # self.edit_dock.operateSignal.connect(self.project_dock.get_checked_modules())
     
     @typing.override
     def closeEvent(self, event):
