@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-22 01:04:43
+LastEditTime: 2024-09-23 14:34:03
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
@@ -29,6 +29,7 @@ from utils.filter import filter_item
 from utils import logger
 from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
 from src.dock.action import ActionDock
+from src.funcs import run_module
 LOG = logger.get_logger()
 
 
@@ -81,10 +82,14 @@ class EditDock(QDockWidget):
     @Slot() # 也可处理不带参数的信号
     def operate(self, data: list | bool = False):
         """ 开始测试,按钮绑定操作 """
+        
         if data is False or data is None: #  按钮clicked信号触发时传递的信息
             self.operateSignal.emit('operate')
         elif isinstance(data, list): # operateResponseSignal信号触发时回带的信息
-            print(data)
+            LOG.info('开始测试 =============================================================================>')
+            if len(data) == 1:
+                run_module(data[0])
+            LOG.info('测试结束 <=============================================================================')
     
     @typing.override
     def closeEvent(self, event) -> None:

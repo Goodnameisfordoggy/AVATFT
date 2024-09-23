@@ -3,6 +3,7 @@
 cookies.json
 action_keywords/
 projects/
+func/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

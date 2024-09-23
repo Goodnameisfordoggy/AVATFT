@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-21 23:01:01
+LastEditTime: 2024-09-23 22:15:02
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\action.py
 Description: 
 
@@ -73,14 +73,21 @@ class ActionDock(QDockWidget):
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.__show_context_menu)
         # 子项
-        first_iteration = True
-        for root, dirs, files in os.walk(ACTION_KEYWORDS_DIR):
-            if first_iteration:
-                first_iteration = False
-                continue
-            rootItem = TreeWidgetItem(self.tree, [os.path.basename(root)], ('package', root))
-            for file_name in files:
-                childItem = TreeWidgetItem(rootItem, [os.path.splitext(file_name)[0]], ('action', os.path.join(root, file_name)))
+        self.__initChildItem(ACTION_KEYWORDS_DIR, self.tree)
+    
+
+    def __initChildItem(self, root_dir, parent):
+        # 获取目录中的所有条目，并按照原始顺序列出
+        with os.scandir(root_dir) as it:
+            for entry in it:
+                # 如果是目录，递归列出其内容
+                if entry.is_dir():
+                    newItem = TreeWidgetItem(parent, [entry.name], ('package', entry.path))
+                    # 递归调用，传入新的父项 newItem
+                    self.__initChildItem(entry.path, newItem)
+                # 如果是文件，直接输出文件名
+                else:
+                    newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('action', entry.path))
     
     def __search_tree_items(self):
         """ 搜索树控件子项，搜索框绑定操作"""

@@ -1,25 +1,63 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-02 09:13:48
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\funcs.py
+LastEditTime: 2024-09-23 22:49:58
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\funcs.py
 Description: 
 
-				*		Ğ´×ÖÂ¥ÀïĞ´×Ö¼ä£¬Ğ´×Ö¼äÀï³ÌĞòÔ±£»
-				*		³ÌĞòÈËÔ±Ğ´³ÌĞò£¬ÓÖÄÃ³ÌĞò»»¾ÆÇ®¡£
-				*		¾ÆĞÑÖ»ÔÚÍøÉÏ×ø£¬¾Æ×í»¹À´ÍøÏÂÃß£»
-				*		¾Æ×í¾ÆĞÑÈÕ¸´ÈÕ£¬ÍøÉÏÍøÏÂÄê¸´Äê¡£
-				*		µ«Ô¸ÀÏËÀµçÄÔ¼ä£¬²»Ô¸¾Ï¹ªÀÏ°åÇ°£»
-				*		±¼³Û±¦Âí¹óÕßÈ¤£¬¹«½»×ÔĞĞ³ÌĞòÔ±¡£
-				*		±ğÈËĞ¦ÎÒß¯·èñ²£¬ÎÒĞ¦×Ô¼ºÃüÌ«¼ú£»
-				*		²»¼ûÂú½ÖÆ¯ÁÁÃÃ£¬ÄÄ¸ö¹éµÃ³ÌĞòÔ±£¿    
+				*		å†™å­—æ¥¼é‡Œå†™å­—é—´ï¼Œå†™å­—é—´é‡Œç¨‹åºå‘˜ï¼›
+				*		ç¨‹åºäººå‘˜å†™ç¨‹åºï¼Œåˆæ‹¿ç¨‹åºæ¢é…’é’±ã€‚
+				*		é…’é†’åªåœ¨ç½‘ä¸Šåï¼Œé…’é†‰è¿˜æ¥ç½‘ä¸‹çœ ï¼›
+				*		é…’é†‰é…’é†’æ—¥å¤æ—¥ï¼Œç½‘ä¸Šç½‘ä¸‹å¹´å¤å¹´ã€‚
+				*		ä½†æ„¿è€æ­»ç”µè„‘é—´ï¼Œä¸æ„¿é èº¬è€æ¿å‰ï¼›
+				*		å¥”é©°å®é©¬è´µè€…è¶£ï¼Œå…¬äº¤è‡ªè¡Œç¨‹åºå‘˜ã€‚
+				*		åˆ«äººç¬‘æˆ‘å¿’ç–¯ç™«ï¼Œæˆ‘ç¬‘è‡ªå·±å‘½å¤ªè´±ï¼›
+				*		ä¸è§æ»¡è¡—æ¼‚äº®å¦¹ï¼Œå“ªä¸ªå½’å¾—ç¨‹åºå‘˜ï¼Ÿ    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
-import selenium 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+import os
+import yaml
+from func.web import *
+from utils.logger import get_logger
+from src import BASE_DIR
+LOG = get_logger()
+
+action_type_dict = {
+	'WebAction': web_dict
+}
+
+PAGE_GROUP = {
+		
+}
+
+def run_module(path: str = ''):
+	
+	current_browser = None
+	current_page_id = 0
+	
+	with open(path, 'r', encoding='utf-8') as f:
+		module_content = yaml.safe_load(f)
+	
+	for step_content in module_content['step']:
+		action_type = step_content['action']
+		method_name = step_content['method']
+		params = step_content['params']
+		
+		if action_type == 'WebAction':
+			# è·å–è¦è°ƒç”¨çš„æ–¹æ³•å¯¹è±¡
+			method = action_type_dict[action_type][method_name]
+			print(method)
+			# ä½¿ç”¨ **params å°†å­—å…¸ä½œä¸ºå…³é”®å­—å‚æ•°ä¼ å…¥æ–¹æ³•
+			if method_name == 'NewBrowser':
+				current_browser = method(**params)
+			elif method_name == 'CloseBrowser':
+				method(**params, browser=current_browser)
+			elif method_name == 'NewPage':
+				page = method(**params, browser=current_browser)
+				page_id = params['id']
+				PAGE_GROUP[page_id] = page
+				current_page_id = page_id
+			else:
+				method(**params, page=PAGE_GROUP[current_page_id])
+
 
