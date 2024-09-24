@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-22 01:07:45
+LastEditTime: 2024-09-24 23:23:48
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\project.py
 Description: 
 
@@ -83,14 +83,16 @@ class ProjectDock(QDockWidget):
         # 创建树控件子项
         if directory_path:
             projectItem = TreeWidgetItem(self.tree, [os.path.basename(directory_path)], ('project', directory_path), checkbox=True)
-            first_iteration = True
-            for root, dirs, files in os.walk(os.path.join(directory_path, 'business')): # 项目目录下的business()
-                if first_iteration:
-                    first_iteration = False
-                    continue
-                packageItem = TreeWidgetItem(projectItem, [os.path.basename(root)], ('package', root), checkbox=True)
-                for file_name in files:
-                    moduleItem = TreeWidgetItem(packageItem, [os.path.splitext(file_name)[0]], ('module', os.path.join(root, file_name)), checkbox=True)
+            self.tree.create_item_by_directory_structure(os.path.join(directory_path, 'business'), projectItem)
+
+            # first_iteration = True
+            # for root, dirs, files in os.walk(os.path.join(directory_path, 'business')): # 项目目录下的business()
+            #     if first_iteration:
+            #         first_iteration = False
+            #         continue
+            #     packageItem = TreeWidgetItem(projectItem, [os.path.basename(root)], ('package', root), checkbox=True)
+            #     for file_name in files:
+            #         moduleItem = TreeWidgetItem(packageItem, [os.path.splitext(file_name)[0]], ('module', os.path.join(root, file_name)), checkbox=True)
             LOG.info(f'Load project from {directory_path}')
         # 启用信号
         self.tree.blockSignals(False)
@@ -252,6 +254,33 @@ class TreeWidget(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu) # 使用自定义菜单
         self.customContextMenuRequested.connect(self.__show_context_menu)
     
+    def find_checked_items(self, current_item: TreeWidgetItem, checked_items: typing.List[TreeWidgetItem | None]):
+        """ 递归查找所有被选中的子项 """
+        for i in range(current_item.childCount()):
+            child_item = current_item.child(i)
+            if child_item.checkState(0) == Qt.Checked:
+                checked_items.append(child_item)  # 获取选中的子项的文本
+            self.find_checked_items(child_item, checked_items)  # 递归检查子项
+    
+    def create_item_by_directory_structure(self, root_dir: str, parent):
+        """ 
+        更新子项，根据传入的根目录结构来构建树控件 
+        
+        :param root_dir: 根目录路径
+        :param parent: 根目录所对应的项
+        """
+        # 获取目录中的所有条目，并按照原始顺序列出
+        with os.scandir(root_dir) as it:
+            for entry in it:
+                # 如果是目录
+                if entry.is_dir():
+                    newItem = TreeWidgetItem(parent, [entry.name], ('package', entry.path), checkbox=True)
+                    # 递归调用，传入新的父项
+                    self.create_item_by_directory_structure(entry.path, newItem)
+                # 如果是文件
+                else:
+                    newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('module', entry.path), checkbox=True)
+    
     def __on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件，树控件绑定操作 """
         try:
@@ -369,13 +398,33 @@ class TreeWidget(QTreeWidget):
                 parent_item.setCheckState(0, Qt.PartiallyChecked) # 部分子项被选中
             self.__update_parent_item_check_state(parent_item)
     
-    def find_checked_items(self, current_item: TreeWidgetItem, checked_items: typing.List[TreeWidgetItem | None]):
-        """ 递归查找所有选中的子项 """
-        for i in range(current_item.childCount()):
-            child_item = current_item.child(i)
-            if child_item.checkState(0) == Qt.Checked:
-                checked_items.append(child_item)  # 获取选中的子项的文本
-            self.find_checked_items(child_item, checked_items)  # 递归检查子项
+    def __find_specific_item_upward(self, root_item: QTreeWidgetItem, condition: typing.Callable[[], bool]) -> (TreeWidgetItem | QTreeWidgetItem | None):
+        """
+        从子项开始，向上递归查找符合条件的父项。
+        
+        :param item: 起始子项
+        :param condition: 查找条件的函数，接受 Item 并返回布尔值
+        :return: 符合条件的父项，如果没有找到则返回 None
+        """
+        current_item = root_item
+        while isinstance(current_item, QTreeWidgetItem):
+            if condition(current_item):
+                return current_item
+            current_item = current_item.parent()
+        return None
+    
+    def __update_directory_item(self, directory_item: TreeWidgetItem):
+        """ 更新目录级子项及其下所有子项"""
+        if directory_item.type == 'project':
+            directory_item.takeChildren() # 移除所有子项
+            self.create_item_by_directory_structure(os.path.join(directory_item.path, 'business'), directory_item)
+            LOG.trace(f'Project item update successfullys')
+        elif directory_item.type == 'package':
+            directory_item.takeChildren() # 移除所有子项
+            self.create_item_by_directory_structure(directory_item.path, directory_item)
+            LOG.trace(f'Package item update successfullys')
+        else:
+            LOG.trace(f'Update failed, current item type: {directory_item.type} is not project')
     
     def __new_module_item(self, item: TreeWidgetItem):
         """ 创建 module 级子项，菜单操作"""
@@ -405,6 +454,7 @@ class TreeWidget(QTreeWidget):
                     LOG.trace('Module item create successfully')
                 else:
                     LOG.trace('Some errors during module item creating')
+                self.__update_directory_item(self.__find_specific_item_upward(moduleItem, lambda item: item.type == 'package' or item.type == 'project'))
     
     def __new_package_item(self, item: TreeWidgetItem):
         """ 创建 package 级子项，菜单操作"""
@@ -434,6 +484,7 @@ class TreeWidget(QTreeWidget):
                     LOG.trace('Package item create successfully')
                 else:
                     LOG.trace('Some errors during package item creating')
+                self.__update_directory_item(self.__find_specific_item_upward(packageItem.parent(), lambda item: item.type == 'package' or item.type == 'project'))
     
     def __copy_item(self, item: TreeWidgetItem):
         """ 复制文件项或目录项，菜单操作 """
@@ -481,7 +532,7 @@ class TreeWidget(QTreeWidget):
         elif itemType == 'package':
             item.addChild(self.__tempItem)
             LOG.trace('Item paste successfully')
-            
+        self.__update_directory_item(self.__find_specific_item_upward(self.__tempItem, lambda item: item.type == 'package' or item.type == 'project'))
         del self.__current_path
         del self.__cutEvent
     
@@ -505,6 +556,7 @@ class TreeWidget(QTreeWidget):
                 item.setText(0, os.path.splitext(os.path.basename(newPath))[0])
                 item.change_UserData(1, newPath)
                 LOG.trace('Item rename successfully')
+                self.__update_directory_item(self.__find_specific_item_upward(item, lambda item: item.type == 'package' or item.type == 'project'))
 
 if __name__ == '__main__':
     app = QApplication([])

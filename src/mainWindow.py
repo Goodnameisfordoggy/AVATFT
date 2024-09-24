@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-22 00:31:10
+LastEditTime: 2024-09-24 21:55:56
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\mainWindow.py
 Description: 
 
@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
 
         # fileMenu动作
         self.newProjectAction = QAction("新建工程", self)
-        self.newProjectAction.triggered.connect(self.creat_project)
+        self.newProjectAction.triggered.connect(self.__new_project)
         self.openProjectAction = QAction("打开工程", self)
         self.openProjectAction.triggered.connect(lambda: self.loadProjectSignal.emit('load_project'))
         self.exitAction = QAction("退出", self)
@@ -182,6 +182,22 @@ class MainWindow(QMainWindow):
         self.log_dock.closeSignal.connect(lambda: self.logDockAction.setChecked(False))
         # self.edit_dock.operateSignal.connect(self.project_dock.get_checked_modules())
     
+    def __new_project(self):
+        """ 创建新工程目录，菜单操作"""
+        nameInputDialogBox = NameInputDialogBox(self, '新建工程', '请输入新工程的名称：')
+        if nameInputDialogBox.exec():
+            projectName = nameInputDialogBox.nameInput() # 要创建的顶级目录名称
+            projectPath = os.path.join(PROJECTS_DIR, projectName)
+            try:
+                # 创建完整的目录结构
+                os.makedirs(f"{projectPath}/business")
+                os.makedirs(f"{projectPath}/config")
+                os.makedirs(f"{projectPath}/data")
+                os.makedirs(f"{projectPath}/log")
+                LOG.success(f'Project {projectName} create successfully')
+            except Exception as err:
+                LOG.debug(f'Exception: {err}')
+    
     @typing.override
     def closeEvent(self, event):
         # 恢复标准输出和标准错误，保持良好的编程习惯Qwq。
@@ -213,21 +229,6 @@ class MainWindow(QMainWindow):
         else:
             dock.setVisible(False)
     
-    def creat_project(self):
-        """ 创建新工程目录，菜单操作"""
-        nameInputDialogBox = NameInputDialogBox(self, '新建工程', '请输入新工程的名称：')
-        if nameInputDialogBox.exec():
-            projectName = nameInputDialogBox.nameInput() # 要创建的顶级目录名称
-            projectPath = os.path.join(PROJECTS_DIR, projectName)
-            try:
-                # 创建完整的目录结构
-                os.makedirs(f"{projectPath}/business")
-                os.makedirs(f"{projectPath}/config")
-                os.makedirs(f"{projectPath}/data")
-                os.makedirs(f"{projectPath}/log")
-                LOG.success(f'Project {projectName} create successfully')
-            except Exception as err:
-                LOG.debug(f'Exception: {err}')
 
 
 if __name__ == '__main__':

@@ -80,12 +80,12 @@ class ActionDock(QDockWidget):
         # 获取目录中的所有条目，并按照原始顺序列出
         with os.scandir(root_dir) as it:
             for entry in it:
-                # 如果是目录，递归列出其内容
+                # 如果是目录
                 if entry.is_dir():
                     newItem = TreeWidgetItem(parent, [entry.name], ('package', entry.path))
                     # 递归调用，传入新的父项 newItem
                     self.__initChildItem(entry.path, newItem)
-                # 如果是文件，直接输出文件名
+                # 如果是文件
                 else:
                     newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('action', entry.path))
     
