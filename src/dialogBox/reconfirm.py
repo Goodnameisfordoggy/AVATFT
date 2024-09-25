@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-11 01:25:45
+LastEditTime: 2024-09-25 00:15:03
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dialogBox\reconfirm.py
 Description: 
 
@@ -16,7 +16,7 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import sys
-from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit
+from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
 from PySide6.QtCore import Qt
 
 class ReconfirmDialogBox(QDialog):

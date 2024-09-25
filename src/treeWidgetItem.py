@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-22 01:00:06
+LastEditTime: 2024-09-25 00:14:33
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\treeWidgetItem.py
 Description: 
 
@@ -19,7 +19,6 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import os
-import json
 import yaml
 import typing
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem

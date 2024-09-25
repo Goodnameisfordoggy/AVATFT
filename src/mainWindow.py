@@ -18,7 +18,7 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 import os
 import sys
 import typing
-from PySide6.QtWidgets import QApplication, QMainWindow, QDockWidget, QMenuBar, QMenu, QSplitter, QTextEdit 
+from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QTextEdit 
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, Signal, Slot
 

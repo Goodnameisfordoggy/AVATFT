@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-21 22:58:14
+LastEditTime: 2024-09-25 00:13:17
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\log.py
 Description: 
 
@@ -17,10 +17,9 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 '''
 import typing
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QLabel, QDockWidget, QVBoxLayout, QLineEdit, QTextEdit
+    QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTextEdit
 	)
-from PySide6.QtGui import QScreen
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 
 
 class LogDock(QDockWidget):
@@ -54,9 +53,3 @@ class LogDock(QDockWidget):
         self.closeSignal.emit('close')
         return super().closeEvent(event)
 
-
-if __name__ == '__main__':
-    app = QApplication([])
-    window = LogDock()
-    window.show()
-    app.exec()

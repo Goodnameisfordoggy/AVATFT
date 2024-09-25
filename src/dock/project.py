@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-24 23:23:48
+LastEditTime: 2024-09-25 00:12:15
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\project.py
 Description: 
 
@@ -16,15 +16,13 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import os
-import sys
 import yaml
 import typing
 import shutil
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QLabel, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QTreeWidgetItem,
-    QMenu, QFileDialog
+    QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QTreeWidgetItem, QMenu, QFileDialog
 	)
-from PySide6.QtGui import QAction, QCloseEvent
+from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
 from utils.file import open_file
@@ -84,15 +82,6 @@ class ProjectDock(QDockWidget):
         if directory_path:
             projectItem = TreeWidgetItem(self.tree, [os.path.basename(directory_path)], ('project', directory_path), checkbox=True)
             self.tree.create_item_by_directory_structure(os.path.join(directory_path, 'business'), projectItem)
-
-            # first_iteration = True
-            # for root, dirs, files in os.walk(os.path.join(directory_path, 'business')): # 项目目录下的business()
-            #     if first_iteration:
-            #         first_iteration = False
-            #         continue
-            #     packageItem = TreeWidgetItem(projectItem, [os.path.basename(root)], ('package', root), checkbox=True)
-            #     for file_name in files:
-            #         moduleItem = TreeWidgetItem(packageItem, [os.path.splitext(file_name)[0]], ('module', os.path.join(root, file_name)), checkbox=True)
             LOG.info(f'Load project from {directory_path}')
         # 启用信号
         self.tree.blockSignals(False)
@@ -108,11 +97,6 @@ class ProjectDock(QDockWidget):
         self.tree.find_checked_items(root, checked_items)
         modulePaths = [item.path for item in checked_items if item.type == 'module']
         self.operateResponseSignal.emit(modulePaths)
-    
-    @typing.override
-    def closeEvent(self, event) -> None:
-        self.closeSignal.emit('close')
-        return super().closeEvent(event)
     
     @staticmethod
     def new_module_file(path: str) -> bool:
@@ -239,6 +223,11 @@ class ProjectDock(QDockWidget):
                 LOG.error(f'An error occurred while renaming a directory or file: {e}')
         else:
             LOG.warning(f"{path} does not exist")
+    
+    @typing.override
+    def closeEvent(self, event) -> None:
+        self.closeSignal.emit('close')
+        return super().closeEvent(event)
 
 class TreeWidget(QTreeWidget):
     
@@ -309,8 +298,7 @@ class TreeWidget(QTreeWidget):
         # 获取点击的项
         item = self.itemAt(pos)
         if item:
-            itemType = item.type
-            if itemType in ('module', 'package'):
+            if item.type in ('module', 'package'):
                 # 创建上下文菜单
                 context_menu = QMenu(self)
                 # 创建菜单项
@@ -347,7 +335,7 @@ class TreeWidget(QTreeWidget):
                 context_menu.addAction(deleteAction)
                 context_menu.addAction(renameAction)
                 context_menu.exec(self.viewport().mapToGlobal(pos)) # 显示上下文菜单
-            elif itemType == 'project':
+            elif item.type == 'project':
                 # 创建上下文菜单
                 context_menu = QMenu(self)
                 # 创建菜单项
@@ -428,28 +416,26 @@ class TreeWidget(QTreeWidget):
     
     def __new_module_item(self, item: TreeWidgetItem):
         """ 创建 module 级子项，菜单操作"""
-        itemType = item.type
-        itemPath = item.path
         nameInputDialogBox = NameInputDialogBox(self, '新建模版', '请输入新的测试用例名称：')
         if nameInputDialogBox.exec():
             name = nameInputDialogBox.nameInput()
             # 生成目标路径
-            if itemType == 'project':
-                targetPath = os.path.join(os.path.join(itemPath, 'business'), name + '.yaml')
-            elif itemType == 'package':
-                targetPath = os.path.join(itemPath, name + '.yaml')
-            elif itemType == 'module':
-                dirName = os.path.dirname(itemPath)
+            if item.type == 'project':
+                targetPath = os.path.join(os.path.join(item.path, 'business'), name + '.yaml')
+            elif item.type == 'package':
+                targetPath = os.path.join(item.path, name + '.yaml')
+            elif item.type == 'module':
+                dirName = os.path.dirname(item.path)
                 targetPath = os.path.join(dirName, name + '.yaml')
             else:
                 LOG.critical('This item or item type does not have that functionality')
             # 创建新文件，并创建新子项
             if ProjectDock.new_module_file(targetPath):
                 moduleItem = TreeWidgetItem(None, [name], ('module', targetPath), checkbox=True)
-                if itemType in ('project', 'package'):
+                if item.type in ('project', 'package'):
                     item.addChild(moduleItem)
                     LOG.trace('Module item create successfully')
-                elif itemType == 'module':
+                elif item.type == 'module':
                     item.parent().addChild(moduleItem)
                     LOG.trace('Module item create successfully')
                 else:
@@ -458,28 +444,26 @@ class TreeWidget(QTreeWidget):
     
     def __new_package_item(self, item: TreeWidgetItem):
         """ 创建 package 级子项，菜单操作"""
-        itemType = item.type
-        itemPath = item.path
         nameInputDialogBox = NameInputDialogBox(self, '新建目录', '请输入新的目录名称：')
         if nameInputDialogBox.exec():
             name = nameInputDialogBox.nameInput()
             # 生成目标路径
-            if itemType == 'project':
-                targetPath = os.path.join(os.path.join(itemPath, 'business'), name)
-            elif itemType == 'package':
-                targetPath = os.path.join(itemPath, name)
-            elif itemType == 'module':
-                dirName = os.path.dirname(itemPath)
+            if item.type == 'project':
+                targetPath = os.path.join(os.path.join(item.path, 'business'), name)
+            elif item.type == 'package':
+                targetPath = os.path.join(item.path, name)
+            elif item.type == 'module':
+                dirName = os.path.dirname(item.path)
                 targetPath = os.path.join(dirName, name)
             else:
                 LOG.critical('This item or item type does not have that functionality')
             # 创建新目录，并创建新子项
             if ProjectDock.new_package_file(targetPath):
                 packageItem = TreeWidgetItem(None, [name], ('package', targetPath), checkbox=True)
-                if itemType in ('project', 'package'):
+                if item.type in ('project', 'package'):
                     item.addChild(packageItem)
                     LOG.trace('Package item create successfully')
-                elif itemType == 'module':
+                elif item.type == 'module':
                     item.parent().addChild(packageItem)
                     LOG.trace('Package item create successfully')
                 else:
@@ -488,34 +472,30 @@ class TreeWidget(QTreeWidget):
     
     def __copy_item(self, item: TreeWidgetItem):
         """ 复制文件项或目录项，菜单操作 """
-        itemPath = item.path
-        self.__current_path = itemPath
+        self.__current_path = item.path
         self.__tempItem = item
         self.__cutEvent = False
         LOG.trace(f'Item {item.text(0)} was copied')
     
     def __cut_item(self, item: TreeWidgetItem):
         """ 剪切文件项或目录项，菜单操作 """
-        itemPath = item.path
-        self.__current_path = itemPath
+        self.__current_path = item.path
         self.__tempItem = item
         self.__cutEvent = True
         LOG.trace(f'Item {item.text(0)} was cut')
     
     def __paste_item(self, item: TreeWidgetItem):
         """ 粘贴文件项或目录项，菜单操作 """
-        itemPath = item.path
-        itemType = item.type
         try:
             baseName = os.path.basename(self.__current_path)
         except AttributeError: # current_path
             LOG.trace('There is no prior copy or cut, pasting has been canceled')
             return
         # 获取目标路径，只能为目录
-        if itemType == 'module':
-            targetPath = os.path.join(os.path.dirname(itemPath), baseName)
+        if item.type == 'module':
+            targetPath = os.path.join(os.path.dirname(item.path), baseName)
         else:
-            targetPath = os.path.join(itemPath, baseName)
+            targetPath = os.path.join(item.path, baseName)
         # 处理原子项
         itemIndex = self.__tempItem.parent().indexOfChild(self.__tempItem)
         if self.__cutEvent:
@@ -526,10 +506,10 @@ class TreeWidget(QTreeWidget):
                 self.__tempItem = self.__tempItem.clone() # 一个 QTreeWidgetItem 实例只能属于一个父项, 故重新创建
         # 创建新子项
         self.__tempItem.change_UserData(1, targetPath) # 子项携带的路径信息更改
-        if itemType == 'module':
+        if item.type == 'module':
             item.parent().addChild(self.__tempItem)
             LOG.trace('Item paste successfully')
-        elif itemType == 'package':
+        elif item.type == 'package':
             item.addChild(self.__tempItem)
             LOG.trace('Item paste successfully')
         self.__update_directory_item(self.__find_specific_item_upward(self.__tempItem, lambda item: item.type == 'package' or item.type == 'project'))
@@ -538,28 +518,20 @@ class TreeWidget(QTreeWidget):
     
     def __delete_item(self, item: TreeWidgetItem):
         """ 删除文件项或目录项，菜单操作 """
-        itemPath = item.path
         if ReconfirmDialogBox(self, '删除', '确定要删除该文件吗？').exec():
-            if ProjectDock.delete_file(itemPath):
+            if ProjectDock.delete_file(item.path):
                 item.parent().removeChild(item)
                 LOG.trace('Item delete successfully')
 
     def __rename_item(self, item: TreeWidgetItem):
         """ 重命名文件项或目录项，菜单操作 """
-        itemPath = item.path
         nameInputDialogBox = NameInputDialogBox(self, '重命名', '请输入新的文件名称：')
         nameInputDialogBox.set_default_name(item.text(0))
         if nameInputDialogBox.exec():
             newName = nameInputDialogBox.nameInput()
-            newPath = ProjectDock.rename_file(itemPath, newName)
+            newPath = ProjectDock.rename_file(item.path, newName)
             if newPath:
                 item.setText(0, os.path.splitext(os.path.basename(newPath))[0])
                 item.change_UserData(1, newPath)
                 LOG.trace('Item rename successfully')
                 self.__update_directory_item(self.__find_specific_item_upward(item, lambda item: item.type == 'package' or item.type == 'project'))
-
-if __name__ == '__main__':
-    app = QApplication([])
-    window = ProjectDock()
-    window.show()
-    app.exec()

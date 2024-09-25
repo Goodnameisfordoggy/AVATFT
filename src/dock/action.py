@@ -20,10 +20,9 @@ import sys
 import typing
 import subprocess
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QTextEdit, QLabel, QMainWindow, QDockWidget, QVBoxLayout, QLineEdit,
-    QTreeWidget, QMenu
+    QApplication, QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QMenu
     )
-from PySide6.QtGui import QScreen, QAction
+from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, Signal, QPoint
 
 from utils.file import open_file
@@ -128,9 +127,3 @@ class ActionDock(QDockWidget):
         self.closeSignal.emit('close')
         return super().closeEvent(event)
     
-
-if __name__ == '__main__':
-    app = QApplication([])
-    window = ActionDock()
-    window.show()
-    app.exec()
