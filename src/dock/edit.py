@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-25 00:12:00
+LastEditTime: 2024-09-25 22:05:39
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
@@ -20,7 +20,7 @@ import yaml
 import typing
 from PySide6.QtWidgets import (
     QApplication, QLabel, QDockWidget, QVBoxLayout, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem,
-    QMenu, QPushButton
+    QMenu, QPushButton, QHeaderView
     )
 from PySide6.QtGui import QAction
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
@@ -113,6 +113,9 @@ class TreeWidget(QTreeWidget):
         # 连接右键菜单事件
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.__show_context_menu)
+        # 子项展开和收缩事件
+        self.itemExpanded.connect(self.__adjust_column_widths)
+        self.itemCollapsed.connect(self.__adjust_column_widths)
     
     @typing.override
     def edit(self, index, trigger, event):
@@ -319,6 +322,11 @@ class TreeWidget(QTreeWidget):
             if item.type == 'action':
                 item.setFirstColumnSpanned(True)
             self.__swap_actionInfo(index, index + 1)
+    
+    def __adjust_column_widths(self):
+        """ 调节数控件列的宽度 """
+        for col in range(self.columnCount()):
+            self.resizeColumnToContents(col)
     
     @typing.override
     def dragEnterEvent(self, event):

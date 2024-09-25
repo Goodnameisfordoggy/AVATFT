@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-24 21:55:56
+LastEditTime: 2024-09-25 21:31:02
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\mainWindow.py
 Description: 
 
@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
         screen_size = screen.size()
         self.screen_width = screen_size.width()
         self.screen_height = screen_size.height()
-        self.resize(self.screen_width - 100, self.screen_height - 100)
+        self.resize(self.screen_width, self.screen_height)
         # self.maximumSize()        
 
         self.__build_menu()
@@ -167,6 +167,8 @@ class MainWindow(QMainWindow):
         # 分割 Horizontal Vertical
         self.splitDockWidget(self.action_dock, self.edit_dock, Qt.Horizontal)
         self.splitDockWidget(self.edit_dock, self.project_dock, Qt.Horizontal)
+        self.resizeDocks([self.action_dock, self.edit_dock, self.project_dock], [250, 500, 250], Qt.Horizontal)
+
     
     def __connect_signals(self): # QwQ: sender.signal.connect(receiver.func)
         """ 信号连接 """
