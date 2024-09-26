@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-23 22:15:02
+LastEditTime: 2024-09-26 23:10:36
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\action.py
 Description: 
 
@@ -22,14 +22,14 @@ import subprocess
 from PySide6.QtWidgets import (
     QApplication, QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QMenu
     )
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, Signal, QPoint
 
 from utils.file import open_file
 from utils.filter import filter_item
 from utils import logger
 from src.treeWidgetItem import TreeWidgetItem
-from src import ACTION_KEYWORDS_DIR
+from src import ACTION_KEYWORDS_DIR, ICON_DIR
 LOG = logger.get_logger()
 
 
@@ -111,7 +111,7 @@ class ActionDock(QDockWidget):
             context_menu = QMenu(self)
 
             # 创建菜单项
-            action_edit = QAction("打开文件(目录)", self)
+            action_edit = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), "打开文件(目录)", self)
 
             # 连接菜单项的触发信号
             action_edit.triggered.connect(lambda: open_file(item.path))

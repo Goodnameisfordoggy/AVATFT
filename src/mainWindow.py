@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-25 21:31:02
+LastEditTime: 2024-09-26 23:32:05
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\mainWindow.py
 Description: 
 
@@ -19,7 +19,7 @@ import os
 import sys
 import typing
 from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QTextEdit 
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, Signal, Slot
 
 from utils import logger
@@ -28,7 +28,7 @@ from src.dock.action import ActionDock
 from src.dock.log import LogDock
 from src.dock.project import ProjectDock
 from src.dialogBox.input import NameInputDialogBox
-from src import PROJECTS_DIR
+from src import PROJECTS_DIR, ICON_DIR
 LOG = logger.get_logger()
 
 
@@ -104,10 +104,13 @@ class MainWindow(QMainWindow):
 
         # fileMenu动作
         self.newProjectAction = QAction("新建工程", self)
+        self.newProjectAction.setIcon(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')))
         self.newProjectAction.triggered.connect(self.__new_project)
         self.openProjectAction = QAction("打开工程", self)
+        self.openProjectAction.setIcon(QIcon(os.path.join(ICON_DIR, 'folder-search.svg')))
         self.openProjectAction.triggered.connect(lambda: self.loadProjectSignal.emit('load_project'))
         self.exitAction = QAction("退出", self)
+        self.exitAction.setIcon(QIcon(os.path.join(ICON_DIR, 'window-close.svg')))
         self.exitAction.triggered.connect(self.close)  # 连接退出动作到窗口的关闭功能
 
         self.fileMenu.addAction(self.newProjectAction)
@@ -116,20 +119,13 @@ class MainWindow(QMainWindow):
         self.fileMenu.addAction(self.exitAction)
         
         # viewMenu 动作
-        self.actionDockAction = QAction("自动化测试关键字窗口", self)
-        self.actionDockAction.setCheckable(True)  # 设置菜单项可勾选
-        self.actionDockAction.setChecked(True) # 初始勾选
+        self.actionDockAction = QAction(QIcon(os.path.join(ICON_DIR, 'view-dashboard-variant.svg')), "自动化测试关键字窗口", self)
         self.actionDockAction.triggered.connect(self.__viewMenu_clicked)
-        self.editDockAction = QAction("自动化测试编辑窗口", self)
-        self.editDockAction.setCheckable(True)
-        self.editDockAction.setChecked(True)
+        self.editDockAction = QAction(QIcon(os.path.join(ICON_DIR, 'view-dashboard-variant.svg')), "自动化测试编辑窗口", self)
         self.editDockAction.triggered.connect(self.__viewMenu_clicked)
-        self.projectDockAction = QAction("自动化测试项目窗口", self)
-        self.projectDockAction.setCheckable(True)
-        self.projectDockAction.setChecked(True)
+        self.projectDockAction = QAction(QIcon(os.path.join(ICON_DIR, 'view-dashboard-variant.svg')), "自动化测试项目窗口", self)
         self.projectDockAction.triggered.connect(self.__viewMenu_clicked)
         self.logDockAction = QAction("自动化测试日志窗口", self)
-        self.logDockAction.setCheckable(True)
         self.logDockAction.triggered.connect(self.__viewMenu_clicked)
 
         self.viewMenu.addAction(self.actionDockAction)
@@ -173,16 +169,15 @@ class MainWindow(QMainWindow):
     def __connect_signals(self): # QwQ: sender.signal.connect(receiver.func)
         """ 信号连接 """
         self.loadProjectSignal.connect(lambda: self.project_dock.load_project(self.project_dock.select_project()))
-        self.action_dock.closeSignal.connect(lambda: self.actionDockAction.setChecked(False))
+        self.action_dock.closeSignal.connect(lambda: self.actionDockAction.setIcon(QIcon()))
         self.action_dock.itemDoubleClickedSignal.connect(self.edit_dock.tree.display_action_details)
-        self.project_dock.closeSignal.connect(lambda: self.projectDockAction.setChecked(False))
+        self.project_dock.closeSignal.connect(lambda: self.projectDockAction.setIcon(QIcon()))
         self.project_dock.operateResponseSignal.connect(self.edit_dock.operate)
         self.project_dock.tree.itemDoubleClickedSignal.connect(self.edit_dock.tree.display_module_details)
-        self.edit_dock.closeSignal.connect(lambda: self.editDockAction.setChecked(False))
+        self.edit_dock.closeSignal.connect(lambda: self.editDockAction.setIcon(QIcon()))
         self.edit_dock.operateSignal.connect(lambda: self.log_dock.setVisible(True))
         self.edit_dock.operateSignal.connect(self.project_dock.get_checked_modules)
-        self.log_dock.closeSignal.connect(lambda: self.logDockAction.setChecked(False))
-        # self.edit_dock.operateSignal.connect(self.project_dock.get_checked_modules())
+        self.log_dock.closeSignal.connect(lambda: self.logDockAction.setIcon(QIcon()))
     
     def __new_project(self):
         """ 创建新工程目录，菜单操作"""
@@ -212,7 +207,7 @@ class MainWindow(QMainWindow):
     @Slot(bool)
     def __viewMenu_clicked(self, checked: bool):
         """ 视图菜单下子项的单击事件 """
-        sender = self.sender()  # 获取信号发送者
+        sender: QAction = self.sender()  # 获取信号发送者
         actionText = sender.text()
         dock = None
         if actionText == '自动化测试关键字窗口':
@@ -226,10 +221,12 @@ class MainWindow(QMainWindow):
         else:
             return
         # 判断菜单项的勾选状态
-        if checked:
+        if sender.icon().isNull():
             dock.setVisible(True)
+            sender.setIcon(QIcon(os.path.join(ICON_DIR, 'view-dashboard-variant.svg')))
         else:
             dock.setVisible(False)
+            sender.setIcon(QIcon())
     
 
 

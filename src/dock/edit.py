@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-25 22:05:39
+LastEditTime: 2024-09-26 23:07:27
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
@@ -15,6 +15,7 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
+import os
 import json
 import yaml
 import typing
@@ -22,7 +23,7 @@ from PySide6.QtWidgets import (
     QApplication, QLabel, QDockWidget, QVBoxLayout, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem,
     QMenu, QPushButton, QHeaderView
     )
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
 from utils.filter import filter_item
@@ -30,6 +31,7 @@ from utils import logger
 from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
 from src.dock.action import ActionDock
 from src.funcs import run_module
+from src import ICON_DIR
 LOG = logger.get_logger()
 
 
@@ -214,9 +216,9 @@ class TreeWidget(QTreeWidget):
                 # 创建上下文菜单
                 context_menu = QMenu(self)
                 # 创建菜单项
-                actionDelete = QAction("删除", self)
-                actionMoveUp = QAction("上移", self)
-                actionMoveDown = QAction("下移", self)
+                actionDelete = QAction(QIcon(os.path.join(ICON_DIR, 'trash-can-outline.svg')), "删除", self)
+                actionMoveUp = QAction(QIcon(os.path.join(ICON_DIR, 'arrange-bring-forward.svg')), "上移", self)
+                actionMoveDown = QAction(QIcon(os.path.join(ICON_DIR, 'arrange-send-backward.svg')), "下移", self)
                 # 连接菜单项的触发信号
                 actionDelete.triggered.connect(lambda: self.__delete_item(item))
                 actionMoveUp.triggered.connect(lambda: self.__move_item_up(item))

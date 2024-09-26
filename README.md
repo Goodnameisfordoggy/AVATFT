@@ -1,7 +1,7 @@
 # VATFT 
 Visual automatic test framework tool
 
-version: 0.1.19
+version: 0.2.19
 
 # 项目结构
 
@@ -15,6 +15,8 @@ workdir主要结构
 - log
 - projects
 - src
+- static
+  - icon
 - tests
 - utils
 - main.py
@@ -33,6 +35,7 @@ projects目录结构
     - log
 
 # Update log
+- 0.2.19: 项目构建中
 - 0.1.19: 项目构建中
 - 0.1.18: 项目构建中
 - 0.1.17: 项目构建中
