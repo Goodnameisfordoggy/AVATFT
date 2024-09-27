@@ -1,5 +1,7 @@
-# VATFT 
-Visual automatic test framework tool
+# AVATFT 
+*Action visual automatic test framework tool*
+
+*行为可视化自动测试工具*
 
 version: 0.2.19
 

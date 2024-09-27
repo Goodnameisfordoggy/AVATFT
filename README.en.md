@@ -1,4 +1,4 @@
-# VATFT
+# AVATFT
 
 #### Description
 从零学习可视化自动测试框架工具
