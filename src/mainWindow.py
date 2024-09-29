@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-26 23:32:05
+LastEditTime: 2024-09-27 15:38:47
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\mainWindow.py
 Description: 
 
@@ -72,7 +72,7 @@ class MainWindow(QMainWindow):
     
     def __init__(self, app):
         super().__init__()
-        self.setWindowTitle("可视化自动测试框架工具")
+        self.setWindowTitle("行为可视化自动测试平台")
 
         # 获取主屏幕的大小
         screen = app.primaryScreen()
@@ -164,7 +164,6 @@ class MainWindow(QMainWindow):
         self.splitDockWidget(self.action_dock, self.edit_dock, Qt.Horizontal)
         self.splitDockWidget(self.edit_dock, self.project_dock, Qt.Horizontal)
         self.resizeDocks([self.action_dock, self.edit_dock, self.project_dock], [250, 500, 250], Qt.Horizontal)
-
     
     def __connect_signals(self): # QwQ: sender.signal.connect(receiver.func)
         """ 信号连接 """
@@ -194,6 +193,11 @@ class MainWindow(QMainWindow):
                 LOG.success(f'Project {projectName} create successfully')
             except Exception as err:
                 LOG.debug(f'Exception: {err}')
+    
+    @typing.override
+    def contextMenuEvent(self, event):
+        # 阻止右键菜单的弹出
+        event.ignore()
     
     @typing.override
     def closeEvent(self, event):

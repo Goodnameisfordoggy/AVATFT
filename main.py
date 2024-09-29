@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-13 22:47:20
+LastEditTime: 2024-09-29 23:59:40
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\main.py
 Description: 
 
@@ -17,9 +17,12 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 '''
 from PySide6.QtWidgets import QApplication
 from src.mainWindow import MainWindow
+from static.css.stylesheet import STYLE_SHEET
 
 if __name__ == '__main__':
-    app = QApplication([])
-    window = MainWindow(app)
-    window.show()
-    app.exec()
+	app = QApplication([])
+	if STYLE_SHEET:
+		app.setStyleSheet(STYLE_SHEET)
+	window = MainWindow(app)
+	window.show()
+	app.exec()
