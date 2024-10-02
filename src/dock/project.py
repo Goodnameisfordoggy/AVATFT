@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-26 23:01:59
+LastEditTime: 2024-10-02 15:49:45
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\project.py
 Description: 
 
@@ -45,6 +45,7 @@ class ProjectDock(QDockWidget):
         super().__init__(title, parent)
         self.setWindowTitle('项目')
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
+        self.setObjectName('NEUTRAL')
         self.__initUI()
         self.load_project(r"D:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\projects\pro")
         
@@ -55,6 +56,7 @@ class ProjectDock(QDockWidget):
         
         # 搜索框
         self.search_box = QLineEdit(self)
+        self.search_box.setObjectName('NEUTRAL')
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
         self.search_box.textChanged.connect(self.__search_tree_items)
         center_widget_layout.addWidget(self.search_box)
@@ -236,6 +238,7 @@ class TreeWidget(QTreeWidget):
     
     def __init__(self, parent: QWidget | None = ...) -> None:
         super().__init__(parent)
+        self.setObjectName('NEUTRAL') 
         self.setHeaderHidden(True) # 隐藏表头
         self.itemDoubleClicked.connect(self.__on_item_double_clicked)
         self.itemChanged.connect(self.__on_item_change)

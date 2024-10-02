@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-26 23:10:36
+LastEditTime: 2024-10-02 15:39:51
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\action.py
 Description: 
 
@@ -44,6 +44,7 @@ class ActionDock(QDockWidget):
         self.setWindowTitle('行为关键字')
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.resize(400, 300)
+        self.setObjectName('NEUTRAL')
         self.__initUI()
         
     def __initUI(self):
@@ -53,6 +54,7 @@ class ActionDock(QDockWidget):
         
         # 搜索框
         self.search_box = QLineEdit(self)
+        self.search_box.setObjectName('NEUTRAL')
         center_widget_layout.addWidget(self.search_box)
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
         self.search_box.textChanged.connect(self.__search_tree_items)
@@ -60,6 +62,7 @@ class ActionDock(QDockWidget):
 
         # 树控件
         self.tree = QTreeWidget()
+        self.tree.setObjectName('NEUTRAL') 
         center_widget_layout.addWidget(self.tree)
         self.tree.setHeaderHidden(True) # 隐藏表头
         # 拖拽功能

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-25 00:13:17
+LastEditTime: 2024-10-03 00:01:07
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\log.py
 Description: 
 
@@ -31,6 +31,7 @@ class LogDock(QDockWidget):
         super().__init__(title, parent)
         self.setWindowTitle('日志')
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
+        self.setObjectName('NEUTRAL')
         self.__initUI()
         
     def __initUI(self):
@@ -39,10 +40,11 @@ class LogDock(QDockWidget):
         center_widget_layout = QVBoxLayout(self.center_widget)
         
         # 搜索框
-        self.search_box = QLineEdit(self)
-        self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
-        # self.search_box.textChanged.connect()
-        center_widget_layout.addWidget(self.search_box)
+        # self.search_box = QLineEdit(self)
+        # self.search_box.setObjectName('NEUTRAL') 
+        # self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
+        # # self.search_box.textChanged.connect()
+        # center_widget_layout.addWidget(self.search_box)
 
         # 日志区
         self.logTextWidget = QTextEdit(self)

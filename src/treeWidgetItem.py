@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-26 21:06:30
+LastEditTime: 2024-10-03 00:28:56
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\treeWidgetItem.py
 Description: 
 
@@ -46,7 +46,7 @@ class TreeWidgetItem(QTreeWidgetItem):
             for i in range(len(self.__data)):
                 if self.__data[i]:
                     self.setData(i, Qt.UserRole, self.__data[i])
-        
+        self.setFirstColumnSpanned
         # 添加图标
         if icon_path:
             icon = QIcon(icon_path)
@@ -198,15 +198,19 @@ class ModuleItem(TreeWidgetItem):
             rootAction2 = TreeWidgetItem(self, ['运行设置'])
             rootAction2.setFirstColumnSpanned(True)
             root2Child1 = TreeWidgetItem(rootAction2, [str(self.config['config'][0]['describe'])], icon_path=os.path.join(ICON_DIR, 'cogs.svg'))
+            root2Child1.setFirstColumnSpanned(True)
             child1Action1 = TreeWidgetItem(root2Child1, ['是否启用此配置', 'flag', str(self.config['config'][0]['params']['flag'])], ('param', ), editable=True)
             child1Action2 = TreeWidgetItem(root2Child1, ['用例跳过原因', 'reason', str(self.config['config'][0]['params']['reason'])], ('param', ), editable=True)
             root2Child2 = TreeWidgetItem(rootAction2, [str(self.config['config'][1]['describe'])], icon_path=os.path.join(ICON_DIR, 'cogs.svg'))
+            root2Child2.setFirstColumnSpanned(True)
             child2Action1 = TreeWidgetItem(root2Child2, ['是否启用此配置', 'flag', str(self.config['config'][1]['params']['flag'])], ('param', ), editable=True)
             child2Action2 = TreeWidgetItem(root2Child2, ['用例标签名称', 'markname', str(self.config['config'][1]['params']['markname'])], ('param', ), editable=True)
             root2Child3 = TreeWidgetItem(rootAction2, [str(self.config['config'][2]['describe'])], icon_path=os.path.join(ICON_DIR, 'cogs.svg'))
+            root2Child3.setFirstColumnSpanned(True)
             child3Action1 = TreeWidgetItem(root2Child3, ['是否启用此配置', 'flag', str(self.config['config'][2]['params']['flag'])], ('param', ), editable=True)
             child3Action2 = TreeWidgetItem(root2Child3, ['前后置函数名称', 'fixtures', str(self.config['config'][2]['params']['fixtures'])], ('param', ), editable=True)
             root2Child4 = TreeWidgetItem(rootAction2, [str(self.config['config'][3]['describe'])], icon_path=os.path.join(ICON_DIR, 'cogs.svg'))
+            root2Child4.setFirstColumnSpanned(True)
             child4Action1 = TreeWidgetItem(root2Child4, ['是否启用此配置', 'flag', str(self.config['config'][3]['params']['flag'])], ('param', ), editable=True)
             child4Action2 = TreeWidgetItem(root2Child4, ['数据驱动文件名称', 'filename', str(self.config['config'][3]['params']['filename'])], ('param', ), editable=True)
             child4Action3 = TreeWidgetItem(root2Child4, ['数据驱动文件Sheet', 'sheetname', str(self.config['config'][3]['params']['sheetname'])], ('param', ), editable=True)

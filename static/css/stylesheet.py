@@ -64,9 +64,17 @@ __NEUTRAL_1000 = neutral_scale[9]
 print(__NEUTRAL_100, __NEUTRAL_1000)
 
 
-__TEXT = '#0ed02b'
+__TEST = '#0ed02b'
 
 """
+* {
+    padding: 0px;
+    margin: 0px;
+    border: 0px;
+    border-style: none;
+    border-image: none;
+    outline: 0;
+}
 QWidget {{
     color: {__PRIMARY_800};
     border: 2px solid {__NEUTRAL_500};
@@ -82,41 +90,105 @@ QWidget:disabled::selection {{
     background-color: {__NEUTRAL_100};
     color: {__PRIMARY_500};
 }}
+
+QTreeWidget::branch:closed:has-children {{
+    image: url(closed.png);  /* 收起状态的图标 */
+}}
+QTreeWidget::branch:open:has-children {{
+    image: url(open.png);    /* 展开状态的图标 */
+}}
+
+QTreeWidget#SECONDARY QScrollBar {{
+    border: none;
+    background: {__SECONDARY_200};
+    width: 5px;
+}}
+QTreeWidget#SECONDARY QScrollBar::handle {{
+    background: {__SECONDARY_600};
+    weight: 1px;
+    height: 1px;
+}}
+QTreeWidget#SECONDARY QScrollBar::handle:hover {{
+    background: {__TEST};
+    weight: 10px;
+    height: 10px;
+}}
 """
 
 STYLE_SHEET =  f"""
 
 QMainWindow::separator {{
-    width: 10px;
-    height: 4px;
-    background-color: {__NEUTRAL_100};
+    width: 1px;
+    height: 1px;
+    background-color: none;
 }}
 QMainWindow::separator:hover,
 QMainWindow::separator:pressed {{
-    background-color: {__SECONDARY_100};
+    background-color: none;
 }}
 
-QDockWidget {{
-    background-color: {__NEUTRAL_200};
-    
+QDockWidget#NEUTRAL {{
+    border: none; /* 外边框 */
+    background-color: {__NEUTRAL_100}; /* 背景颜色 */
+    min-width: 150 px;
+    min-height: 200 px;
+    color: {__PRIMARY_100};             /* 标题字体颜色 */
+    font-size: 14px;            /* 字体大小 */
+    font-weight: bold;   
 }}
-QDockWidget::title {{
-    background-color: {__SECONDARY_100};
+QDockWidget#NEUTRAL::title {{
+    border: 3px solid {__NEUTRAL_600};
+    border-radius: 12px;
+    border-style: ridge;
+    background-color: {__NEUTRAL_400};  /* 标题栏背景颜色 */
+    padding: 5px;               /* 标题栏内边距 */
+    spacing: 4px;
+
+}}
+QDockWidget#NEUTRAL::close-button, 
+QDockWidget#NEUTRAL::float-button {{
+    background-color: {__NEUTRAL_400};  /* 背景颜色 */
+    padding: 0px;               /* 内边距 */
+    border-radius: none;
+}}
+QDockWidget#NEUTRAL::close-button:hover,
+QDockWidget#NEUTRAL::float-button:hover {{
+    background-color: {__NEUTRAL_400};
+    border-radius: 2px;
+}}
+
+QDockWidget#SECONDARY {{
+    border: none; /* 外边框 */
+    background-color: {__SECONDARY_100}; /* 背景颜色 */
+    min-width: 150 px;
+    min-height: 200 px;
+}}
+QDockWidget#SECONDARY::title {{
     border: 2px solid {__SECONDARY_300};
     border-radius: 12px;
-    padding: 5px;
+    background-color: {__SECONDARY_100};  /* 标题栏背景颜色 */
+    padding: 5px;               /* 标题栏内边距 */
     spacing: 4px;
+    font-size: 14px;            /* 字体大小 */
+    font-weight: bold;   
+    color: {__PRIMARY_100};             /* 字体颜色 */
 }}
-QDockWidget::close-button:hover,
-QDockWidget::float-button:hover {{
-    background-color: {__SECONDARY_200};
+QDockWidget#SECONDARY::close-button, 
+QDockWidget#SECONDARY::float-button {{
+    border: none;               /* 无边框 */
+    background-color: {__SECONDARY_100};  /* 背景颜色 */
+    padding: 0px;               /* 内边距 */
+}}
+QDockWidget#SECONDARY::close-button:hover,
+QDockWidget#SECONDARY::float-button:hover {{
+    background-color: {__SECONDARY_100};
     border-radius: 2px
 }}
 
 QPushButton {{
     background-color: {__NEUTRAL_500};  /* 按钮的背景颜色 */
     color: {__NEUTRAL_700};                               /* 按钮的文本颜色 */
-    border: none;  /* 按钮的边框样式 */
+    border: 2px solid {__NEUTRAL_300};  /* 按钮的边框样式 */
     border-radius: 10px;                        /* 按钮的圆角半径 */
     padding: 5px 10px;                          /* 内边距 */
     font-size: 14px;                            /* 字体大小 */
@@ -125,10 +197,12 @@ QPushButton {{
 QPushButton:hover {{
     background-color: {__NEUTRAL_300}; /* 悬停时的背景颜色 */
     border: 2px solid {__NEUTRAL_500};  /* 悬停时的边框颜色 */
+    color: {__NEUTRAL_500};
 }}
 QPushButton:pressed {{
-    background-color: {__TEXT};  /* 按下时的背景颜色 */
+    background-color: {__NEUTRAL_100};  /* 按下时的背景颜色 */
     border: 2px solid {__NEUTRAL_500};   /* 按下时的边框颜色 */
+    color: {__NEUTRAL_300};
 }}
 QPushButton:disabled {{
     background-color: {__NEUTRAL_500}; /* 禁用时的背景颜色 */
@@ -136,7 +210,29 @@ QPushButton:disabled {{
     border: none; /* 禁用时的边框颜色 */
 }}
 
-QLineEdit {{
+QLineEdit#NEUTRAL {{
+    background-color: {__NEUTRAL_100}; /* 背景颜色 */
+    color: {__PRIMARY_700};               /* 文本颜色 */
+    border: 2px solid {__NEUTRAL_300}; /* 边框样式 */
+    border-radius: 5px;                         /* 圆角半径 */
+    padding: 5px;                               /* 内边距 */
+    font-size: 12px;                            /* 字体大小 */
+    margin: 0px;
+}}
+QLineEdit#NEUTRAL:hover {{
+    border: 2px solid {__NEUTRAL_300};  /* 鼠标悬停时的边框颜色 */
+}}
+QLineEdit#NEUTRAL:focus {{                             
+    border: 2px solid {__NEUTRAL_500};  /* 焦点时的边框颜色 */
+    background-color: {__NEUTRAL_200}; /* 焦点时的背景颜色 */
+}}
+QLineEdit#NEUTRAL:disabled {{
+    background-color: {__NEUTRAL_100}; /* 禁用状态下的背景颜色 */
+    color: {__PRIMARY_700};            /* 禁用状态下的文本颜色 */
+    border: 2px solid {__NEUTRAL_300}; /* 禁用状态下的边框颜色 */
+}}
+
+QLineEdit#SECONDARY {{
     background-color: {__SECONDARY_100}; /* 背景颜色 */
     color: {__PRIMARY_700};               /* 文本颜色 */
     border: 2px solid {__SECONDARY_300}; /* 边框样式 */
@@ -144,17 +240,73 @@ QLineEdit {{
     padding: 5px;                               /* 内边距 */
     font-size: 12px;                            /* 字体大小 */
 }}
-QLineEdit:hover {{
+QLineEdit#SECONDARY:hover {{
     border: 2px solid {__SECONDARY_300};  /* 鼠标悬停时的边框颜色 */
 }}
-QLineEdit:focus {{
-    border: 2px solid {__SECONDARY_300};  /* 焦点时的边框颜色 */
-    background-color: {__PRIMARY_400}; /* 焦点时的背景颜色 */
+QLineEdit#SECONDARY:focus {{                             
+    border: 2px solid {__SECONDARY_500};  /* 焦点时的边框颜色 */
+    background-color: {__SECONDARY_200}; /* 焦点时的背景颜色 */
 }}
-QLineEdit:disabled {{
+QLineEdit#SECONDARY:disabled {{
     background-color: {__SECONDARY_100}; /* 禁用状态下的背景颜色 */
     color: {__PRIMARY_700};            /* 禁用状态下的文本颜色 */
     border: 2px solid {__SECONDARY_300}; /* 禁用状态下的边框颜色 */
+}}
+
+QTreeWidget#NEUTRAL {{
+    background-color: {__NEUTRAL_200}; /* 背景色 */
+    color: {__PRIMARY_700};           /* 文字颜色 */
+}}
+QTreeWidget#NEUTRAL::item:selected {{
+    background-color: {__NEUTRAL_400}; /* 选中项背景色 */
+    color: white;              /* 选中项文字颜色 */
+}}
+QTreeWidget#NEUTRAL::branch {{
+    margin: 0px;  /* 设置分支之间的间隔 */
+}}
+QTreeWidget#NEUTRAL::item {{
+    min-height: 24px; /* 设置最小行高 */
+}}
+QTreeWidget#NEUTRAL::item:selected {{
+    background-color: {__NEUTRAL_400}; /* 选中项背景色 */
+    color: {__PRIMARY_200};              /* 选中项文字颜色 */
+    border: none;
+}}
+
+QTreeWidget#SECONDARY {{
+    background-color: {__SECONDARY_200}; /* 背景色 */
+    color: {__PRIMARY_700};           /* 文字颜色 */
+    border: 1px solid {__SECONDARY_500};
+    border-radius: 5px;
+}}
+QTreeWidget#SECONDARY::item:selected {{
+    background-color: {__SECONDARY_400}; /* 选中项背景色 */
+    color: {__PRIMARY_200};              /* 选中项文字颜色 */
+}}
+QTreeWidget#SECONDARY::branch {{
+    margin: 0px;                         /* 设置分支之间的间隔 */
+}}
+QTreeWidget#SECONDARY::item {{
+    min-height: 26px; /* 设置最小行高 */
+    border-left: 1px solid {__SECONDARY_500};
+    border-right: 1px solid {__SECONDARY_500};
+}}
+QTreeWidget#SECONDARY::item:first {{
+    border-left: none;
+}}
+
+QTreeWidget#SECONDARY QHeaderView{{         
+    background-color: {__SECONDARY_200}; /* 标题栏背景 */
+    height: 30px;
+    border: 0px;
+    border-radius: 5px;
+    color: {__PRIMARY_100};
+}}
+QTreeWidget#SECONDARY QHeaderView::section {{
+    background-color: {__SECONDARY_300};
+    border: 2px solid {__SECONDARY_500};
+    font-weight: bold;
+    border-radius: 10px;
 }}
 
 """

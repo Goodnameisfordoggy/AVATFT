@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-26 23:07:27
+LastEditTime: 2024-10-02 16:08:47
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
 Description: 
 
@@ -32,6 +32,7 @@ from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
 from src.dock.action import ActionDock
 from src.funcs import run_module
 from src import ICON_DIR
+from static.css.stylesheet import STYLE_SHEET
 LOG = logger.get_logger()
 
 
@@ -54,7 +55,8 @@ class EditDock(QDockWidget):
         # QDockWidget.DockWidgetMovable           允许停靠窗口在主窗口中进行移动。
         self.setFeatures(QDockWidget.NoDockWidgetFeatures | QDockWidget.DockWidgetClosable)
         self.setWindowTitle('测试用例编辑区')
-        self.setTitleBarWidget(QLabel('   测试用例编辑区'))
+        self.setTitleBarWidget(QLabel(''))
+        self.setObjectName('SECONDARY')
         self.__initUI()
     
     def __initUI(self):
@@ -63,6 +65,7 @@ class EditDock(QDockWidget):
         center_widget_layout = QVBoxLayout(self.center_widget)
         # 搜索框
         self.search_box = QLineEdit(self)
+        self.search_box.setObjectName('SECONDARY')
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
         self.search_box.textChanged.connect(self.__search_tree_items)
         center_widget_layout.addWidget(self.search_box)
@@ -106,6 +109,7 @@ class TreeWidget(QTreeWidget):
     
     def __init__(self):
         super().__init__()
+        self.setObjectName('SECONDARY')
         self.setColumnCount(3) # 列数
         self.setHeaderLabels(['参数描述', '参数名称', '参数值'])
         self.setDragEnabled(True) # 能否拖拽
@@ -118,7 +122,7 @@ class TreeWidget(QTreeWidget):
         # 子项展开和收缩事件
         self.itemExpanded.connect(self.__adjust_column_widths)
         self.itemCollapsed.connect(self.__adjust_column_widths)
-    
+        
     @typing.override
     def edit(self, index, trigger, event):
         """ 仅允许编辑第3列的文本 """
