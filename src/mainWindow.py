@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-27 15:38:47
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\mainWindow.py
+LastEditTime: 2024-10-04 22:18:32
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\mainWindow.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -18,9 +18,9 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 import os
 import sys
 import typing
-from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QTextEdit 
+from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QTextEdit, QToolBar
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtCore import Qt, Signal, Slot, QSize
 
 from utils import logger
 from src.dock.edit import EditDock
@@ -32,18 +32,28 @@ from src import PROJECTS_DIR, ICON_DIR
 LOG = logger.get_logger()
 
 
+import sys
+from PySide6.QtWidgets import QTextEdit
+
 class ConsoleOutput:
     """ 用于重定向控制台输出 """
     def __init__(self, outputWidget: QTextEdit):
         self.outputWidget = outputWidget
 
     def write(self, message):
-        # 将信息追加到 QTextEdit 中
-        self.outputWidget.append(message)
-        # 输出到控制台
+        # 不做任何处理，直接输出到控制台
         sys.__stdout__.write(message)
         sys.__stdout__.flush()
 
+        # 确保 message 是字符串类型
+        if isinstance(message, bytes):
+            message = message.decode('utf-8')  # 将 bytes 转换为 str
+        # 去除前后空白字符
+        message = message.strip().replace('^', '')
+        # 只在 message 非空时才追加到 QTextEdit
+        if message:
+            self.outputWidget.append(message)
+    
     def flush(self):
         """ 清空缓冲区 """
         # 需要实现这个方法以避免报错
@@ -51,13 +61,38 @@ class ConsoleOutput:
 
 
 class QTextEditLogger:
-    """ 用于将日志输出到 QTextEdit """
-    def __init__(self, outputWidget):
+    """ 使用 QTextEdit 作为日志记录器 """
+    def __init__(self, outputWidget: QTextEdit):
         self.outputWidget = outputWidget
-        LOG.add(self, level="TRACE")
-		
+        LOG.add(self.log_to_widget, level="TRACE")
+
+    def log_to_widget(self, message):
+        log_level = message.record["level"].name
+        # 根据日志级别设置颜色
+        if log_level == "ERROR":
+            color = "red"
+        elif log_level == "WARNING":
+            color = "orange"
+        elif log_level == "SUCCESS":
+            color = "green"
+        elif log_level == "DEBUG":
+            color = "blue"
+        else:
+            color = "gray"  # 默认颜色
+        # 构建 HTML 格式的日志消息
+        html_message = f"""
+            <div>
+                <span style='color:gray; '>{message.record["time"].strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]}</span> | 
+                <span style='color:{color}; font-weight: bold; '>{message.record["level"].name}</span> | 
+                <span style='color:{color}; '>{message.record["message"]}</span> 
+                <br>
+            </div>
+            """                 
+        # 在主线程中将日志插入到 QTextEdit 中
+        self.outputWidget.insertHtml(html_message)
+
     def write(self, message):
-        # 将日志输出到 QTextEdit
+        # 保持兼容性，write 方法处理一般的文本输出
         self.outputWidget.append(message)
 
     def flush(self):
@@ -98,7 +133,7 @@ class MainWindow(QMainWindow):
         self.menuBar = self.menuBar()
 
         # 创建菜单
-        self.fileMenu = QMenu("文件", self)
+        self.fileMenu = QMenu("文件", self)        
         self.viewMenu = QMenu("视图", self)
         self.helpMenu = QMenu("帮助", self)
 
@@ -167,7 +202,7 @@ class MainWindow(QMainWindow):
     
     def __connect_signals(self): # QwQ: sender.signal.connect(receiver.func)
         """ 信号连接 """
-        self.loadProjectSignal.connect(lambda: self.project_dock.load_project(self.project_dock.select_project()))
+        self.loadProjectSignal.connect(lambda: self.project_dock.tree.load_project(self.project_dock.tree.select_project()))
         self.action_dock.closeSignal.connect(lambda: self.actionDockAction.setIcon(QIcon()))
         self.action_dock.itemDoubleClickedSignal.connect(self.edit_dock.tree.display_action_details)
         self.project_dock.closeSignal.connect(lambda: self.projectDockAction.setIcon(QIcon()))

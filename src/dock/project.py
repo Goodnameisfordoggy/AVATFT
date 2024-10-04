@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-02 15:49:45
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\project.py
+LastEditTime: 2024-10-04 22:12:15
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\project.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -47,7 +47,7 @@ class ProjectDock(QDockWidget):
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.setObjectName('NEUTRAL')
         self.__initUI()
-        self.load_project(r"D:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\projects\pro")
+        self.tree.load_project(r"D:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\projects\pro")
         
     def __initUI(self):
         self.center_widget = QWidget(self)
@@ -70,23 +70,6 @@ class ProjectDock(QDockWidget):
         search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
         root = self.tree.invisibleRootItem() # 获取根项
         filter_item(root, search_text)
-    
-    def select_project(self) -> str:
-        directory_path = QFileDialog.getExistingDirectory(self, "选择项目目录", PROJECTS_DIR)
-        return directory_path
-    
-    @Slot(str)
-    def load_project(self, directory_path: str):
-        """ 加载项目 """
-        # 暂时禁用信号
-        self.tree.blockSignals(True)
-        # 创建树控件子项
-        if directory_path:
-            projectItem = TreeWidgetItem(self.tree, [os.path.basename(directory_path)], ('Project:project', directory_path), checkbox=True)
-            self.tree.create_item_by_directory_structure(os.path.join(directory_path, 'business'), projectItem)
-            LOG.info(f'Load project from {directory_path}')
-        # 启用信号
-        self.tree.blockSignals(False)
     
     @Slot(str)
     def get_checked_modules(self, msg: str):
@@ -245,6 +228,23 @@ class TreeWidget(QTreeWidget):
         # 连接右键菜单事件
         self.setContextMenuPolicy(Qt.CustomContextMenu) # 使用自定义菜单
         self.customContextMenuRequested.connect(self.__show_context_menu)
+    
+    def select_project(self) -> str:
+        directory_path = QFileDialog.getExistingDirectory(self, "选择项目目录", PROJECTS_DIR)
+        return directory_path
+    
+    @Slot(str)
+    def load_project(self, directory_path: str):
+        """ 加载项目 """
+        # 暂时禁用信号
+        self.blockSignals(True)
+        # 创建树控件子项
+        if directory_path:
+            projectItem = TreeWidgetItem(self, [os.path.basename(directory_path)], ('Project:project', directory_path), checkbox=True)
+            self.create_item_by_directory_structure(os.path.join(directory_path, 'business'), projectItem)
+            LOG.info(f'Load project from {directory_path}')
+        # 启用信号
+        self.blockSignals(False)
     
     def find_checked_items(self, current_item: TreeWidgetItem, checked_items: typing.List[TreeWidgetItem | None]):
         """ 递归查找所有被选中的子项 """

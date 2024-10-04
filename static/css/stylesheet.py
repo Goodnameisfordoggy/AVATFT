@@ -116,7 +116,9 @@ QTreeWidget#SECONDARY QScrollBar::handle:hover {{
 """
 
 STYLE_SHEET =  f"""
-
+QMainWindow{{
+    background-color: {__PRIMARY_200};
+}}
 QMainWindow::separator {{
     width: 1px;
     height: 1px;
@@ -125,6 +127,30 @@ QMainWindow::separator {{
 QMainWindow::separator:hover,
 QMainWindow::separator:pressed {{
     background-color: none;
+}}
+
+QMenu {{
+    background-color: {__PRIMARY_300};  /* 菜单背景色 */
+    border: 2px solid {__PRIMARY_500};  /* 边框颜色 */
+    padding: 0px;               /* 内边距 */
+    font-size: 12px;            /* 字体大小 */
+    border-radius: 2px;
+}}
+QMenu::item {{
+    background-color: {__PRIMARY_300}; 
+    padding: 2px;             /* 项目的内边距 */
+    color: {__PRIMARY_800};                /* 字体颜色 */
+    margin: 2px 3px;
+}}
+QMenu::item:selected {{
+    background-color: {__PRIMARY_500}; /* 选中的背景色 */
+    font-size: 12px;            /* 字体大小 */
+    color: {__PRIMARY_200};            /* 选中时的文本颜色 */
+}}
+QMenu::separator {{
+    height: 2px;
+    background: {__PRIMARY_200};
+    margin: 1px 0px;
 }}
 
 QDockWidget#NEUTRAL {{
@@ -160,7 +186,7 @@ QDockWidget#NEUTRAL::float-button:hover {{
 QDockWidget#SECONDARY {{
     border: none; /* 外边框 */
     background-color: {__SECONDARY_100}; /* 背景颜色 */
-    min-width: 150 px;
+    min-width: 300 px;
     min-height: 200 px;
 }}
 QDockWidget#SECONDARY::title {{
@@ -309,4 +335,10 @@ QTreeWidget#SECONDARY QHeaderView::section {{
     border-radius: 10px;
 }}
 
+QTextEdit {{
+    background-color: white;
+    border: 4px solid {__SECONDARY_300};
+    border-radius: 2px;
+    border-style: dotted;
+}}
 """

@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-03 00:01:07
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\log.py
+LastEditTime: 2024-10-04 00:47:25
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\log.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
