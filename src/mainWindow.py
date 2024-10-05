@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-04 22:18:32
+LastEditTime: 2024-10-04 23:29:54
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\mainWindow.py
 Description: 
 
@@ -52,7 +52,7 @@ class ConsoleOutput:
         message = message.strip().replace('^', '')
         # 只在 message 非空时才追加到 QTextEdit
         if message:
-            self.outputWidget.append(message)
+            self.outputWidget.append(message + '\n')
     
     def flush(self):
         """ 清空缓冲区 """
@@ -78,7 +78,7 @@ class QTextEditLogger:
         elif log_level == "DEBUG":
             color = "blue"
         else:
-            color = "gray"  # 默认颜色
+            color = "black"  # 默认颜色
         # 构建 HTML 格式的日志消息
         html_message = f"""
             <div>

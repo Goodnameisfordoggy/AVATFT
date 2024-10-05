@@ -35,7 +35,7 @@ __PRIMARY_700 = primary_scale[6]
 __PRIMARY_800 = primary_scale[7]
 __PRIMARY_900 = primary_scale[8]
 __PRIMARY_1000 = primary_scale[9]
-print(__PRIMARY_100, __PRIMARY_1000)
+# print(__PRIMARY_100, __PRIMARY_1000)
 
 secondary_scale = generate_color_scale(*__SECONDARY_HUE, 10)
 __SECONDARY_100 = secondary_scale[0]
@@ -48,7 +48,7 @@ __SECONDARY_700 = secondary_scale[6]
 __SECONDARY_800 = secondary_scale[7]
 __SECONDARY_900 = secondary_scale[8]
 __SECONDARY_1000 = secondary_scale[9]
-print(__SECONDARY_100, __SECONDARY_1000)
+# print(__SECONDARY_100, __SECONDARY_1000)
 
 neutral_scale = generate_color_scale(*__NEUTRAL_HUE, 10)
 __NEUTRAL_100 = neutral_scale[0]
@@ -61,7 +61,7 @@ __NEUTRAL_700 = neutral_scale[6]
 __NEUTRAL_800 = neutral_scale[7]
 __NEUTRAL_900 = neutral_scale[8]
 __NEUTRAL_1000 = neutral_scale[9]
-print(__NEUTRAL_100, __NEUTRAL_1000)
+# print(__NEUTRAL_100, __NEUTRAL_1000)
 
 
 __TEST = '#0ed02b'
@@ -212,6 +212,7 @@ QDockWidget#SECONDARY::float-button:hover {{
 }}
 
 QPushButton {{
+    max-width: 300px;
     background-color: {__NEUTRAL_500};  /* 按钮的背景颜色 */
     color: {__NEUTRAL_700};                               /* 按钮的文本颜色 */
     border: 2px solid {__NEUTRAL_300};  /* 按钮的边框样式 */

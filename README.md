@@ -3,7 +3,7 @@
 
 *行为可视化自动测试工具*
 
-version: 0.3.21
+version: 0.3.22
 
 # 项目结构
 
@@ -36,7 +36,12 @@ projects目录结构
     - data
     - log
 
+# Thanks
+
+- https://github.com/Pictogrammers/pictogrammers.com
+
 # Update log
+- 0.3.22: 项目构建中
 - 0.3.21: 主题（色阶渐变）构建完成
 - 0.2.21: 主题构建中
 - 0.2.20: 主题构建中

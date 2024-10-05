@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-02 16:08:47
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\edit.py
+LastEditTime: 2024-10-05 22:49:45
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\edit.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -20,13 +20,13 @@ import json
 import yaml
 import typing
 from PySide6.QtWidgets import (
-    QApplication, QLabel, QDockWidget, QVBoxLayout, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem,
-    QMenu, QPushButton, QHeaderView
+    QApplication, QLabel, QDockWidget, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem,
+    QMenu, QPushButton, QHBoxLayout, QVBoxLayout
     )
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
-from utils.filter import filter_item
+from utils.filter import filter_item, input_type_identify
 from utils import logger
 from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
 from src.dock.action import ActionDock
@@ -72,10 +72,13 @@ class EditDock(QDockWidget):
         # 树状控件
         self.tree = TreeWidget()
         center_widget_layout.addWidget(self.tree)
+        
+        button_layout = QHBoxLayout()
+        center_widget_layout.addLayout(button_layout)
         # 运行按钮
         self.operation_btn = QPushButton(self, text='开始测试')
-        center_widget_layout.addWidget(self.operation_btn)
         self.operation_btn.clicked.connect(self.operate)
+        button_layout.addWidget(self.operation_btn)
     
     @Slot(list)  
     @Slot() # 也可处理不带参数的信号
@@ -88,10 +91,10 @@ class EditDock(QDockWidget):
             if len(data) == 0:
                 LOG.warning('还未勾选要运行的测试用例！')
                 return
-            LOG.info('开始测试 =============================================================================>')
+            LOG.info('开始测试 》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》')
             if len(data) == 1:
                 run_module(data[0])
-            LOG.info('测试结束 <=============================================================================')
+            LOG.info('测试结束《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《 ')
     
     def __search_tree_items(self):
         """ 搜索树控件子项，搜索框绑定操作"""
@@ -140,6 +143,7 @@ class TreeWidget(QTreeWidget):
         if item:
             key = item.text(1)
             newValue = item.text(column)
+            newValue = input_type_identify(newValue)
             # 文件变动
             mouduleItem = self.topLevelItem(0)
             with open(mouduleItem.path, 'r', encoding='utf-8') as f:
@@ -279,7 +283,18 @@ class TreeWidget(QTreeWidget):
         with open(moduleItem.path, 'w', encoding='utf-8') as f:
             yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
         LOG.trace(f'Action info at "step" index {index} delete successfully at {moduleItem.path}')
-    
+
+    def __move_actionInfo_to(self, move_index: int,  to_index: int):
+        """ 向 module 文件(step)中特定索引插入 action 信息"""
+        moduleItem = self.topLevelItem(0)
+        with open(moduleItem.path, 'r', encoding='utf-8') as f:
+            content = yaml.safe_load(f)
+        removed_action = content['step'].pop(move_index) # 根据子项索引在文件中删除对应位置上的信息
+        content['step'].insert(to_index, removed_action)
+        with open(moduleItem.path, 'w', encoding='utf-8') as f:
+            yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
+        LOG.trace(f'Action info at "step" index {move_index} move to index {move_index} successfully at {moduleItem.path}')
+
     def __swap_actionInfo(self, index_1: int, index_2: int):
         """ 将 module 文件(step)中两个不同索引的 action 信息交换 """
         moduleItem = self.topLevelItem(0)
@@ -405,14 +420,12 @@ class TreeWidget(QTreeWidget):
                             tempItem = item.takeChild(draggedItemIndex)
                             item.insertChild(0, tempItem) # 在第一项放置
                             tempItem.setFirstColumnSpanned(True)
-                            self.__delete_actionInfo(draggedItemIndex)
-                            self.__add_action_to_module(draggedItem.path, modulePath, 0)
+                            self.__move_actionInfo_to(draggedItemIndex, 0)
                         elif item.type == 'action': # 放置目标项类型二
                             parentItem = item.parent() # 拖动项与放置目标项同级，故使用相同的父级
                             itemIndex = parentItem.indexOfChild(item)
                             draggedItemIndex = parentItem.indexOfChild(draggedItem)
                             tempItem = parentItem.takeChild(draggedItemIndex) # 拿起拖动项
-                            self.__delete_actionInfo(draggedItemIndex)
                             # 计算删除拖拽项后，放置目标项的索引
                             if draggedItemIndex < itemIndex: # 拖拽项在放置目标项的上方, 放置目标项此时上移 index - 1
                                 itemIndex = itemIndex - 1
@@ -422,11 +435,11 @@ class TreeWidget(QTreeWidget):
                             if draggedItemIndex - itemIndex != 1:
                                 parentItem.insertChild(itemIndex + 1, tempItem) # 在放置目标子项的下方创建同级子项
                                 tempItem.setFirstColumnSpanned(True)
-                                self.__add_action_to_module(draggedItem.path, modulePath, itemIndex + 1)
+                                self.__move_actionInfo_to(draggedItemIndex, itemIndex + 1)
                             else: # 拖拽项在放置目标项下方，且两项相邻，则交换两项位置
                                 parentItem.insertChild(itemIndex, tempItem) # 在放置目标子项的下方创建同级子项
                                 tempItem.setFirstColumnSpanned(True)
-                                self.__add_action_to_module(draggedItem.path, modulePath, itemIndex)
+                                self.__move_actionInfo_to(draggedItemIndex, itemIndex)
                         # 确认并完成当前的拖放操作
                         event.acceptProposedAction()
             else:

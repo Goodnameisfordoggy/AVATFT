@@ -25,9 +25,10 @@ from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 
-from utils import logger
+from utils.filter import input_type_identify
+from utils.logger import get_logger
 from src import BASE_DIR, ICON_DIR
-LOG = logger.get_logger()
+LOG = get_logger()
 
 
 class TreeWidgetItem(QTreeWidgetItem):
@@ -154,7 +155,7 @@ class ActionItem(TreeWidgetItem):
     def __create_childItem(self):
         # 创建子项
         try:
-            parameterItemsText = [[self.config[0]['params_describe'][key], key, value] for key, value in self.config[0]['params'].items()]
+            parameterItemsText = [[str(self.config[0]['params_describe'][key]), str(key), str(value)] for key, value in self.config[0]['params'].items()]
         except KeyError as err:
             LOG.critical(f'Please check if the key: {err} exists at {self.action_path}')
             return
@@ -220,9 +221,9 @@ class ModuleItem(TreeWidgetItem):
             # 创建action子项
             if self.config['step']:
                 for action in self.config['step']:
-                    actionItem = TreeWidgetItem(rootAction3, [action['describe']], ('action', os.path.join(BASE_DIR, action['action_RP']), False, True)) 
+                    actionItem = TreeWidgetItem(rootAction3, [str(action['describe'])], ('action', os.path.join(BASE_DIR, action['action_RP']), False, True)) 
                     actionItem.setFirstColumnSpanned(True)  # 合并三列
-                    parameterItemsText = [[action['params_describe'][key], key, value] for key, value in action['params'].items()]
+                    parameterItemsText = [[str(action['params_describe'][key]), str(key), str(value)] for key, value in action['params'].items()]
                     for parameterItemText in parameterItemsText:
                         parameterItem = TreeWidgetItem(actionItem, parameterItemText, ('param', ), editable=True)
         except KeyError as err:
