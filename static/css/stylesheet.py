@@ -338,7 +338,7 @@ QTreeWidget#SECONDARY QHeaderView::section {{
 
 QTextEdit {{
     background-color: white;
-    border: 4px solid {__SECONDARY_300};
+    border: 2px solid {__SECONDARY_300};
     border-radius: 2px;
     border-style: dotted;
 }}

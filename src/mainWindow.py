@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-04 23:29:54
+LastEditTime: 2024-10-06 14:13:31
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\mainWindow.py
 Description: 
 
@@ -19,7 +19,7 @@ import os
 import sys
 import typing
 from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QTextEdit, QToolBar
-from PySide6.QtGui import QAction, QIcon
+from PySide6.QtGui import QAction, QIcon, QTextCursor
 from PySide6.QtCore import Qt, Signal, Slot, QSize
 
 from utils import logger
@@ -49,7 +49,7 @@ class ConsoleOutput:
         if isinstance(message, bytes):
             message = message.decode('utf-8')  # 将 bytes 转换为 str
         # 去除前后空白字符
-        message = message.strip().replace('^', '')
+        message = message.strip().translate(str.maketrans('', '', '^~'))
         # 只在 message 非空时才追加到 QTextEdit
         if message:
             self.outputWidget.append(message + '\n')
@@ -68,8 +68,12 @@ class QTextEditLogger:
 
     def log_to_widget(self, message):
         log_level = message.record["level"].name
+        background = None
         # 根据日志级别设置颜色
-        if log_level == "ERROR":
+        if log_level == "CRITICAL":
+            color = "white"
+            background = "red"
+        elif log_level == "ERROR":
             color = "red"
         elif log_level == "WARNING":
             color = "orange"
@@ -77,17 +81,22 @@ class QTextEditLogger:
             color = "green"
         elif log_level == "DEBUG":
             color = "blue"
+        elif log_level == "TRACE":
+            color = "skyblue"
         else:
-            color = "black"  # 默认颜色
+            color = "black"
         # 构建 HTML 格式的日志消息
         html_message = f"""
             <div>
                 <span style='color:gray; '>{message.record["time"].strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]}</span> | 
-                <span style='color:{color}; font-weight: bold; '>{message.record["level"].name}</span> | 
-                <span style='color:{color}; '>{message.record["message"]}</span> 
+                <span style='color:{color}; background-color: {background}; font-weight: bold; '>{message.record["level"].name}</span> | 
+                <span style='color:{color}; background-color: {background}; '>{message.record["message"]}</span> 
                 <br>
             </div>
-            """                 
+            """
+        cursor = self.outputWidget.textCursor()  # 获取当前光标
+        cursor.movePosition(QTextCursor.End)  # 将光标移动到末尾
+        self.outputWidget.setTextCursor(cursor)  # 更新 QTextEdit 的光标
         # 在主线程中将日志插入到 QTextEdit 中
         self.outputWidget.insertHtml(html_message)
 

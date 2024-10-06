@@ -27,7 +27,7 @@ def input_type_identify(input_value: str):
     :param input_value: 输入内容一般为字符串类型
     """
     # 1. 先判断是否为 None（空字符串或 None 都视为 None）
-    if input_value is None or input_value.strip() == "":
+    if input_value is None or input_value.strip() == "" or input_value.lower() in ("none", "null"):
         return None
 
     # 2. 再判断是否为 bool 类型 ('True'/'False' 不区分大小写)

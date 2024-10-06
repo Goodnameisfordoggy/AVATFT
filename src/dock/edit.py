@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-05 22:49:45
+LastEditTime: 2024-10-06 02:08:10
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\edit.py
 Description: 
 
@@ -78,6 +78,7 @@ class EditDock(QDockWidget):
         # 运行按钮
         self.operation_btn = QPushButton(self, text='开始测试')
         self.operation_btn.clicked.connect(self.operate)
+        self.operation_btn.setFocusPolicy(Qt.NoFocus)  # 禁用键盘焦点
         button_layout.addWidget(self.operation_btn)
     
     @Slot(list)  
@@ -100,6 +101,31 @@ class EditDock(QDockWidget):
         """ 搜索树控件子项，搜索框绑定操作"""
         search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
         root = self.tree.invisibleRootItem() # 获取根项
+        
+        def filter_item(item: QTreeWidgetItem, search_text: str):
+            """ 
+            筛选符合条件的子项，遍历子项，递归搜索
+            
+            :param item: 根节点（项）
+            """
+            
+            # 当前项处理
+            item_text = item.text(0).lower()  # 获取项的文本，并转换为小写
+            match = search_text in item_text  # 检查项的文本是否包含搜索内容
+
+            # 对所有子项进行同样的处理
+            for j in range(item.childCount()):
+                child_item = item.child(j)
+                match = filter_item(child_item, search_text) or match # 如果任何一个子项匹配，那么其父项也应当被视为匹配
+            
+            if search_text == "":
+                match = False
+            # 根据是否匹配来设置当前项是否可见
+            item.setSelected(match)
+            if match and item.parent():
+                item.parent().setExpanded(True)
+            return match
+
         filter_item(root, search_text)
     
     @typing.override
@@ -144,6 +170,8 @@ class TreeWidget(QTreeWidget):
             key = item.text(1)
             newValue = item.text(column)
             newValue = input_type_identify(newValue)
+            if newValue is None:
+                item.setText(column, "None")
             # 文件变动
             mouduleItem = self.topLevelItem(0)
             with open(mouduleItem.path, 'r', encoding='utf-8') as f:

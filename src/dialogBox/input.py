@@ -22,15 +22,12 @@ class NameInputDialogBox(QDialog):
     def __init__(self, parent, title: str = 'nameInput', text: str = 'text'):
         super().__init__()
         self.setWindowTitle(title)
-        self.setStyleSheet("QDialog { min-width: 200px; max-width:200px; min-height: 100px; max-height: 100px; }")
 
         self.label = QLabel(text)
         self.lineEdit = QLineEdit()
         self.okButton = QPushButton("确定")
         self.cancelButton = QPushButton("取消")
         # 样式
-        self.okButton.setStyleSheet("QPushButton { min-width: 35px; max-width: 35px; min-height: 20px; max-width: 20px; }")
-        self.cancelButton.setStyleSheet("QPushButton { min-width: 35px; max-width: 35px; min-height: 20px; max-width: 20px; }")
 
         self.okButton.clicked.connect(self.accept)
         self.cancelButton.clicked.connect(self.reject)
