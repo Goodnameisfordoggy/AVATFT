@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-06 14:13:31
+LastEditTime: 2024-10-07 00:39:54
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\mainWindow.py
 Description: 
 
@@ -124,6 +124,7 @@ class MainWindow(QMainWindow):
         self.screen_width = screen_size.width()
         self.screen_height = screen_size.height()
         self.resize(self.screen_width, self.screen_height)
+        self.setWindowIcon(QIcon(os.path.join(ICON_DIR, 'app.svg')))
         # self.maximumSize()        
 
         self.__build_menu()

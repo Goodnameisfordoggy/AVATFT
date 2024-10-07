@@ -67,14 +67,6 @@ __NEUTRAL_1000 = neutral_scale[9]
 __TEST = '#0ed02b'
 
 """
-* {
-    padding: 0px;
-    margin: 0px;
-    border: 0px;
-    border-style: none;
-    border-image: none;
-    outline: 0;
-}
 QWidget {{
     color: {__PRIMARY_800};
     border: 2px solid {__NEUTRAL_500};
@@ -90,32 +82,17 @@ QWidget:disabled::selection {{
     background-color: {__NEUTRAL_100};
     color: {__PRIMARY_500};
 }}
-
-QTreeWidget::branch:closed:has-children {{
-    image: url(closed.png);  /* 收起状态的图标 */
-}}
-QTreeWidget::branch:open:has-children {{
-    image: url(open.png);    /* 展开状态的图标 */
-}}
-
-QTreeWidget#SECONDARY QScrollBar {{
-    border: none;
-    background: {__SECONDARY_200};
-    width: 5px;
-}}
-QTreeWidget#SECONDARY QScrollBar::handle {{
-    background: {__SECONDARY_600};
-    weight: 1px;
-    height: 1px;
-}}
-QTreeWidget#SECONDARY QScrollBar::handle:hover {{
-    background: {__TEST};
-    weight: 10px;
-    height: 10px;
-}}
 """
 
 STYLE_SHEET =  f"""
+* {{
+    padding: 0px;
+    margin: 0px;
+    border: 0px;
+    border-style: none;
+    border-image: none;
+    outline: 0;
+}}
 QMainWindow{{
     background-color: {__PRIMARY_200};
 }}
@@ -342,4 +319,24 @@ QTextEdit {{
     border-radius: 2px;
     border-style: dotted;
 }}
+
+QComboBox {{
+    background-color: {__SECONDARY_100};    /* 下拉框的背景色 */
+    border: 2px solid {__SECONDARY_300};       /* 边框样式 */
+    padding: 5px;                 /* 内边距 */
+    border-radius: 5px;           /* 圆角 */
+    font-size: 12px;              /* 字体大小 */
+    font-weight: bold;
+    color: {__SECONDARY_500};
+}}
+QComboBox:open {{
+    border: 1px solid {__SECONDARY_500}; /* 获取焦点或打开时 */
+    color: {__SECONDARY_200};
+}}
+QComboBox QAbstractItemView {{
+    border: 1px solid {__SECONDARY_500}; /* 设置下拉列表边框颜色*/
+    background-color: {__SECONDARY_100}; /* 设置下拉列表中选中项的背景色 */
+    color: {__SECONDARY_700}; /* 设置下拉列表中选中项的文字颜色*/
+}}
+
 """

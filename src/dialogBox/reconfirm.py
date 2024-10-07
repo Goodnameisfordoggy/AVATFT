@@ -15,14 +15,18 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
+import os
 import sys
 from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
 
+from src import ICON_DIR
 class ReconfirmDialogBox(QDialog):
     def __init__(self, parent, title: str = 'reconfirm', text: str = 'text'):
         super().__init__()
         self.setWindowTitle(title)
+        self.setWindowIcon(QIcon(os.path.join(ICON_DIR, 'app.svg')))
         self.label = QLabel(text)
         self.okButton = QPushButton("确定")
         self.cancelButton = QPushButton("取消")

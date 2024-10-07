@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-06 02:08:10
+LastEditTime: 2024-10-06 17:38:11
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\edit.py
 Description: 
 
@@ -21,7 +21,7 @@ import yaml
 import typing
 from PySide6.QtWidgets import (
     QApplication, QLabel, QDockWidget, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem,
-    QMenu, QPushButton, QHBoxLayout, QVBoxLayout
+    QMenu, QPushButton, QHBoxLayout, QVBoxLayout, QComboBox
     )
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
@@ -63,12 +63,21 @@ class EditDock(QDockWidget):
         self.center_widget = QWidget(self)
         self.setWidget(self.center_widget)
         center_widget_layout = QVBoxLayout(self.center_widget)
+
+        search_layout = QHBoxLayout()
         # 搜索框
         self.search_box = QLineEdit(self)
         self.search_box.setObjectName('SECONDARY')
         self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
-        self.search_box.textChanged.connect(self.__search_tree_items)
-        center_widget_layout.addWidget(self.search_box)
+        self.search_box.textChanged.connect(lambda: self.__search_tree_items())
+        search_layout.addWidget(self.search_box, 3)
+        # 搜索方法下拉列表
+        self.search_combo_box =  QComboBox()
+        self.search_combo_box.addItems(["匹配参数描述", "匹配参数名称", "匹配参数值"]) # 添加选项
+        self.search_combo_box.currentIndexChanged.connect(self.__switch_search_method)
+        search_layout.addWidget(self.search_combo_box, 1)
+        
+        center_widget_layout.addLayout(search_layout)
         # 树状控件
         self.tree = TreeWidget()
         center_widget_layout.addWidget(self.tree)
@@ -97,36 +106,52 @@ class EditDock(QDockWidget):
                 run_module(data[0])
             LOG.info('测试结束《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《 ')
     
-    def __search_tree_items(self):
-        """ 搜索树控件子项，搜索框绑定操作"""
+    def __search_tree_items(self, column: int = 0):
+        """ 
+        搜索树控件子项，搜索框绑定操作
+        
+        :param column: 搜索文本所在的列
+        """
         search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
         root = self.tree.invisibleRootItem() # 获取根项
         
-        def filter_item(item: QTreeWidgetItem, search_text: str):
+        def filter_item(item: QTreeWidgetItem, column: int, search_text: str):
             """ 
             筛选符合条件的子项，遍历子项，递归搜索
             
             :param item: 根节点（项）
             """
-            
             # 当前项处理
-            item_text = item.text(0).lower()  # 获取项的文本，并转换为小写
+            item_text = item.text(column).lower()  # 获取项的文本，并转换为小写
             match = search_text in item_text  # 检查项的文本是否包含搜索内容
-
+            if search_text == "":
+                match = False
+            item.setSelected(match)
             # 对所有子项进行同样的处理
             for j in range(item.childCount()):
                 child_item = item.child(j)
-                match = filter_item(child_item, search_text) or match # 如果任何一个子项匹配，那么其父项也应当被视为匹配
+                match = filter_item(child_item, column, search_text) or match # 如果任何一个子项匹配，那么其父项也应当被视为匹配
             
-            if search_text == "":
-                match = False
-            # 根据是否匹配来设置当前项是否可见
-            item.setSelected(match)
+            # 根据是否匹配来设置当前项的选中状态，以及其父项的展折叠状态
+            # item.setSelected(match)
             if match and item.parent():
                 item.parent().setExpanded(True)
             return match
 
-        filter_item(root, search_text)
+        filter_item(root, column, search_text)
+    
+    def __switch_search_method(self):
+        """ 切换查找方法，下拉列表绑定操作 """
+        selected_text = self.search_combo_box.currentText()
+        if selected_text == "查找参数描述":
+            self.search_box.textChanged.disconnect()
+            self.search_box.textChanged.connect(lambda: self.__search_tree_items(0))
+        elif selected_text == "查找参数名称":
+            self.search_box.textChanged.disconnect()
+            self.search_box.textChanged.connect(lambda: self.__search_tree_items(1))
+        elif selected_text == "查找参数值":
+            self.search_box.textChanged.disconnect()
+            self.search_box.textChanged.connect(lambda: self.__search_tree_items(2))
     
     @typing.override
     def closeEvent(self, event) -> None:
