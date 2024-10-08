@@ -88,10 +88,6 @@ STYLE_SHEET =  f"""
 * {{
     padding: 0px;
     margin: 0px;
-    border: 0px;
-    border-style: none;
-    border-image: none;
-    outline: 0;
 }}
 QMainWindow{{
     background-color: {__PRIMARY_200};

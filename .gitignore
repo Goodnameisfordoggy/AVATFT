@@ -4,6 +4,8 @@ cookies.json
 action_keywords/
 projects/
 func/
+workspace.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

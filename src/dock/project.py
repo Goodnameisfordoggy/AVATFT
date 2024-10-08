@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-04 22:12:15
+LastEditTime: 2024-10-09 00:01:36
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\project.py
 Description: 
 
@@ -16,6 +16,7 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import os
+import json
 import yaml
 import typing
 import shutil
@@ -31,7 +32,7 @@ from utils import logger
 from src.treeWidgetItem import TreeWidgetItem
 from src.dialogBox.input import NameInputDialogBox
 from src.dialogBox.reconfirm import ReconfirmDialogBox
-from src import PROJECTS_DIR, CONFIG_DIR, ICON_DIR
+from src import PROJECTS_DIR, CONFIG_DIR, ICON_DIR, TEMPLATE_DIR
 LOG = logger.get_logger()
 
 
@@ -47,7 +48,7 @@ class ProjectDock(QDockWidget):
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.setObjectName('NEUTRAL')
         self.__initUI()
-        self.tree.load_project(r"D:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\projects\pro")
+        self.load_history_project()
         
     def __initUI(self):
         self.center_widget = QWidget(self)
@@ -65,6 +66,74 @@ class ProjectDock(QDockWidget):
         self.tree = TreeWidget(self)
         center_widget_layout.addWidget(self.tree)
     
+    @Slot(str)
+    def new_project(self, msg: str):
+        """ 创建新工程目录，菜单操作"""
+        nameInputDialogBox = NameInputDialogBox(self, '新建工程', '请输入新工程的名称：')
+        if nameInputDialogBox.exec():
+            projectName = nameInputDialogBox.nameInput() # 要创建的顶级目录名称
+            projectPath = os.path.join(PROJECTS_DIR, projectName)
+            try:
+                # 创建完整的目录结构
+                os.makedirs(f"{projectPath}/business")
+                os.makedirs(f"{projectPath}/config")
+                os.makedirs(f"{projectPath}/data")
+                os.makedirs(f"{projectPath}/log")
+                LOG.success(f'Project {projectName} create successfully')
+            except Exception as err:
+                LOG.debug(f'Exception: {err}')
+            self.tree.load_project_item(projectPath)
+
+    def select_project(self) -> str:
+        directory_path = QFileDialog.getExistingDirectory(self, "选择项目目录", PROJECTS_DIR)
+        return directory_path
+    
+    @Slot(str)
+    def load_project(self, directory_path: str):
+        """ 加载项目 """
+        if directory_path:
+            if os.path.isdir(directory_path):
+                # 读取历史工程, 若是新工程则加入历史记录
+                workspace_file = os.path.join(CONFIG_DIR, 'workspace.json')
+                try:
+                    with open(workspace_file, 'r') as file:
+                        workspace_settings = json.load(file)
+                except FileNotFoundError:
+                    LOG.critical(f"The file {workspace_file} not exist")
+                except json.JSONDecodeError:
+                    LOG.error(f"The file {workspace_file} is not valid JSON")
+                except Exception as e:
+                    LOG.error(f"An error occurred: {e}")
+                folders = workspace_settings['folders']
+                folder_paths = [folder['path'] for folder in folders]
+                if directory_path not in folder_paths:
+                    workspace_settings['folders'].append({'path': directory_path})
+                    with open(workspace_file, 'w') as file:
+                        json.dump(workspace_settings, file, indent=4, ensure_ascii=False)
+                    self.tree.load_project_item(directory_path)
+                    LOG.info(f'Load project from {directory_path}')
+    
+    def load_history_project(self):
+        """ 从配置文件中载入历史工程 """
+        workspace_file = os.path.join(CONFIG_DIR, 'workspace.json')
+        try:
+            with open(workspace_file, 'r') as file:
+                workspace_settings = json.load(file)
+        except FileNotFoundError:
+            LOG.critical(f"The file {workspace_file} not exist")
+        except json.JSONDecodeError:
+            LOG.error(f"The file {workspace_file} is not valid JSON")
+        except Exception as e:
+            LOG.error(f"An error occurred: {e}")
+
+        folders: list[dict] = workspace_settings['folders']
+        if folders:
+            for folder in folders:
+                if os.path.isdir(folder['path']):
+                    self.tree.load_project_item(folder['path'])
+                    LOG.info(f'Load project from history path "{folder['path']}"')
+
+
     def __search_tree_items(self):
         """ 搜索树控件子项，搜索框绑定操作"""
         search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
@@ -91,7 +160,7 @@ class ProjectDock(QDockWidget):
         :param path: 目标文件路径
         """
         if not os.path.exists(path):
-            if ProjectDock.paste_file(os.path.join(CONFIG_DIR, 'module_template.yaml'), path, 'COPY'): # 直接使用模版文件初始化
+            if ProjectDock.paste_file(os.path.join(TEMPLATE_DIR, 'module_template.yaml'), path, 'COPY'): # 直接使用模版文件初始化
                 LOG.success('Test cases have been initialized using the template file')
                 return True
             # config_data = {}
@@ -218,6 +287,7 @@ class TreeWidget(QTreeWidget):
     
     # 自定义信号
     itemDoubleClickedSignal = Signal(str)  # 信号携带一个字符串参数
+    loadProjectSignal = Signal(str)
     
     def __init__(self, parent: QWidget | None = ...) -> None:
         super().__init__(parent)
@@ -229,23 +299,15 @@ class TreeWidget(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu) # 使用自定义菜单
         self.customContextMenuRequested.connect(self.__show_context_menu)
     
-    def select_project(self) -> str:
-        directory_path = QFileDialog.getExistingDirectory(self, "选择项目目录", PROJECTS_DIR)
-        return directory_path
-    
-    @Slot(str)
-    def load_project(self, directory_path: str):
-        """ 加载项目 """
+    def load_project_item(self, directory_path: str):
+        """ 创建树控件子项 """
         # 暂时禁用信号
         self.blockSignals(True)
-        # 创建树控件子项
-        if directory_path:
-            projectItem = TreeWidgetItem(self, [os.path.basename(directory_path)], ('Project:project', directory_path), checkbox=True)
-            self.create_item_by_directory_structure(os.path.join(directory_path, 'business'), projectItem)
-            LOG.info(f'Load project from {directory_path}')
+        projectItem = TreeWidgetItem(self, [os.path.basename(directory_path)], ('Project:project', directory_path), checkbox=True)
+        self.create_item_by_directory_structure(os.path.join(directory_path, 'business'), projectItem)
         # 启用信号
         self.blockSignals(False)
-    
+        
     def find_checked_items(self, current_item: TreeWidgetItem, checked_items: typing.List[TreeWidgetItem | None]):
         """ 递归查找所有被选中的子项 """
         for i in range(current_item.childCount()):
@@ -346,11 +408,14 @@ class TreeWidget(QTreeWidget):
                 newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), '新建测试用例', self)
                 newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), '新建目录', self)
                 openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), '打开文件(目录)', self)
-                
+                addProjectAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-plus.svg')), '将文件添加到工作区', self)
+                removeProjectAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-remove.svg')), '将文件从工作区移除', self)
                 # 连接菜单项的触发信号
                 newModuleAction.triggered.connect(lambda: self.__new_module_item(item))
                 newPackageAction.triggered.connect(lambda: self.__new_package_item(item))
                 openAction.triggered.connect(lambda: open_file(item.path))
+                addProjectAction.triggered.connect(lambda: self.loadProjectSignal.emit('load project'))
+                removeProjectAction.triggered.connect(lambda: self.takeTopLevelItem(self.indexOfTopLevelItem(item)))
 
                 # 将菜单项添加到上下文菜单
                 context_menu.addMenu(newMenu)
@@ -358,12 +423,16 @@ class TreeWidget(QTreeWidget):
                 newMenu.addAction(newPackageAction)
                 context_menu.addSeparator()  # 分隔符
                 context_menu.addAction(openAction)
+                context_menu.addSeparator()  # 分隔符
+                context_menu.addAction(addProjectAction)
+                context_menu.addAction(removeProjectAction)
+                
                 context_menu.exec(self.viewport().mapToGlobal(pos)) # 显示上下文菜单
 
         else: # 右击树控件空白处
             context_menu = QMenu(self)
             openAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-plus.svg')), "将文件添加到工作区", self)
-            openAction.triggered.connect(lambda: self.load_project(self.select_project()))
+            openAction.triggered.connect(lambda: self.loadProjectSignal.emit('load project'))
             context_menu.addAction(openAction)
             context_menu.exec(self.viewport().mapToGlobal(pos))
     

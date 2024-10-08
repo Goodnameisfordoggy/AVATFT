@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-06 17:38:11
+LastEditTime: 2024-10-08 21:53:59
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\edit.py
 Description: 
 
@@ -30,7 +30,7 @@ from utils.filter import filter_item, input_type_identify
 from utils import logger
 from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
 from src.dock.action import ActionDock
-from src.funcs import run_module
+from src.funcs import run_module, run
 from src import ICON_DIR
 from static.css.stylesheet import STYLE_SHEET
 LOG = logger.get_logger()
@@ -104,6 +104,8 @@ class EditDock(QDockWidget):
             LOG.info('开始测试 》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》')
             if len(data) == 1:
                 run_module(data[0])
+            else:
+                run(path_list=data)
             LOG.info('测试结束《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《 ')
     
     def __search_tree_items(self, column: int = 0):

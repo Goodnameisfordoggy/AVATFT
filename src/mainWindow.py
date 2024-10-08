@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-07 00:39:54
+LastEditTime: 2024-10-08 23:15:31
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\mainWindow.py
 Description: 
 
@@ -111,7 +111,7 @@ class QTextEditLogger:
 class MainWindow(QMainWindow):
     
     # 自定义信号
-    new_project_signal = Signal(str)
+    newProjectSignal = Signal(str)
     loadProjectSignal = Signal(str)
     
     def __init__(self, app):
@@ -150,7 +150,7 @@ class MainWindow(QMainWindow):
         # fileMenu动作
         self.newProjectAction = QAction("新建工程", self)
         self.newProjectAction.setIcon(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')))
-        self.newProjectAction.triggered.connect(self.__new_project)
+        self.newProjectAction.triggered.connect(lambda: self.newProjectSignal.emit('new_project'))
         self.openProjectAction = QAction("打开工程", self)
         self.openProjectAction.setIcon(QIcon(os.path.join(ICON_DIR, 'folder-search.svg')))
         self.openProjectAction.triggered.connect(lambda: self.loadProjectSignal.emit('load_project'))
@@ -212,32 +212,20 @@ class MainWindow(QMainWindow):
     
     def __connect_signals(self): # QwQ: sender.signal.connect(receiver.func)
         """ 信号连接 """
-        self.loadProjectSignal.connect(lambda: self.project_dock.tree.load_project(self.project_dock.tree.select_project()))
+        self.newProjectSignal.connect(self.project_dock.new_project)
+        self.loadProjectSignal.connect(lambda: self.project_dock.load_project(self.project_dock.select_project()))
         self.action_dock.closeSignal.connect(lambda: self.actionDockAction.setIcon(QIcon()))
         self.action_dock.itemDoubleClickedSignal.connect(self.edit_dock.tree.display_action_details)
         self.project_dock.closeSignal.connect(lambda: self.projectDockAction.setIcon(QIcon()))
         self.project_dock.operateResponseSignal.connect(self.edit_dock.operate)
         self.project_dock.tree.itemDoubleClickedSignal.connect(self.edit_dock.tree.display_module_details)
+        self.project_dock.tree.loadProjectSignal.connect(lambda: self.project_dock.load_project(self.project_dock.select_project()))
         self.edit_dock.closeSignal.connect(lambda: self.editDockAction.setIcon(QIcon()))
         self.edit_dock.operateSignal.connect(lambda: self.log_dock.setVisible(True))
         self.edit_dock.operateSignal.connect(self.project_dock.get_checked_modules)
         self.log_dock.closeSignal.connect(lambda: self.logDockAction.setIcon(QIcon()))
     
-    def __new_project(self):
-        """ 创建新工程目录，菜单操作"""
-        nameInputDialogBox = NameInputDialogBox(self, '新建工程', '请输入新工程的名称：')
-        if nameInputDialogBox.exec():
-            projectName = nameInputDialogBox.nameInput() # 要创建的顶级目录名称
-            projectPath = os.path.join(PROJECTS_DIR, projectName)
-            try:
-                # 创建完整的目录结构
-                os.makedirs(f"{projectPath}/business")
-                os.makedirs(f"{projectPath}/config")
-                os.makedirs(f"{projectPath}/data")
-                os.makedirs(f"{projectPath}/log")
-                LOG.success(f'Project {projectName} create successfully')
-            except Exception as err:
-                LOG.debug(f'Exception: {err}')
+
     
     @typing.override
     def contextMenuEvent(self, event):

@@ -3,7 +3,7 @@
 
 *行为可视化自动测试工具*
 
-version: 0.3.24
+version: 0.3.25
 
 # 项目结构
 
@@ -41,6 +41,7 @@ projects目录结构
 - https://github.com/Pictogrammers/pictogrammers.com
 
 # Update log
+- 0.3.25: 项目构建中
 - 0.3.24: 项目构建中
 - 0.3.23: 进行了一些细微调整
 - 0.3.22: 项目构建中
