@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-06 14:47:47
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\__init__.py
+LastEditTime: 2024-10-10 22:20:15
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\__init__.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -23,3 +23,4 @@ LOG_DIR = os.path.join(BASE_DIR, 'log')
 CONFIG_DIR = os.path.join(BASE_DIR, 'config')
 ICON_DIR = os.path.join(os.path.join(BASE_DIR, 'static'), 'icon')
 TEMPLATE_DIR = os.path.join(os.path.join(BASE_DIR, 'static'), 'template')
+TRANSLATIONS_DIR = os.path.join(os.path.join(BASE_DIR, 'static'), 'translations')

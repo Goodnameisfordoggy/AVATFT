@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-09 00:01:36
+LastEditTime: 2024-10-11 00:22:21
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\project.py
 Description: 
 
@@ -26,9 +26,9 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
-from utils.file import open_file
-from utils.filter import filter_item
-from utils import logger
+from src.utils.file import open_file
+from src.utils.filter import filter_item
+from src.utils import logger
 from src.treeWidgetItem import TreeWidgetItem
 from src.dialogBox.input import NameInputDialogBox
 from src.dialogBox.reconfirm import ReconfirmDialogBox
@@ -44,7 +44,7 @@ class ProjectDock(QDockWidget):
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
-        self.setWindowTitle('项目')
+        self.setWindowTitle(self.tr("项目", "window_title"))
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.setObjectName('NEUTRAL')
         self.__initUI()
@@ -58,7 +58,7 @@ class ProjectDock(QDockWidget):
         # 搜索框
         self.search_box = QLineEdit(self)
         self.search_box.setObjectName('NEUTRAL')
-        self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
+        self.search_box.setPlaceholderText(self.tr("请输入搜索项，按Enter搜索", "search_box_placeholder_text"))
         self.search_box.textChanged.connect(self.__search_tree_items)
         center_widget_layout.addWidget(self.search_box)
 
@@ -415,7 +415,7 @@ class TreeWidget(QTreeWidget):
                 newPackageAction.triggered.connect(lambda: self.__new_package_item(item))
                 openAction.triggered.connect(lambda: open_file(item.path))
                 addProjectAction.triggered.connect(lambda: self.loadProjectSignal.emit('load project'))
-                removeProjectAction.triggered.connect(lambda: self.takeTopLevelItem(self.indexOfTopLevelItem(item)))
+                removeProjectAction.triggered.connect(lambda: self.__remove_project(self.indexOfTopLevelItem(item)))
 
                 # 将菜单项添加到上下文菜单
                 context_menu.addMenu(newMenu)
@@ -435,7 +435,29 @@ class TreeWidget(QTreeWidget):
             openAction.triggered.connect(lambda: self.loadProjectSignal.emit('load project'))
             context_menu.addAction(openAction)
             context_menu.exec(self.viewport().mapToGlobal(pos))
-    
+
+    def __remove_project(self, index: int):
+        """ 移除工程目录， 菜单操作"""
+        print("__remove_project")
+        print(index)
+        workspace_file = os.path.join(CONFIG_DIR, 'workspace.json')
+        try:
+            with open(workspace_file, 'r') as file:
+                workspace_settings = json.load(file)
+                folders: list = workspace_settings['folders']
+                workspace_settings['folders'].pop(index)
+                self.takeTopLevelItem(index)
+            with open(workspace_file, 'w') as file:
+                json.dump(workspace_settings, file, indent=4, ensure_ascii=False)
+        except FileNotFoundError:
+            LOG.critical(f"The file {workspace_file} not exist")
+        except json.JSONDecodeError:
+            LOG.error(f"The file {workspace_file} is not valid JSON")
+        except Exception as e:
+            LOG.error(f"An error occurred: {e}")
+
+        
+
     def __update_child_items_check_state(self, current_item: TreeWidgetItem, check_state: Qt.CheckState):
         """ 递归遍历所有子项，并设置与父项一致的复选框状态 """
         for i in range(current_item.childCount()):

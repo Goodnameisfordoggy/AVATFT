@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-08 21:46:48
+LastEditTime: 2024-10-10 23:23:03
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\funcs.py
 Description: 
 
@@ -18,8 +18,8 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 import os
 import yaml
 import typing
-from func.web import *
-from utils.logger import get_logger
+from src.func.web import *
+from src.utils.logger import get_logger
 from src import BASE_DIR
 LOG = get_logger()
 

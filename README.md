@@ -3,7 +3,7 @@
 
 *行为可视化自动测试工具*
 
-version: 0.3.25
+version: 0.3.26
 
 # 项目结构
 
@@ -35,12 +35,14 @@ projects目录结构
     - config
     - data
     - log
-
-# Thanks
+# 命令
+pyside6-lupdate src\AVATFT.py src\dock\action.py src\dock\edit.py src\dock\log.py src\dock\project.py -ts static\translations\en_US.ts
+lrelease static\translations\en_US.ts
 
 - https://github.com/Pictogrammers/pictogrammers.com
 
 # Update log
+- 0.3.26: 尝试国际化
 - 0.3.25: 项目构建中
 - 0.3.24: 项目构建中
 - 0.3.23: 进行了一些细微调整

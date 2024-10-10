@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-02 15:39:51
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\action.py
+LastEditTime: 2024-10-11 00:21:59
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\action.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -25,9 +25,9 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, Signal, QPoint
 
-from utils.file import open_file
-from utils.filter import filter_item
-from utils import logger
+from src.utils.file import open_file
+from src.utils.filter import filter_item
+from src.utils import logger
 from src.treeWidgetItem import TreeWidgetItem
 from src import ACTION_KEYWORDS_DIR, ICON_DIR
 LOG = logger.get_logger()
@@ -41,7 +41,7 @@ class ActionDock(QDockWidget):
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
-        self.setWindowTitle('行为关键字')
+        self.setWindowTitle(self.tr("行为关键字", "window_title"))
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.resize(400, 300)
         self.setObjectName('NEUTRAL')
@@ -56,7 +56,7 @@ class ActionDock(QDockWidget):
         self.search_box = QLineEdit(self)
         self.search_box.setObjectName('NEUTRAL')
         center_widget_layout.addWidget(self.search_box)
-        self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
+        self.search_box.setPlaceholderText(self.tr("请输入搜索项，按Enter搜索", "search_box_placeholder_text"))
         self.search_box.textChanged.connect(self.__search_tree_items)
         
 
@@ -114,7 +114,7 @@ class ActionDock(QDockWidget):
             context_menu = QMenu(self)
 
             # 创建菜单项
-            action_edit = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), "打开文件(目录)", self)
+            action_edit = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file(directory)"), self)
 
             # 连接菜单项的触发信号
             action_edit.triggered.connect(lambda: open_file(item.path))

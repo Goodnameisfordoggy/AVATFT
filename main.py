@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-03 00:47:51
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\main.py
+LastEditTime: 2024-10-10 23:35:43
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\main.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -15,14 +15,7 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
-from PySide6.QtWidgets import QApplication
-from src.mainWindow import MainWindow
-from static.css.stylesheet import STYLE_SHEET
 
 if __name__ == '__main__':
-	app = QApplication([])
-	if STYLE_SHEET:
-		app.setStyleSheet(STYLE_SHEET)
-	window = MainWindow(app)
-	window.show()
-	app.exec()
+	from src.AVATFT import AVATFT
+	AVATFT()

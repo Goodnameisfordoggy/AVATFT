@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-03 00:28:56
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\treeWidgetItem.py
+LastEditTime: 2024-10-10 23:22:40
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\treeWidgetItem.py
 Description: 
 
     TreeWidgetItem: 项目中通用的树控件子项的封装
@@ -25,8 +25,8 @@ from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 
-from utils.filter import input_type_identify
-from utils.logger import get_logger
+from src.utils.filter import input_type_identify
+from src.utils.logger import get_logger
 from src import BASE_DIR, ICON_DIR
 LOG = get_logger()
 

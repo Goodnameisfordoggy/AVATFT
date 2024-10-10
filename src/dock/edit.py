@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-08 21:53:59
+LastEditTime: 2024-10-11 00:00:07
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\edit.py
 Description: 
 
@@ -26,8 +26,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
-from utils.filter import filter_item, input_type_identify
-from utils import logger
+from src.utils.filter import filter_item, input_type_identify
+from src.utils import logger
 from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
 from src.dock.action import ActionDock
 from src.funcs import run_module, run
@@ -54,7 +54,7 @@ class EditDock(QDockWidget):
         # QDockWidget.DockWidgetFloatable         允许停靠窗口浮动，使其可以脱离主窗口作为独立的浮动窗口显示。
         # QDockWidget.DockWidgetMovable           允许停靠窗口在主窗口中进行移动。
         self.setFeatures(QDockWidget.NoDockWidgetFeatures | QDockWidget.DockWidgetClosable)
-        self.setWindowTitle('测试用例编辑区')
+        self.setWindowTitle(self.tr("测试用例编辑区", "window_title"))
         self.setTitleBarWidget(QLabel(''))
         self.setObjectName('SECONDARY')
         self.__initUI()
@@ -68,12 +68,12 @@ class EditDock(QDockWidget):
         # 搜索框
         self.search_box = QLineEdit(self)
         self.search_box.setObjectName('SECONDARY')
-        self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
+        self.search_box.setPlaceholderText(self.tr("请输入搜索项，按Enter搜索", "search_box_placeholder_text"))
         self.search_box.textChanged.connect(lambda: self.__search_tree_items())
         search_layout.addWidget(self.search_box, 3)
         # 搜索方法下拉列表
         self.search_combo_box =  QComboBox()
-        self.search_combo_box.addItems(["匹配参数描述", "匹配参数名称", "匹配参数值"]) # 添加选项
+        self.search_combo_box.addItems([self.tr("匹配参数描述", "search_combo_box_item_Pdescribe"), self.tr("匹配参数名称", "search_combo_box_item_Pname"), self.tr("匹配参数值", "search_combo_box_item_Pvalue")]) # 添加选项
         self.search_combo_box.currentIndexChanged.connect(self.__switch_search_method)
         search_layout.addWidget(self.search_combo_box, 1)
         
@@ -85,7 +85,7 @@ class EditDock(QDockWidget):
         button_layout = QHBoxLayout()
         center_widget_layout.addLayout(button_layout)
         # 运行按钮
-        self.operation_btn = QPushButton(self, text='开始测试')
+        self.operation_btn = QPushButton(self, text=self.tr("开始测试", "operation_button_text"))
         self.operation_btn.clicked.connect(self.operate)
         self.operation_btn.setFocusPolicy(Qt.NoFocus)  # 禁用键盘焦点
         button_layout.addWidget(self.operation_btn)
@@ -145,13 +145,13 @@ class EditDock(QDockWidget):
     def __switch_search_method(self):
         """ 切换查找方法，下拉列表绑定操作 """
         selected_text = self.search_combo_box.currentText()
-        if selected_text == "查找参数描述":
+        if selected_text == self.tr("匹配参数描述", "search_combo_box_item_Pdescribe"):
             self.search_box.textChanged.disconnect()
             self.search_box.textChanged.connect(lambda: self.__search_tree_items(0))
-        elif selected_text == "查找参数名称":
+        elif selected_text == self.tr("匹配参数名称", "search_combo_box_item_Pname"):
             self.search_box.textChanged.disconnect()
             self.search_box.textChanged.connect(lambda: self.__search_tree_items(1))
-        elif selected_text == "查找参数值":
+        elif selected_text == self.tr("匹配参数值", "search_combo_box_item_Pvalue"):
             self.search_box.textChanged.disconnect()
             self.search_box.textChanged.connect(lambda: self.__search_tree_items(2))
     
@@ -167,7 +167,7 @@ class TreeWidget(QTreeWidget):
         super().__init__()
         self.setObjectName('SECONDARY')
         self.setColumnCount(3) # 列数
-        self.setHeaderLabels(['参数描述', '参数名称', '参数值'])
+        self.setHeaderLabels([self.tr("参数描述", "tree_header_label_Pdescribe"), self.tr("参数名称", "tree_header_label_Pname"), self.tr("参数值", "tree_header_label_Pvalue")])
         self.setDragEnabled(True) # 能否拖拽
         self.setAcceptDrops(True) # 能否放置
         self.setDropIndicatorShown(True) # 是否启用放置指示器
