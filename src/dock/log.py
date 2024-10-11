@@ -29,7 +29,7 @@ class LogDock(QDockWidget):
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
-        self.setWindowTitle('日志')
+        self.setWindowTitle(self.tr("日志", "window_title"))
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.setObjectName('NEUTRAL')
         self.__initUI()

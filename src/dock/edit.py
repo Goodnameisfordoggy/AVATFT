@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-11 00:00:07
+LastEditTime: 2024-10-11 16:36:34
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\edit.py
 Description: 
 
@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
-from src.utils.filter import filter_item, input_type_identify
+from src.utils.filter import identify_input_type
 from src.utils import logger
 from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
 from src.dock.action import ActionDock
@@ -99,14 +99,14 @@ class EditDock(QDockWidget):
             self.operateSignal.emit('operate')
         elif isinstance(data, list): # operateResponseSignal信号触发时回带的信息
             if len(data) == 0:
-                LOG.warning('还未勾选要运行的测试用例！')
+                LOG.warning(self.tr("还未勾选要运行的测试用例！", "Log_msg"))
                 return
-            LOG.info('开始测试 》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》')
+            LOG.info(self.tr("开始测试 》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》", "Log_msg"))
             if len(data) == 1:
                 run_module(data[0])
             else:
                 run(path_list=data)
-            LOG.info('测试结束《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《 ')
+            LOG.info(self.tr("测试结束《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《 ", "Log_msg"))
     
     def __search_tree_items(self, column: int = 0):
         """ 
@@ -196,7 +196,7 @@ class TreeWidget(QTreeWidget):
         if item:
             key = item.text(1)
             newValue = item.text(column)
-            newValue = input_type_identify(newValue)
+            newValue = identify_input_type(newValue)
             if newValue is None:
                 item.setText(column, "None")
             # 文件变动
@@ -323,11 +323,11 @@ class TreeWidget(QTreeWidget):
                 yaml.safe_dump(module_content, f, allow_unicode=True, sort_keys=False)
                 LOG.trace(f'Add action info to the "step" section of the {module_file}')
         except FileNotFoundError as e:
-            LOG.warning(f"File not found : {e}")
+            LOG.warning(self.tr("文件不存在：{}", "Log_msg").format(e))
         except yaml.YAMLError as e:
-            LOG.error(f"YAML parse error: {e}")
+            LOG.error(self.tr("YAML解析发生错误：{}", "Log_msg").format(e))
         except IOError as e:
-            LOG.error(f"File IO failed: {e}")
+            LOG.error(self.tr("文件读写发生错误：{}", "Log_msg").format(e))
     
     def __delete_actionInfo(self, index: int):
         """ 从 module 文件(step)中删除 action 信息"""

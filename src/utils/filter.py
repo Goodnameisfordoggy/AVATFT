@@ -20,7 +20,7 @@ def filter_item(item: QTreeWidgetItem, search_text: str):
     item.setHidden(not match)
     return match
 
-def input_type_identify(input_value: str):
+def identify_input_type(input_value: str):
     """
     识别输入内容的类型， 并返回对应的值。
     

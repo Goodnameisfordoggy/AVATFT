@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-11 00:21:59
+LastEditTime: 2024-10-11 13:50:35
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\action.py
 Description: 
 
@@ -114,7 +114,7 @@ class ActionDock(QDockWidget):
             context_menu = QMenu(self)
 
             # 创建菜单项
-            action_edit = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file(directory)"), self)
+            action_edit = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self)
 
             # 连接菜单项的触发信号
             action_edit.triggered.connect(lambda: open_file(item.path))

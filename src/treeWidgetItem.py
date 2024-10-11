@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-10 23:22:40
+LastEditTime: 2024-10-11 21:25:51
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\treeWidgetItem.py
 Description: 
 
@@ -22,16 +22,16 @@ import os
 import yaml
 import typing
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QObject
 from PySide6.QtGui import QIcon
 
-from src.utils.filter import input_type_identify
+from src.utils.filter import identify_input_type
 from src.utils.logger import get_logger
 from src import BASE_DIR, ICON_DIR
 LOG = get_logger()
 
 
-class TreeWidgetItem(QTreeWidgetItem):
+class TreeWidgetItem(QTreeWidgetItem, QObject):
     """
     Data(tuple):
         0----type
@@ -132,7 +132,7 @@ class TreeWidgetItem(QTreeWidgetItem):
         return cloned_item
 
 
-class ActionItem(TreeWidgetItem):
+class ActionItem(TreeWidgetItem, QObject):
     """ 在编辑区使用的行为关键字项 """
     def __init__(self, parent, text: list = [], data: tuple = (), icon_path: str = '', editable: bool = False, param_editable: bool = False):
         super().__init__(parent, text, data, icon_path, editable, checkbox=False)
@@ -143,12 +143,12 @@ class ActionItem(TreeWidgetItem):
             with open(self.action_path, 'r', encoding='utf-8') as file:
                 self.config = yaml.safe_load(file)
         except FileNotFoundError:
-            LOG.critical(f'Please check if the file exists at {self.action_path}')
+            LOG.critical(self.tr("请检查文件 {} 是否存在", "Log_msg").format(self.action_path))
 
         try:
             self.setText(0, self.config[0]['describe'])
         except KeyError as err:
-            LOG.critical(f'Please check if the key: {err} exists at {self.action_path}')
+            LOG.critical(self.tr("请检查文件 {} 中是否存在键：{}", "Log_msg").format(self.action_path, err))
         self.setFirstColumnSpanned(True)  # 合并所有列
         self.__create_childItem()
 
@@ -157,7 +157,7 @@ class ActionItem(TreeWidgetItem):
         try:
             parameterItemsText = [[str(self.config[0]['params_describe'][key]), str(key), str(value)] for key, value in self.config[0]['params'].items()]
         except KeyError as err:
-            LOG.critical(f'Please check if the key: {err} exists at {self.action_path}')
+            LOG.critical(self.tr("请检查文件 {} 中是否存在键：{}", "Log_msg").format(self.action_path, err))
             return
             
         for parameterItemText in parameterItemsText:
@@ -167,7 +167,7 @@ class ActionItem(TreeWidgetItem):
                 parameterItem = TreeWidgetItem(self, parameterItemText)
             
 
-class ModuleItem(TreeWidgetItem):
+class ModuleItem(TreeWidgetItem, QObject):
     """ 在编辑区使用的模块项 """
     def __init__(self, parent: QTreeWidget, text: list = [], data: tuple = (), icon_path: str = '', editable: bool = False):
         super().__init__(parent, text, data, icon_path, editable, checkbox=False)
@@ -178,7 +178,7 @@ class ModuleItem(TreeWidgetItem):
             with open(self.module_path, 'r', encoding='utf-8') as file:
                 self.config = yaml.safe_load(file)
         except FileNotFoundError:
-            LOG.critical(f'Please check if the file exists at {self.module_path}')
+            LOG.critical(self.tr("请检查文件 {} 是否存在", "Log_msg").format(self.module_path))
         self.setFirstColumnSpanned(True)
         self.setText(0, os.path.splitext(os.path.basename(self.module_path))[0])
         self.__create_childItem()
@@ -190,31 +190,31 @@ class ModuleItem(TreeWidgetItem):
     def __create_childItem(self):
         try:
             # 固定的action子项
-            rootAction1 = TreeWidgetItem(self, ['用例信息'])
+            rootAction1 = TreeWidgetItem(self, [self.tr("用例信息")])
             rootAction1.setFirstColumnSpanned(True)
-            root1Child1 = TreeWidgetItem(rootAction1, ['测试用例描述', 'describe', str(self.config['info']['describe'])], ('param', ), icon_path=os.path.join(ICON_DIR, 'information-slab-circle.svg'), editable=True)
-            root1Child2 = TreeWidgetItem(rootAction1, ['测试用例编号', 'id', str(self.config['info']['id'])], ('param', ), icon_path=os.path.join(ICON_DIR, 'information-slab-circle.svg'), editable=True)
-            root1Child3 = TreeWidgetItem(rootAction1, ['测试用例标题', 'title', str(self.config['info']['title'])], ('param', ), icon_path=os.path.join(ICON_DIR, 'information-slab-circle.svg'), editable=True)
+            root1Child1 = TreeWidgetItem(rootAction1, [self.tr("测试用例描述"), 'describe', str(self.config['info']['describe'])], ('param', ), icon_path=os.path.join(ICON_DIR, 'information-slab-circle.svg'), editable=True)
+            root1Child2 = TreeWidgetItem(rootAction1, [self.tr("测试用例编号"), 'id', str(self.config['info']['id'])], ('param', ), icon_path=os.path.join(ICON_DIR, 'information-slab-circle.svg'), editable=True)
+            root1Child3 = TreeWidgetItem(rootAction1, [self.tr("测试用例标题"), 'title', str(self.config['info']['title'])], ('param', ), icon_path=os.path.join(ICON_DIR, 'information-slab-circle.svg'), editable=True)
 
-            rootAction2 = TreeWidgetItem(self, ['运行设置'])
+            rootAction2 = TreeWidgetItem(self, [self.tr("运行设置")])
             rootAction2.setFirstColumnSpanned(True)
             root2Child1 = TreeWidgetItem(rootAction2, [str(self.config['config'][0]['describe'])], icon_path=os.path.join(ICON_DIR, 'cogs.svg'))
             root2Child1.setFirstColumnSpanned(True)
-            child1Action1 = TreeWidgetItem(root2Child1, ['是否启用此配置', 'flag', str(self.config['config'][0]['params']['flag'])], ('param', ), editable=True)
-            child1Action2 = TreeWidgetItem(root2Child1, ['用例跳过原因', 'reason', str(self.config['config'][0]['params']['reason'])], ('param', ), editable=True)
+            child1Action1 = TreeWidgetItem(root2Child1, [self.tr("是否启用此配置"), 'flag', str(self.config['config'][0]['params']['flag'])], ('param', ), editable=True)
+            child1Action2 = TreeWidgetItem(root2Child1, [self.tr("用例跳过原因"), 'reason', str(self.config['config'][0]['params']['reason'])], ('param', ), editable=True)
             root2Child2 = TreeWidgetItem(rootAction2, [str(self.config['config'][1]['describe'])], icon_path=os.path.join(ICON_DIR, 'cogs.svg'))
             root2Child2.setFirstColumnSpanned(True)
-            child2Action1 = TreeWidgetItem(root2Child2, ['是否启用此配置', 'flag', str(self.config['config'][1]['params']['flag'])], ('param', ), editable=True)
-            child2Action2 = TreeWidgetItem(root2Child2, ['用例标签名称', 'markname', str(self.config['config'][1]['params']['markname'])], ('param', ), editable=True)
+            child2Action1 = TreeWidgetItem(root2Child2, [self.tr("是否启用此配置"), 'flag', str(self.config['config'][1]['params']['flag'])], ('param', ), editable=True)
+            child2Action2 = TreeWidgetItem(root2Child2, [self.tr("用例标签名称"), 'markname', str(self.config['config'][1]['params']['markname'])], ('param', ), editable=True)
             root2Child3 = TreeWidgetItem(rootAction2, [str(self.config['config'][2]['describe'])], icon_path=os.path.join(ICON_DIR, 'cogs.svg'))
             root2Child3.setFirstColumnSpanned(True)
-            child3Action1 = TreeWidgetItem(root2Child3, ['是否启用此配置', 'flag', str(self.config['config'][2]['params']['flag'])], ('param', ), editable=True)
-            child3Action2 = TreeWidgetItem(root2Child3, ['前后置函数名称', 'fixtures', str(self.config['config'][2]['params']['fixtures'])], ('param', ), editable=True)
+            child3Action1 = TreeWidgetItem(root2Child3, [self.tr("是否启用此配置"), 'flag', str(self.config['config'][2]['params']['flag'])], ('param', ), editable=True)
+            child3Action2 = TreeWidgetItem(root2Child3, [self.tr("前后置函数名称"), 'fixtures', str(self.config['config'][2]['params']['fixtures'])], ('param', ), editable=True)
             root2Child4 = TreeWidgetItem(rootAction2, [str(self.config['config'][3]['describe'])], icon_path=os.path.join(ICON_DIR, 'cogs.svg'))
             root2Child4.setFirstColumnSpanned(True)
-            child4Action1 = TreeWidgetItem(root2Child4, ['是否启用此配置', 'flag', str(self.config['config'][3]['params']['flag'])], ('param', ), editable=True)
-            child4Action2 = TreeWidgetItem(root2Child4, ['数据驱动文件名称', 'filename', str(self.config['config'][3]['params']['filename'])], ('param', ), editable=True)
-            child4Action3 = TreeWidgetItem(root2Child4, ['数据驱动文件Sheet', 'sheetname', str(self.config['config'][3]['params']['sheetname'])], ('param', ), editable=True)
+            child4Action1 = TreeWidgetItem(root2Child4, [self.tr("是否启用此配置"), 'flag', str(self.config['config'][3]['params']['flag'])], ('param', ), editable=True)
+            child4Action2 = TreeWidgetItem(root2Child4, [self.tr("数据驱动文件名称"), 'filename', str(self.config['config'][3]['params']['filename'])], ('param', ), editable=True)
+            child4Action3 = TreeWidgetItem(root2Child4, [self.tr("数据驱动文件Sheet"), 'sheetname', str(self.config['config'][3]['params']['sheetname'])], ('param', ), editable=True)
             
             rootAction3 = TreeWidgetItem(self, ['测试步骤'], (None,None,True,True))
             rootAction3.setFirstColumnSpanned(True)
@@ -227,7 +227,7 @@ class ModuleItem(TreeWidgetItem):
                     for parameterItemText in parameterItemsText:
                         parameterItem = TreeWidgetItem(actionItem, parameterItemText, ('param', ), editable=True)
         except KeyError as err:
-            LOG.critical(f'Please check if the key: {err} exists at {self.module_path}')
+            LOG.critical(self.tr("请检查文件 {} 中是否存在键：{}", "Log_msg").format(self.module_path, err))
             return
         # 展开子项
         self.setExpanded(True)

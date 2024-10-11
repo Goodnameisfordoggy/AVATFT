@@ -3,7 +3,7 @@
 
 *行为可视化自动测试工具*
 
-version: 0.3.26
+version: 0.3.27
 
 # 项目结构
 
@@ -36,12 +36,20 @@ projects目录结构
     - data
     - log
 # 命令
-pyside6-lupdate src\AVATFT.py src\dock\action.py src\dock\edit.py src\dock\log.py src\dock\project.py -ts static\translations\en_US.ts
+生成ts文件模版
+```
+pyside6-lupdate src\AVATFT.py src\dock\action.py src\dock\edit.py src\dock\log.py src\dock\project.py src\treeWidgetItem.py src\utils\file.py -ts static\translations\en_US.ts
+```
+将ts文件转为qm文件(二进制)供程序读取
+```
 lrelease static\translations\en_US.ts
+```
 
+# 感谢
 - https://github.com/Pictogrammers/pictogrammers.com
 
 # Update log
+- 0.3.27: 国际化构建中
 - 0.3.26: 尝试国际化
 - 0.3.25: 项目构建中
 - 0.3.24: 项目构建中

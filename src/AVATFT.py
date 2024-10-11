@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-10 23:38:50
+LastEditTime: 2024-10-11 22:14:55
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\AVATFT.py
 Description: 
 
@@ -49,11 +49,10 @@ class AVATFT:
         self.translator = QTranslator()
 
         # 加载编译后的翻译文件 en.qm
-        if self.translator.load(r"static\translations\en-US.qm"):
-            self.app.installTranslator(self.translator)
-            print("Translator loaded successfully.")
-        else:
-            print("Failed to load translator.")
+        qm_file = os.path.join(TRANSLATIONS_DIR, 'en_US.qm')
+        if os.path.exists(qm_file):
+            if self.translator.load(qm_file):
+                self.app.installTranslator(self.translator)
 
         self.window = MainWindow(self.app)
         self.window.show()
@@ -97,7 +96,7 @@ class QTextEditLogger:
         # 根据日志级别设置颜色
         if log_level == "CRITICAL":
             color = "white"
-            background = "red"
+            background = "#de747e"
         elif log_level == "ERROR":
             color = "red"
         elif log_level == "WARNING":
@@ -158,14 +157,6 @@ class MainWindow(QMainWindow):
         self.__initialize_layout()
         self.__connect_signals()
 
-        # 创建 QTranslator 实例
-        translator = QTranslator()
-        # 加载编译后的翻译文件 en.qm
-        if translator.load(os.path.join(TRANSLATIONS_DIR, 'en-US.qm')):
-            self.__app.installTranslator(translator)
-            print("Translator loaded successfully.")
-        else:
-            print("Failed to load translator.")
         # 重定向标准输出和标准错误到自定义输出类
         sys.stdout = ConsoleOutput(self.log_dock.logTextWidget)
         sys.stderr = ConsoleOutput(self.log_dock.logTextWidget)
@@ -217,9 +208,9 @@ class MainWindow(QMainWindow):
         self.viewMenu.addAction(self.logDockAction)
 
         # languageMenu 动作
-        self.zh_CN_Action = QAction('zh-CN', self)
+        self.zh_CN_Action = QAction('zh_CN', self)
         self.zh_CN_Action.triggered.connect(self.__switch_language)
-        self.en_US_Action = QAction('en-US', self)
+        self.en_US_Action = QAction('en_US', self)
         self.en_US_Action.triggered.connect(self.__switch_language)
         self.languageMenu.addAction(self.zh_CN_Action)
         self.languageMenu.addAction(self.en_US_Action)

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-11 00:22:21
+LastEditTime: 2024-10-12 00:05:29
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\project.py
 Description: 
 
@@ -24,9 +24,9 @@ from PySide6.QtWidgets import (
     QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QTreeWidgetItem, QMenu, QFileDialog
 	)
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import Qt, QPoint, Signal, Slot
+from PySide6.QtCore import Qt, QPoint, Signal, Slot, QCoreApplication
 
-from src.utils.file import open_file
+from src.utils.file import open_file, load_file_content, save_file_content
 from src.utils.filter import filter_item
 from src.utils import logger
 from src.treeWidgetItem import TreeWidgetItem
@@ -69,7 +69,7 @@ class ProjectDock(QDockWidget):
     @Slot(str)
     def new_project(self, msg: str):
         """ 创建新工程目录，菜单操作"""
-        nameInputDialogBox = NameInputDialogBox(self, '新建工程', '请输入新工程的名称：')
+        nameInputDialogBox = NameInputDialogBox(self, self.tr("新建工程", "dialog_title"), self.tr("请输入新工程的名称：", "dialog_text"))
         if nameInputDialogBox.exec():
             projectName = nameInputDialogBox.nameInput() # 要创建的顶级目录名称
             projectPath = os.path.join(PROJECTS_DIR, projectName)
@@ -79,18 +79,19 @@ class ProjectDock(QDockWidget):
                 os.makedirs(f"{projectPath}/config")
                 os.makedirs(f"{projectPath}/data")
                 os.makedirs(f"{projectPath}/log")
-                LOG.success(f'Project {projectName} create successfully')
+                LOG.success(self.tr("项目 '{}' 创建成功", "Log_msg").format(projectName))
             except Exception as err:
                 LOG.debug(f'Exception: {err}')
             self.tree.load_project_item(projectPath)
 
     def select_project(self) -> str:
-        directory_path = QFileDialog.getExistingDirectory(self, "选择项目目录", PROJECTS_DIR)
+        directory_path = QFileDialog.getExistingDirectory(self, self.tr("选择项目目录", "dialog_title"), PROJECTS_DIR)
         return directory_path
     
     @Slot(str)
     def load_project(self, directory_path: str):
         """ 加载项目 """
+        print(directory_path)
         if directory_path:
             if os.path.isdir(directory_path):
                 # 读取历史工程, 若是新工程则加入历史记录
@@ -99,11 +100,11 @@ class ProjectDock(QDockWidget):
                     with open(workspace_file, 'r') as file:
                         workspace_settings = json.load(file)
                 except FileNotFoundError:
-                    LOG.critical(f"The file {workspace_file} not exist")
+                    LOG.critical(self.tr("文件 {} 不存在", "Log_msg").format(workspace_file))
                 except json.JSONDecodeError:
-                    LOG.error(f"The file {workspace_file} is not valid JSON")
+                    LOG.error(self.tr("文件 {} 不是有效的JSON", "Log_msg").format(workspace_file))
                 except Exception as e:
-                    LOG.error(f"An error occurred: {e}")
+                    LOG.error(self.tr("发生错误：{}", "Log_msg").format(e))
                 folders = workspace_settings['folders']
                 folder_paths = [folder['path'] for folder in folders]
                 if directory_path not in folder_paths:
@@ -111,27 +112,28 @@ class ProjectDock(QDockWidget):
                     with open(workspace_file, 'w') as file:
                         json.dump(workspace_settings, file, indent=4, ensure_ascii=False)
                     self.tree.load_project_item(directory_path)
-                    LOG.info(f'Load project from {directory_path}')
+                    LOG.info(self.tr("从 {} 加载工程", "Log_msg").format(directory_path))
     
     def load_history_project(self):
         """ 从配置文件中载入历史工程 """
+        
         workspace_file = os.path.join(CONFIG_DIR, 'workspace.json')
         try:
             with open(workspace_file, 'r') as file:
                 workspace_settings = json.load(file)
         except FileNotFoundError:
-            LOG.critical(f"The file {workspace_file} not exist")
+            LOG.critical(self.tr("文件 {} 不存在", "Log_msg").format(workspace_file))
         except json.JSONDecodeError:
-            LOG.error(f"The file {workspace_file} is not valid JSON")
+            LOG.error(self.tr("文件 {} 不是有效的JSON", "Log_msg").format(workspace_file))
         except Exception as e:
-            LOG.error(f"An error occurred: {e}")
+            LOG.error(self.tr("发生错误：{}", "Log_msg").format(e))
 
         folders: list[dict] = workspace_settings['folders']
         if folders:
             for folder in folders:
                 if os.path.isdir(folder['path']):
                     self.tree.load_project_item(folder['path'])
-                    LOG.info(f'Load project from history path "{folder['path']}"')
+                    LOG.info(self.tr("从历史记录中载入工程: {}", "Log_msg").format(folder['path']))
 
 
     def __search_tree_items(self):
@@ -161,14 +163,14 @@ class ProjectDock(QDockWidget):
         """
         if not os.path.exists(path):
             if ProjectDock.paste_file(os.path.join(TEMPLATE_DIR, 'module_template.yaml'), path, 'COPY'): # 直接使用模版文件初始化
-                LOG.success('Test cases have been initialized using the template file')
+                LOG.success(QCoreApplication.translate("ProjectDock", "测试用例已经使用模板文件初始化", "Log_msg"))
                 return True
             # config_data = {}
             # # 创建并写入 YAML 文件
             # with open(path, 'w') as f:
             #     yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True)
         else:
-            LOG.warning('A file with the same name exists in the destination location, and the new operation has been canceled')    
+            LOG.warning(QCoreApplication.translate("ProjectDock", "目标位置中存在同名文件，新建操作已取消", "Log_msg"))
     
     @staticmethod
     def new_package_file(path: str) -> bool:
@@ -180,10 +182,10 @@ class ProjectDock(QDockWidget):
         if path:
             try:
                 os.mkdir(path)
-                LOG.success(f'Test cases directory create successfully at {path}')
+                LOG.success(QCoreApplication.translate("ProjectDock", "测试集 {} 创建成功：", "Log_msg").format(path))
                 return True
             except FileExistsError:
-                LOG.warning(f'Directory already exists at {path}')
+                LOG.warning(QCoreApplication.translate("ProjectDock", "目录 {} 已存在", "Log_msg").format(path))
     
     @staticmethod
     def paste_file(source: str, target: str, pre_event: str = '') -> bool:
@@ -199,7 +201,7 @@ class ProjectDock(QDockWidget):
                 LOG.trace('A file with the same name exists at the destination location, pasting has been canceled')
                 return
             if os.path.splitext(os.path.basename(source))[1] != os.path.splitext(os.path.basename(target))[1]:
-                LOG.warning('Note that source file has a different suffix than target file')
+                LOG.warning(QCoreApplication.translate("ProjectDock", "请注意，源文件的后缀与目标文件不同", "Log_msg"))
             if not pre_event:
                 LOG.trace('Param pre_event should be set to CUT or COPY')
             # 剪切粘贴
@@ -211,14 +213,14 @@ class ProjectDock(QDockWidget):
                 # 拷贝文件或目录
                 if os.path.isfile(source):
                     shutil.copy(source, target)
-                    LOG.success(f'File copy successfully at {target}')
+                    LOG.trace(f'File copy successfully at {target}')
                     return True
                 elif os.path.isdir(source):
                     shutil.copytree(source, target)
-                    LOG.success(f'Directory copy successfully at {target}')
+                    LOG.trace(f'Directory copy successfully at {target}')
                     return True
                 else:
-                    LOG.error(f'{source} is not a file or directory')
+                    LOG.error(QCoreApplication.translate("ProjectDock", "{} 不是文件或目录", "Log_msg").format(source))
     
     @staticmethod
     def delete_file(path: str) -> bool:
@@ -231,23 +233,23 @@ class ProjectDock(QDockWidget):
             if os.path.isfile(path):
                 try:
                     os.remove(path)
-                    LOG.success(f"File at '{path}' delete successfully")
+                    LOG.trace(f"File at '{path}' delete successfully")
                     return True
                 except PermissionError:
-                    LOG.warning(f"Do not have permission to delete files at {path}")
+                    LOG.warning(QCoreApplication.translate("ProjectDock", "没有权限删除文件: {}", "Log_msg").format(path))
                 except Exception as e:
-                    LOG.error(f"An error occurred while deleting a file: {e}")
+                    LOG.error(QCoreApplication.translate("ProjectDock", "发生错误：{}", "Log_msg").format(e))
             elif os.path.isdir(path): # 如果是目录直接删除，不考虑是否为空
                 try:
                     shutil.rmtree(path)
-                    LOG.success(f"Directory at {path} delete successfully")
+                    LOG.trace(f"Directory at {path} delete successfully")
                     return True
                 except PermissionError:
-                    LOG.warning(f"Do not have permission to delete directory at {path}")
+                    LOG.warning(QCoreApplication.translate("ProjectDock", "没有权限删除目录: {}", "Log_msg").format(path))
                 except Exception as e:
-                    LOG.error(f"An error occurred while deleting a directory: {e}")
+                    LOG.error(QCoreApplication.translate("ProjectDock", "发生错误：{}", "Log_msg").format(e))
             else:
-                LOG.warning(f"{path} does not exist.")
+                LOG.warning(QCoreApplication.translate("ProjectDock", "文件 {} 不存在", "Log_msg").format(path))
     
     @staticmethod
     def rename_file(path: str, name: str = '') -> str:
@@ -267,16 +269,16 @@ class ProjectDock(QDockWidget):
                 newPath = os.path.join(dirname, name)
             try:
                 os.rename(path, newPath)
-                LOG.success(f'The file or directory has been successfully renamed to {name} at {newPath}')
+                LOG.trace(f'The file or directory has been successfully renamed to {name} at {newPath}')
                 return newPath
             except FileNotFoundError:
-                LOG.warning(f'File or directory at {path} not found')
+                LOG.warning(QCoreApplication.translate("ProjectDock", "文件或目录 {} 不存在", "Log_msg").format(path))
             except PermissionError:
-                LOG.warning('Do not have permission to rename file or directory')
+                LOG.warning(QCoreApplication.translate("ProjectDock", "没有权限重命名文件或目录：{}", "Log_msg").format(path))
             except Exception as e:
-                LOG.error(f'An error occurred while renaming a directory or file: {e}')
+                LOG.error(QCoreApplication.translate("ProjectDock", "发生错误：{}", "Log_msg").format(e))
         else:
-            LOG.warning(f"{path} does not exist")
+            LOG.trace(f"{path} does not exist")
     
     @typing.override
     def closeEvent(self, event) -> None:
@@ -368,14 +370,14 @@ class TreeWidget(QTreeWidget):
                 context_menu = QMenu(self)
                 # 创建菜单项
                 newMenu = QMenu('新建', self)
-                newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), '新建测试用例', self)
-                newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), '新建目录', self)
-                openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), '打开文件(目录)', self)
-                copyAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-copy.svg')), '复制', self)
-                cutAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-cut.svg')), '剪切', self)
-                pasteAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-paste.svg')), '粘贴', self)
-                deleteAction = QAction(QIcon(os.path.join(ICON_DIR, 'trash-can-outline.svg')), '删除', self)
-                renameAction = QAction(QIcon(os.path.join(ICON_DIR, 'rename.svg')), '重命名', self)
+                newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), self.tr("新建测试用例", "menu_action_new_module"), self)
+                newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), self.tr("新建目录", "menu_action_new_package"), self)
+                openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self)
+                copyAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-copy.svg')), self.tr("复制", "menu_action_copy"), self)
+                cutAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-cut.svg')), self.tr("剪切", "meun_action_cut"), self)
+                pasteAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-paste.svg')), self.tr("粘贴", "meun_action_paste"), self)
+                deleteAction = QAction(QIcon(os.path.join(ICON_DIR, 'trash-can-outline.svg')), self.tr("删除", "menu_action_delete"), self)
+                renameAction = QAction(QIcon(os.path.join(ICON_DIR, 'rename.svg')), self.tr("重命名", "menu_action_rename"), self)
 
                 # 连接菜单项的触发信号
                 newModuleAction.triggered.connect(lambda: self.__new_module_item(item))
@@ -405,11 +407,11 @@ class TreeWidget(QTreeWidget):
                 context_menu = QMenu(self)
                 # 创建菜单项
                 newMenu = QMenu('新建', self)
-                newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), '新建测试用例', self)
-                newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), '新建目录', self)
-                openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), '打开文件(目录)', self)
-                addProjectAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-plus.svg')), '将文件添加到工作区', self)
-                removeProjectAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-remove.svg')), '将文件从工作区移除', self)
+                newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), self.tr("新建测试用例", "menu_action_new_module"), self)
+                newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), self.tr("新建目录", "menu_action_new_package"), self)
+                openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self)
+                addProjectAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-plus.svg')), self.tr("将文件添加到工作区", "menu_action_add_project"), self)
+                removeProjectAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-remove.svg')), self.tr("将文件从工作区移除", "menu_action_remove_project"), self)
                 # 连接菜单项的触发信号
                 newModuleAction.triggered.connect(lambda: self.__new_module_item(item))
                 newPackageAction.triggered.connect(lambda: self.__new_package_item(item))
@@ -431,33 +433,20 @@ class TreeWidget(QTreeWidget):
 
         else: # 右击树控件空白处
             context_menu = QMenu(self)
-            openAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-plus.svg')), "将文件添加到工作区", self)
+            openAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-plus.svg')), self.tr("将文件添加到工作区", "menu_action_add_project"), self)
             openAction.triggered.connect(lambda: self.loadProjectSignal.emit('load project'))
             context_menu.addAction(openAction)
             context_menu.exec(self.viewport().mapToGlobal(pos))
 
     def __remove_project(self, index: int):
         """ 移除工程目录， 菜单操作"""
-        print("__remove_project")
-        print(index)
-        workspace_file = os.path.join(CONFIG_DIR, 'workspace.json')
-        try:
-            with open(workspace_file, 'r') as file:
-                workspace_settings = json.load(file)
-                folders: list = workspace_settings['folders']
-                workspace_settings['folders'].pop(index)
-                self.takeTopLevelItem(index)
-            with open(workspace_file, 'w') as file:
-                json.dump(workspace_settings, file, indent=4, ensure_ascii=False)
-        except FileNotFoundError:
-            LOG.critical(f"The file {workspace_file} not exist")
-        except json.JSONDecodeError:
-            LOG.error(f"The file {workspace_file} is not valid JSON")
-        except Exception as e:
-            LOG.error(f"An error occurred: {e}")
-
-        
-
+        workspace_setting_file = os.path.join(CONFIG_DIR, 'workspace.json')
+        workspace_settings = load_file_content(workspace_setting_file, LOG, True)
+        folders: list = workspace_settings['folders']
+        workspace_settings['folders'].pop(index)
+        self.takeTopLevelItem(index)
+        save_file_content(workspace_setting_file, workspace_settings, LOG, True)
+    
     def __update_child_items_check_state(self, current_item: TreeWidgetItem, check_state: Qt.CheckState):
         """ 递归遍历所有子项，并设置与父项一致的复选框状态 """
         for i in range(current_item.childCount()):
@@ -510,7 +499,7 @@ class TreeWidget(QTreeWidget):
     
     def __new_module_item(self, item: TreeWidgetItem):
         """ 创建 module 级子项，菜单操作"""
-        nameInputDialogBox = NameInputDialogBox(self, '新建模版', '请输入新的测试用例名称：')
+        nameInputDialogBox = NameInputDialogBox(self, self.tr("新建模版", "dialog_title"), self.tr("请输入新的测试用例名称：", "dialog_text"))
         if nameInputDialogBox.exec():
             name = nameInputDialogBox.nameInput()
             # 生成目标路径
@@ -522,7 +511,7 @@ class TreeWidget(QTreeWidget):
                 dirName = os.path.dirname(item.path)
                 targetPath = os.path.join(dirName, name + '.yaml')
             else:
-                LOG.critical('This item or item type does not have that functionality')
+                LOG.trace('This item or item type does not have that functionality')
             # 创建新文件，并创建新子项
             if ProjectDock.new_module_file(targetPath):
                 moduleItem = TreeWidgetItem(None, [name], ('Project:module', targetPath), checkbox=True)
@@ -538,7 +527,7 @@ class TreeWidget(QTreeWidget):
     
     def __new_package_item(self, item: TreeWidgetItem):
         """ 创建 package 级子项，菜单操作"""
-        nameInputDialogBox = NameInputDialogBox(self, '新建目录', '请输入新的目录名称：')
+        nameInputDialogBox = NameInputDialogBox(self, self.tr("新建目录", "dialog_title"), self.tr("请输入新的目录名称：", "dialog_text"))
         if nameInputDialogBox.exec():
             name = nameInputDialogBox.nameInput()
             # 生成目标路径
@@ -550,7 +539,7 @@ class TreeWidget(QTreeWidget):
                 dirName = os.path.dirname(item.path)
                 targetPath = os.path.join(dirName, name)
             else:
-                LOG.critical('This item or item type does not have that functionality')
+                LOG.trace('This item or item type does not have that functionality')
             # 创建新目录，并创建新子项
             if ProjectDock.new_package_file(targetPath):
                 packageItem = TreeWidgetItem(None, [name], ('Project:package', targetPath), checkbox=True)
@@ -612,14 +601,14 @@ class TreeWidget(QTreeWidget):
     
     def __delete_item(self, item: TreeWidgetItem):
         """ 删除文件项或目录项，菜单操作 """
-        if ReconfirmDialogBox(self, '删除', '确定要删除该文件吗？').exec():
+        if ReconfirmDialogBox(self, self.tr("删除", "dialog_title"), self.tr("确定要删除该文件吗？", "dialog_text")).exec():
             if ProjectDock.delete_file(item.path):
                 item.parent().removeChild(item)
                 LOG.trace('Item delete successfully')
 
     def __rename_item(self, item: TreeWidgetItem):
         """ 重命名文件项或目录项，菜单操作 """
-        nameInputDialogBox = NameInputDialogBox(self, '重命名', '请输入新的文件名称：')
+        nameInputDialogBox = NameInputDialogBox(self, self.tr("重命名", "dialog_title"), self.tr("请输入新的文件名称：", "dialog_text"))
         nameInputDialogBox.set_default_name(item.text(0))
         if nameInputDialogBox.exec():
             newName = nameInputDialogBox.nameInput()

@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-25 00:15:03
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dialogBox\reconfirm.py
+LastEditTime: 2024-10-11 20:56:32
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dialogBox\reconfirm.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -22,6 +22,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 
 from src import ICON_DIR
+
 class ReconfirmDialogBox(QDialog):
     def __init__(self, parent, title: str = 'reconfirm', text: str = 'text'):
         super().__init__()
