@@ -1,9 +1,16 @@
 # AVATFT 
+
+<center>
+<figure>
+    <img src="static\icon\app.svg" alt="webUI_1" width="600">
+</figure>
+</center>
+
 *Action visual automatic test framework tool*
 
 *行为可视化自动测试工具*
 
-version: 0.3.27
+version: 0.4.27
 
 # 项目结构
 
@@ -49,6 +56,7 @@ lrelease static\translations\en_US.ts
 - https://github.com/Pictogrammers/pictogrammers.com
 
 # Update log
+- 0.4.27: 国际化（英文）构建完成
 - 0.3.27: 国际化构建中
 - 0.3.26: 尝试国际化
 - 0.3.25: 项目构建中

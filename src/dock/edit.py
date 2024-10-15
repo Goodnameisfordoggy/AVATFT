@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-11 16:36:34
+LastEditTime: 2024-10-13 14:07:10
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\edit.py
 Description: 
 
@@ -26,13 +26,13 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
-from src.utils.filter import identify_input_type
 from src.utils import logger
+from src.utils.filter import identify_input_type
+from src.utils.file import load_file_content, save_file_content
 from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
 from src.dock.action import ActionDock
 from src.funcs import run_module, run
 from src import ICON_DIR
-from static.css.stylesheet import STYLE_SHEET
 LOG = logger.get_logger()
 
 
@@ -201,8 +201,9 @@ class TreeWidget(QTreeWidget):
                 item.setText(column, "None")
             # 文件变动
             mouduleItem = self.topLevelItem(0)
-            with open(mouduleItem.path, 'r', encoding='utf-8') as f:
-                content = yaml.safe_load(f)
+            content = load_file_content(mouduleItem.path, LOG, translater=True)
+            # with open(mouduleItem.path, 'r', encoding='utf-8') as f:
+            #     content = yaml.safe_load(f)
             try:
                 if self.__find_specific_item_upward(item, lambda item: item.text(0) == '用例信息'):
                     content['info'][key] = newValue
@@ -214,8 +215,9 @@ class TreeWidget(QTreeWidget):
                     content['step'][stepIndex]['params'][key] = newValue
             except IndexError: # 忽略不存在的键的影响
                 pass
-            with open(mouduleItem.path, 'w', encoding='utf-8') as f:
-                yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
+            save_file_content(mouduleItem.path, content, logger=LOG, translater=True)
+            # with open(mouduleItem.path, 'w', encoding='utf-8') as f:
+            #     yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
     
     @Slot(str)
     def display_action_details(self, action_path:str):

@@ -99,7 +99,7 @@ def save_file_content(path: str, data: object, logger: Optional[object] = None, 
                 json.dump(data, file, ensure_ascii=False, indent=4)
         elif file_path.suffix in ['.yaml', '.yml']:
             with open(file_path, 'w', encoding='utf-8') as file:
-                yaml.dump(data, file, allow_unicode=True, sort_keys=False)
+                yaml.safe_dump(data, file, indent=2, allow_unicode=True, encoding='ytf-8', sort_keys=False)
         else:
             if translater:
                 msg = QCoreApplication.translate("Log_msg", "不支持的文件类型: ").format(file_path.suffix)

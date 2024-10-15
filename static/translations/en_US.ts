@@ -118,103 +118,127 @@
         <location filename="../../src/utils/file.py" line="46"/>
         <location filename="../../src/utils/file.py" line="105"/>
         <source>不支持的文件类型: </source>
-        <translation type="unfinished"></translation>
+        <translation>Unsupported file types: </translation>
     </message>
     <message>
         <location filename="../../src/utils/file.py" line="55"/>
         <source>文件 {} 不是有效的 JSON 格式</source>
-        <translation type="unfinished"></translation>
+        <translation>The file at {} is not a valid JSON format</translation>
     </message>
     <message>
         <location filename="../../src/utils/file.py" line="64"/>
         <source>文件 {} 不是有效的 YAML 格式</source>
-        <translation type="unfinished"></translation>
+        <translation>The file at {} is not a valid YAML format</translation>
     </message>
     <message>
         <location filename="../../src/utils/file.py" line="73"/>
         <source>加载文件时发生错误：{}</source>
-        <translation type="unfinished"></translation>
+        <translation>Error loading file: </translation>
     </message>
     <message>
         <location filename="../../src/utils/file.py" line="88"/>
         <source>目录 {} 不存在</source>
-        <translation type="unfinished"></translation>
+        <translation>The directory does not exist at {}</translation>
     </message>
     <message>
         <location filename="../../src/utils/file.py" line="113"/>
         <source>保存文件时发生错误：{}</source>
-        <translation type="unfinished"></translation>
+        <translation>An error occurred saving the file: </translation>
     </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../src/AVATFT.py" line="144"/>
+        <location filename="../../src/AVATFT.py" line="146"/>
         <source>行为可视化自动测试平台</source>
         <translation>AVATFT</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="171"/>
+        <location filename="../../src/AVATFT.py" line="173"/>
         <source>文件</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="172"/>
+        <location filename="../../src/AVATFT.py" line="174"/>
         <source>视图</source>
         <translation>View</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="173"/>
+        <location filename="../../src/AVATFT.py" line="175"/>
         <source>语言</source>
         <translation>Language</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="174"/>
+        <location filename="../../src/AVATFT.py" line="176"/>
         <source>帮助</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="177"/>
+        <location filename="../../src/AVATFT.py" line="179"/>
         <source>新建工程</source>
         <translation>new project</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="180"/>
+        <location filename="../../src/AVATFT.py" line="182"/>
         <source>打开工程</source>
         <translation>add project</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="183"/>
+        <location filename="../../src/AVATFT.py" line="185"/>
         <source>退出</source>
         <translation>quit</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="193"/>
-        <location filename="../../src/AVATFT.py" line="286"/>
+        <location filename="../../src/AVATFT.py" line="195"/>
+        <location filename="../../src/AVATFT.py" line="288"/>
         <source>自动化测试关键字窗口</source>
         <comment>view_keyword_window</comment>
         <translation>Keyword Window</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="195"/>
-        <location filename="../../src/AVATFT.py" line="288"/>
+        <location filename="../../src/AVATFT.py" line="197"/>
+        <location filename="../../src/AVATFT.py" line="290"/>
         <source>自动化测试编辑窗口</source>
         <comment>view_edit_window</comment>
         <translation>Edit Window</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="197"/>
-        <location filename="../../src/AVATFT.py" line="290"/>
+        <location filename="../../src/AVATFT.py" line="199"/>
+        <location filename="../../src/AVATFT.py" line="292"/>
         <source>自动化测试项目窗口</source>
         <comment>view_project_window</comment>
         <translation>Project Window</translation>
     </message>
     <message>
-        <location filename="../../src/AVATFT.py" line="199"/>
-        <location filename="../../src/AVATFT.py" line="292"/>
+        <location filename="../../src/AVATFT.py" line="201"/>
+        <location filename="../../src/AVATFT.py" line="294"/>
         <source>自动化测试日志窗口</source>
         <comment>view_log_window</comment>
         <translation>Log Window</translation>
+    </message>
+    <message>
+        <location filename="../../src/AVATFT.py" line="314"/>
+        <source>切换语言设置</source>
+        <comment>dialog_title</comment>
+        <translation>Switching language Settings</translation>
+    </message>
+    <message>
+        <location filename="../../src/AVATFT.py" line="314"/>
+        <source>需要重启以启用新设置</source>
+        <comment>dialog_text</comment>
+        <translation>The new settings will take effect after a restart</translation>
+    </message>
+    <message>
+        <location filename="../../src/AVATFT.py" line="314"/>
+        <source>立即重启</source>
+        <comment>dialog_ok</comment>
+        <translation>Restart Now</translation>
+    </message>
+    <message>
+        <location filename="../../src/AVATFT.py" line="314"/>
+        <source>稍后重启</source>
+        <comment>dialog_cancel</comment>
+        <translation>Restart Later</translation>
     </message>
 </context>
 <context>
@@ -251,6 +275,11 @@
         <translation>Run Settings</translation>
     </message>
     <message>
+        <location filename="../../src/treeWidgetItem.py" line="201"/>
+        <source>跳过此用例</source>
+        <translation>Skip test case</translation>
+    </message>
+    <message>
         <location filename="../../src/treeWidgetItem.py" line="203"/>
         <location filename="../../src/treeWidgetItem.py" line="207"/>
         <location filename="../../src/treeWidgetItem.py" line="211"/>
@@ -264,14 +293,29 @@
         <translation>Skip reasons</translation>
     </message>
     <message>
+        <location filename="../../src/treeWidgetItem.py" line="205"/>
+        <source>给用例打标签</source>
+        <translation>Markdown test case</translation>
+    </message>
+    <message>
         <location filename="../../src/treeWidgetItem.py" line="208"/>
         <source>用例标签名称</source>
         <translation>Test case markdown name</translation>
     </message>
     <message>
+        <location filename="../../src/treeWidgetItem.py" line="209"/>
+        <source>使用前置后置</source>
+        <translation>Front/Rear function</translation>
+    </message>
+    <message>
         <location filename="../../src/treeWidgetItem.py" line="212"/>
         <source>前后置函数名称</source>
         <translation>Front/Rear function name</translation>
+    </message>
+    <message>
+        <location filename="../../src/treeWidgetItem.py" line="213"/>
+        <source>数据驱动</source>
+        <translation>Data-driven</translation>
     </message>
     <message>
         <location filename="../../src/treeWidgetItem.py" line="216"/>
@@ -282,6 +326,11 @@
         <location filename="../../src/treeWidgetItem.py" line="217"/>
         <source>数据驱动文件Sheet</source>
         <translation>Data driven file&apos;s Sheet</translation>
+    </message>
+    <message>
+        <location filename="../../src/treeWidgetItem.py" line="219"/>
+        <source>测试步骤</source>
+        <translation>Step</translation>
     </message>
     <message>
         <location filename="../../src/treeWidgetItem.py" line="230"/>
@@ -329,98 +378,87 @@
         <translation>Select a project directory</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="103"/>
-        <location filename="../../src/dock/project.py" line="125"/>
-        <location filename="../../src/dock/project.py" line="252"/>
+        <location filename="../../src/dock/project.py" line="230"/>
         <source>文件 {} 不存在</source>
         <comment>Log_msg</comment>
         <translation>File does not exist at {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="105"/>
-        <location filename="../../src/dock/project.py" line="127"/>
-        <source>文件 {} 不是有效的JSON</source>
-        <comment>Log_msg</comment>
-        <translation>The file at {} is not valid JSON</translation>
-    </message>
-    <message>
-        <location filename="../../src/dock/project.py" line="115"/>
+        <location filename="../../src/dock/project.py" line="104"/>
         <source>从 {} 加载工程</source>
         <comment>Log_msg</comment>
         <translation>Load project from {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="107"/>
-        <location filename="../../src/dock/project.py" line="129"/>
-        <location filename="../../src/dock/project.py" line="241"/>
-        <location filename="../../src/dock/project.py" line="250"/>
-        <location filename="../../src/dock/project.py" line="279"/>
+        <location filename="../../src/dock/project.py" line="219"/>
+        <location filename="../../src/dock/project.py" line="228"/>
+        <location filename="../../src/dock/project.py" line="257"/>
         <source>发生错误：{}</source>
         <comment>Log_msg</comment>
         <translation>An error occurred: {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="136"/>
+        <location filename="../../src/dock/project.py" line="114"/>
         <source>从历史记录中载入工程: {}</source>
         <comment>Log_msg</comment>
         <translation>Load project from history: {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="166"/>
+        <location filename="../../src/dock/project.py" line="144"/>
         <source>测试用例已经使用模板文件初始化</source>
         <comment>Log_msg</comment>
         <translation>Test cases have been initialized using the template file</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="173"/>
+        <location filename="../../src/dock/project.py" line="151"/>
         <source>目标位置中存在同名文件，新建操作已取消</source>
         <comment>Log_msg</comment>
         <translation>A file with the same name exists in the destination location, and the new operation has been canceled</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="185"/>
+        <location filename="../../src/dock/project.py" line="163"/>
         <source>测试集 {} 创建成功：</source>
         <comment>Log_msg</comment>
         <translation>Test cases directory create successfully at {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="188"/>
+        <location filename="../../src/dock/project.py" line="166"/>
         <source>目录 {} 已存在</source>
         <comment>Log_msg</comment>
         <translation>Directory already exists at {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="204"/>
+        <location filename="../../src/dock/project.py" line="182"/>
         <source>请注意，源文件的后缀与目标文件不同</source>
         <comment>Log_msg</comment>
         <translation>Note that source file has a different suffix than target file</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="223"/>
+        <location filename="../../src/dock/project.py" line="201"/>
         <source>{} 不是文件或目录</source>
         <comment>Log_msg</comment>
         <translation>{} is not a file or directory</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="239"/>
+        <location filename="../../src/dock/project.py" line="217"/>
         <source>没有权限删除文件: {}</source>
         <comment>Log_msg</comment>
         <translation>No permission to delete files: {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="248"/>
+        <location filename="../../src/dock/project.py" line="226"/>
         <source>没有权限删除目录: {}</source>
         <comment>Log_msg</comment>
         <translation>No permission to delete directory: {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="275"/>
+        <location filename="../../src/dock/project.py" line="253"/>
         <source>文件或目录 {} 不存在</source>
         <comment>Log_msg</comment>
         <translation>The file or directory does not exist at {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="277"/>
+        <location filename="../../src/dock/project.py" line="255"/>
         <source>没有权限重命名文件或目录：{}</source>
         <comment>Log_msg</comment>
         <translation>No permission to rename files or directories: {}</translation>
@@ -447,83 +485,83 @@
         <translation>Value</translation>
     </message>
     <message>
-        <location filename="../../src/dock/edit.py" line="326"/>
+        <location filename="../../src/dock/edit.py" line="328"/>
         <source>文件不存在：{}</source>
         <comment>Log_msg</comment>
         <translation>File does not exist: {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/edit.py" line="328"/>
+        <location filename="../../src/dock/edit.py" line="330"/>
         <source>YAML解析发生错误：{}</source>
         <comment>Log_msg</comment>
         <translation>YAML parsing error: {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/edit.py" line="330"/>
+        <location filename="../../src/dock/edit.py" line="332"/>
         <source>文件读写发生错误：{}</source>
         <comment>Log_msg</comment>
         <translation>File I/O error: {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="373"/>
-        <location filename="../../src/dock/project.py" line="410"/>
+        <location filename="../../src/dock/project.py" line="351"/>
+        <location filename="../../src/dock/project.py" line="388"/>
         <source>新建测试用例</source>
         <comment>menu_action_new_module</comment>
         <translation>new module</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="374"/>
-        <location filename="../../src/dock/project.py" line="411"/>
+        <location filename="../../src/dock/project.py" line="352"/>
+        <location filename="../../src/dock/project.py" line="389"/>
         <source>新建目录</source>
         <comment>menu_action_new_package</comment>
         <translation>new package</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="375"/>
-        <location filename="../../src/dock/project.py" line="412"/>
+        <location filename="../../src/dock/project.py" line="353"/>
+        <location filename="../../src/dock/project.py" line="390"/>
         <source>打开文件(目录)</source>
         <comment>menu_action_open_file_or_directory</comment>
         <translation>Open file(directory)</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="376"/>
+        <location filename="../../src/dock/project.py" line="354"/>
         <source>复制</source>
         <comment>menu_action_copy</comment>
         <translation>copy</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="377"/>
+        <location filename="../../src/dock/project.py" line="355"/>
         <source>剪切</source>
         <comment>meun_action_cut</comment>
         <translation>cut</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="378"/>
+        <location filename="../../src/dock/project.py" line="356"/>
         <source>粘贴</source>
         <comment>meun_action_paste</comment>
         <translation>paste</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="379"/>
+        <location filename="../../src/dock/project.py" line="357"/>
         <source>删除</source>
         <comment>menu_action_delete</comment>
         <translation>delete</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="380"/>
+        <location filename="../../src/dock/project.py" line="358"/>
         <source>重命名</source>
         <comment>menu_action_rename</comment>
         <translation>rename</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="413"/>
-        <location filename="../../src/dock/project.py" line="436"/>
+        <location filename="../../src/dock/project.py" line="391"/>
+        <location filename="../../src/dock/project.py" line="414"/>
         <source>将文件添加到工作区</source>
         <comment>menu_action_add_project</comment>
         <translation>Add file to workspace</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="414"/>
+        <location filename="../../src/dock/project.py" line="392"/>
         <source>将文件从工作区移除</source>
         <comment>menu_action_remove_project</comment>
         <translation>Remove file from workspace</translation>
@@ -544,49 +582,49 @@
         <translation type="vanished">An error occurred: {}</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="502"/>
+        <location filename="../../src/dock/project.py" line="480"/>
         <source>新建模版</source>
         <comment>dialog_title</comment>
         <translation>New module</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="502"/>
+        <location filename="../../src/dock/project.py" line="480"/>
         <source>请输入新的测试用例名称：</source>
         <comment>dialog_text</comment>
         <translation>Place enter a new test case name:</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="530"/>
+        <location filename="../../src/dock/project.py" line="508"/>
         <source>新建目录</source>
         <comment>dialog_title</comment>
         <translation>New package</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="530"/>
+        <location filename="../../src/dock/project.py" line="508"/>
         <source>请输入新的目录名称：</source>
         <comment>dialog_text</comment>
         <translation>Please enter a new package name</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="604"/>
+        <location filename="../../src/dock/project.py" line="582"/>
         <source>删除</source>
         <comment>dialog_title</comment>
         <translation>Delete</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="604"/>
+        <location filename="../../src/dock/project.py" line="582"/>
         <source>确定要删除该文件吗？</source>
         <comment>dialog_text</comment>
         <translation>Do you confirm the deletion of this file?</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="611"/>
+        <location filename="../../src/dock/project.py" line="589"/>
         <source>重命名</source>
         <comment>dialog_title</comment>
         <translation>Rename</translation>
     </message>
     <message>
-        <location filename="../../src/dock/project.py" line="611"/>
+        <location filename="../../src/dock/project.py" line="589"/>
         <source>请输入新的文件名称：</source>
         <comment>dialog_text</comment>
         <translation>Please enter a new file name:</translation>

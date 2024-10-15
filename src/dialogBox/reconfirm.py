@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-11 20:56:32
+LastEditTime: 2024-10-13 00:52:58
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dialogBox\reconfirm.py
 Description: 
 
@@ -24,13 +24,13 @@ from PySide6.QtGui import QIcon
 from src import ICON_DIR
 
 class ReconfirmDialogBox(QDialog):
-    def __init__(self, parent, title: str = 'reconfirm', text: str = 'text'):
+    def __init__(self, parent, title: str = 'reconfirm', text: str = 'text', ok_text: str = "确定", cancel_text: str = "取消"):
         super().__init__()
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(os.path.join(ICON_DIR, 'app.svg')))
         self.label = QLabel(text)
-        self.okButton = QPushButton("确定")
-        self.cancelButton = QPushButton("取消")
+        self.okButton = QPushButton(ok_text)
+        self.cancelButton = QPushButton(cancel_text)
         # 样式
         self.label.setAlignment(Qt.AlignCenter)
 
@@ -46,14 +46,3 @@ class ReconfirmDialogBox(QDialog):
         mainLayout.addWidget(self.label)
         mainLayout.addLayout(buttonLayout)
         
-if __name__ == '__main__':
-    # Application setup
-    app = QApplication(sys.argv)
-    dialog = ReconfirmDialogBox('text')
-    
-    # Show the dialog and wait for it to close
-    if dialog.exec():
-        print("Password:", dialog.lineEdit.text())
-    else:
-        print("Operation cancelled.")
-    sys.exit(app.exec())

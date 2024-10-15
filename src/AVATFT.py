@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-11 22:14:55
+LastEditTime: 2024-10-13 00:44:34
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\AVATFT.py
 Description: 
 
@@ -24,13 +24,14 @@ from PySide6.QtGui import QAction, QIcon, QTextCursor
 from PySide6.QtCore import Qt, Signal, Slot, QSize
 
 from src.utils import logger
+from src.utils.file import load_file_content, save_file_content
 from src.dock.edit import EditDock
 from src.dock.action import ActionDock 
 from src.dock.log import LogDock
 from src.dock.project import ProjectDock
 from src.dialogBox.reconfirm import ReconfirmDialogBox
 from static.css.stylesheet import STYLE_SHEET
-from src import ICON_DIR, TRANSLATIONS_DIR
+from src import ICON_DIR, CONFIG_DIR, TRANSLATIONS_DIR
 LOG = logger.get_logger()
 
 
@@ -42,14 +43,15 @@ class AVATFT:
     def __init__(self) -> None:
         self.app = QApplication([])  # 将 QApplication 实例作为成员变量
         
-        if STYLE_SHEET:
-            self.app.setStyleSheet(STYLE_SHEET)
+        # if STYLE_SHEET:
+        #     self.app.setStyleSheet(STYLE_SHEET)
 
         # 创建 QTranslator 实例
         self.translator = QTranslator()
 
-        # 加载编译后的翻译文件 en.qm
-        qm_file = os.path.join(TRANSLATIONS_DIR, 'en_US.qm')
+        # 加载编译后的翻译文件
+        workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
+        qm_file = os.path.join(TRANSLATIONS_DIR, f'{workspace_settings['settings']['user_language'] or workspace_settings['settings']['default_language']}.qm')
         if os.path.exists(qm_file):
             if self.translator.load(qm_file):
                 self.app.installTranslator(self.translator)
@@ -304,5 +306,10 @@ class MainWindow(QMainWindow):
         """ 切换语言设置，菜单操作"""
         sender: QAction = self.sender()  # 获取信号发送者
         language = sender.text()
-            
-        
+        workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
+        history_user_language = workspace_settings['settings']['user_language']
+        if language != history_user_language: # 语言发生变化时才进行保存
+            workspace_settings['settings']['user_language'] = language
+            save_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), workspace_settings, LOG, translater=True)
+            if ReconfirmDialogBox(self, self.tr("切换语言设置", "dialog_title"), self.tr("需要重启以启用新设置", "dialog_text"), self.tr("立即重启", "dialog_ok"), self.tr("稍后重启", "dialog_cancel")).exec():
+                os.execl(sys.executable, *([sys.executable] + sys.argv))

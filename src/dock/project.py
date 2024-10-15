@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-12 00:05:29
+LastEditTime: 2024-10-13 13:56:22
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\project.py
 Description: 
 
@@ -91,43 +91,21 @@ class ProjectDock(QDockWidget):
     @Slot(str)
     def load_project(self, directory_path: str):
         """ 加载项目 """
-        print(directory_path)
         if directory_path:
             if os.path.isdir(directory_path):
                 # 读取历史工程, 若是新工程则加入历史记录
-                workspace_file = os.path.join(CONFIG_DIR, 'workspace.json')
-                try:
-                    with open(workspace_file, 'r') as file:
-                        workspace_settings = json.load(file)
-                except FileNotFoundError:
-                    LOG.critical(self.tr("文件 {} 不存在", "Log_msg").format(workspace_file))
-                except json.JSONDecodeError:
-                    LOG.error(self.tr("文件 {} 不是有效的JSON", "Log_msg").format(workspace_file))
-                except Exception as e:
-                    LOG.error(self.tr("发生错误：{}", "Log_msg").format(e))
+                workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
                 folders = workspace_settings['folders']
                 folder_paths = [folder['path'] for folder in folders]
                 if directory_path not in folder_paths:
                     workspace_settings['folders'].append({'path': directory_path})
-                    with open(workspace_file, 'w') as file:
-                        json.dump(workspace_settings, file, indent=4, ensure_ascii=False)
+                    save_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), workspace_settings, LOG, translater=True)
                     self.tree.load_project_item(directory_path)
                     LOG.info(self.tr("从 {} 加载工程", "Log_msg").format(directory_path))
     
     def load_history_project(self):
         """ 从配置文件中载入历史工程 """
-        
-        workspace_file = os.path.join(CONFIG_DIR, 'workspace.json')
-        try:
-            with open(workspace_file, 'r') as file:
-                workspace_settings = json.load(file)
-        except FileNotFoundError:
-            LOG.critical(self.tr("文件 {} 不存在", "Log_msg").format(workspace_file))
-        except json.JSONDecodeError:
-            LOG.error(self.tr("文件 {} 不是有效的JSON", "Log_msg").format(workspace_file))
-        except Exception as e:
-            LOG.error(self.tr("发生错误：{}", "Log_msg").format(e))
-
+        workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
         folders: list[dict] = workspace_settings['folders']
         if folders:
             for folder in folders:
