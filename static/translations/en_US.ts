@@ -485,22 +485,21 @@
         <translation>Value</translation>
     </message>
     <message>
-        <location filename="../../src/dock/edit.py" line="328"/>
-        <source>文件不存在：{}</source>
-        <comment>Log_msg</comment>
-        <translation>File does not exist: {}</translation>
+        <location filename="../../src/dock/edit.py" line="208"/>
+        <source>用例信息</source>
+        <translation>Test case Info</translation>
     </message>
     <message>
-        <location filename="../../src/dock/edit.py" line="330"/>
-        <source>YAML解析发生错误：{}</source>
-        <comment>Log_msg</comment>
-        <translation>YAML parsing error: {}</translation>
+        <location filename="../../src/dock/edit.py" line="210"/>
+        <source>运行设置</source>
+        <translation>Run Settings</translation>
     </message>
     <message>
-        <location filename="../../src/dock/edit.py" line="332"/>
-        <source>文件读写发生错误：{}</source>
-        <comment>Log_msg</comment>
-        <translation>File I/O error: {}</translation>
+        <location filename="../../src/dock/edit.py" line="213"/>
+        <location filename="../../src/dock/edit.py" line="443"/>
+        <location filename="../../src/dock/edit.py" line="458"/>
+        <source>测试步骤</source>
+        <translation>Step</translation>
     </message>
     <message>
         <location filename="../../src/dock/project.py" line="351"/>

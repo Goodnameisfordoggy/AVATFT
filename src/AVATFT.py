@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-13 00:44:34
+LastEditTime: 2024-10-15 21:58:53
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\AVATFT.py
 Description: 
 
@@ -43,8 +43,8 @@ class AVATFT:
     def __init__(self) -> None:
         self.app = QApplication([])  # 将 QApplication 实例作为成员变量
         
-        # if STYLE_SHEET:
-        #     self.app.setStyleSheet(STYLE_SHEET)
+        if STYLE_SHEET:
+            self.app.setStyleSheet(STYLE_SHEET)
 
         # 创建 QTranslator 实例
         self.translator = QTranslator()

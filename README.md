@@ -10,7 +10,7 @@
 
 *行为可视化自动测试工具*
 
-version: 0.4.27
+version: 0.4.28
 
 # 项目结构
 
@@ -56,6 +56,7 @@ lrelease static\translations\en_US.ts
 - https://github.com/Pictogrammers/pictogrammers.com
 
 # Update log
+- 0.4.28: 修复了一些问题
 - 0.4.27: 国际化（英文）构建完成
 - 0.3.27: 国际化构建中
 - 0.3.26: 尝试国际化

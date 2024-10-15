@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-10 23:23:03
+LastEditTime: 2024-10-15 23:53:18
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\funcs.py
 Description: 
 
@@ -18,6 +18,7 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 import os
 import yaml
 import typing
+
 from src.func.web import *
 from src.utils.logger import get_logger
 from src import BASE_DIR
@@ -63,6 +64,7 @@ def run_module(path: str = ''):
 		# 获取要调用的方法对象
 		method = action_type_dict[action_type][method_name]
 		LOG.trace(f'{method.__module__}:{method.__name__}')
+		
 		if action_type == 'WebAction':
 			# 使用 **params 将字典作为关键字参数传入方法
 			if method_name == 'NewBrowser':

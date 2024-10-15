@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-13 14:07:10
+LastEditTime: 2024-10-15 22:20:52
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\edit.py
 Description: 
 
@@ -205,19 +205,17 @@ class TreeWidget(QTreeWidget):
             # with open(mouduleItem.path, 'r', encoding='utf-8') as f:
             #     content = yaml.safe_load(f)
             try:
-                if self.__find_specific_item_upward(item, lambda item: item.text(0) == '用例信息'):
+                if self.__find_specific_item_upward(item, lambda item: item.text(0) == self.tr("用例信息")):
                     content['info'][key] = newValue
-                elif self.__find_specific_item_upward(item, lambda item: item.text(0) == '运行设置'):
+                elif self.__find_specific_item_upward(item, lambda item: item.text(0) == self.tr("运行设置")):
                     configIndex = item.parent().parent().indexOfChild(item.parent()) # 根据子项关系查找配置项的索引
                     content['config'][configIndex]['params'][key] = newValue
-                elif self.__find_specific_item_upward(item, lambda item: item.text(0) == '测试步骤'):
+                elif self.__find_specific_item_upward(item, lambda item: item.text(0) == self.tr("测试步骤")):
                     stepIndex = item.parent().parent().indexOfChild(item.parent()) # 根据子项关系查找步骤的索引
                     content['step'][stepIndex]['params'][key] = newValue
             except IndexError: # 忽略不存在的键的影响
                 pass
             save_file_content(mouduleItem.path, content, logger=LOG, translater=True)
-            # with open(mouduleItem.path, 'w', encoding='utf-8') as f:
-            #     yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
     
     @Slot(str)
     def display_action_details(self, action_path:str):
@@ -303,63 +301,47 @@ class TreeWidget(QTreeWidget):
         """
         start_index = action_file.find('action_keywords') # 查找起始位置
         action_RP = action_file[start_index:] # 提取相对路径
-        try:
-            with open(action_file, 'r', encoding='utf-8') as f:
-                action_content = yaml.safe_load(f)
-            action_content[0] = {'action_RP': action_RP} | action_content[0] #添加相对路径信息，'|' Operator (Python 3.9+)
-            with open(module_file, 'r', encoding='utf-8') as f:
-                module_content = yaml.safe_load(f)
-            # 确保模块内容有 'step' 键
-            if 'step' not in module_content:
-                module_content['step'] = None
-            # 向 module 文件( step 字段)中插入 action
-            if module_content['step'] is None: # 不存在 action 时
-                module_content['step'] = action_content
-            else: # 存在 action 时
-                if isinstance(step_index, int):
-                    module_content['step'].insert(step_index, action_content[0])
-                else: # 默认插入到最后
-                    module_content['step'] = module_content['step'] + action_content
-            # 将更新后的内容写回目标文件
-            with open(module_file, 'w', encoding='utf-8') as f:
-                yaml.safe_dump(module_content, f, allow_unicode=True, sort_keys=False)
-                LOG.trace(f'Add action info to the "step" section of the {module_file}')
-        except FileNotFoundError as e:
-            LOG.warning(self.tr("文件不存在：{}", "Log_msg").format(e))
-        except yaml.YAMLError as e:
-            LOG.error(self.tr("YAML解析发生错误：{}", "Log_msg").format(e))
-        except IOError as e:
-            LOG.error(self.tr("文件读写发生错误：{}", "Log_msg").format(e))
+        action_content = load_file_content(action_file, logger=LOG, translater=True)
+        module_content = load_file_content(module_file, logger=LOG, translater=True)
+        action_content[0] = {'action_RP': action_RP} | action_content[0] #添加相对路径信息，'|' Operator (Python 3.9+)
+        # 确保模块内容有 'step' 键
+        if 'step' not in module_content:
+            module_content['step'] = None
+        # 向 module 文件( step 字段)中插入 action
+        if module_content['step'] is None: # 不存在 action 时
+            module_content['step'] = action_content
+        else: # 存在 action 时
+            if isinstance(step_index, int):
+                module_content['step'].insert(step_index, action_content[0])
+            else: # 默认插入到最后
+                module_content['step'] = module_content['step'] + action_content
+        # 将更新后的内容写回目标文件
+        save_file_content(module_file, module_content, logger=LOG, translater=True)
+        LOG.trace(f'Add action info to the "step" section of the {module_file}')
     
     def __delete_actionInfo(self, index: int):
         """ 从 module 文件(step)中删除 action 信息"""
         moduleItem = self.topLevelItem(0)
-        with open(moduleItem.path, 'r', encoding='utf-8') as f:
-            content = yaml.safe_load(f)
+        content = load_file_content(moduleItem.path, logger=LOG, translater=True)
         removed_action = content['step'].pop(index) # 根据子项索引在文件中删除对应位置上的信息
-        with open(moduleItem.path, 'w', encoding='utf-8') as f:
-            yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
+        save_file_content(moduleItem.path, content, logger=LOG, translater=True)
         LOG.trace(f'Action info at "step" index {index} delete successfully at {moduleItem.path}')
 
     def __move_actionInfo_to(self, move_index: int,  to_index: int):
         """ 向 module 文件(step)中特定索引插入 action 信息"""
         moduleItem = self.topLevelItem(0)
-        with open(moduleItem.path, 'r', encoding='utf-8') as f:
-            content = yaml.safe_load(f)
+        content = load_file_content(moduleItem.path, logger=LOG, translater=True)
         removed_action = content['step'].pop(move_index) # 根据子项索引在文件中删除对应位置上的信息
         content['step'].insert(to_index, removed_action)
-        with open(moduleItem.path, 'w', encoding='utf-8') as f:
-            yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
+        save_file_content(moduleItem.path, content, logger=LOG, translater=True)
         LOG.trace(f'Action info at "step" index {move_index} move to index {move_index} successfully at {moduleItem.path}')
 
     def __swap_actionInfo(self, index_1: int, index_2: int):
         """ 将 module 文件(step)中两个不同索引的 action 信息交换 """
         moduleItem = self.topLevelItem(0)
-        with open(moduleItem.path, 'r', encoding='utf-8') as f:
-            content = yaml.safe_load(f)
+        content = load_file_content(moduleItem.path, logger=LOG, translater=True)
         content['step'][index_1], content['step'][index_2] = content['step'][index_2], content['step'][index_1] # 交换值
-        with open(moduleItem.path, 'w', encoding='utf-8') as f:
-            yaml.safe_dump(content, f, allow_unicode=True, sort_keys=False)
+        save_file_content(moduleItem.path, content, logger=LOG, translater=True)
         LOG.trace(f'Action info at "step" index {index_1} and {index_2} swap successfully at {moduleItem.path}')
     
     def __delete_item(self, item: TreeWidgetItem):
@@ -457,7 +439,7 @@ class TreeWidget(QTreeWidget):
                     # 通过当前选择的项来识别被拖动的子项
                     draggedItem = source.currentItem()
                     if draggedItem.type == 'action':
-                        if item.text(0) == '测试步骤': # 放置目标项类型一
+                        if item.text(0) == self.tr("测试步骤"): # 放置目标项类型一
                             newItem = ActionItem(item, data=('action', draggedItem.path, False, True), editable=True, param_editable=True) # 创建一个新的子项，放置到最后
                             self.__add_action_to_module(draggedItem.path, modulePath) # 将 action 信息写入 module
                         elif item.type == 'action': # 放置目标项类型二
@@ -472,7 +454,7 @@ class TreeWidget(QTreeWidget):
                     # 通过当前选择的项来识别被拖动的子项
                     draggedItem = source.currentItem()
                     if draggedItem.type == 'action': # 被允许放置的类型当前只有 action
-                        if item.text(0) == '测试步骤': # 放置目标项类型一
+                        if item.text(0) == self.tr("测试步骤"): # 放置目标项类型一
                             draggedItemIndex = item.indexOfChild(draggedItem)
                             tempItem = item.takeChild(draggedItemIndex)
                             item.insertChild(0, tempItem) # 在第一项放置
