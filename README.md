@@ -2,7 +2,7 @@
 
 <center>
 <figure>
-    <img src="static\icon\app.svg" alt="webUI_1" width="600">
+    <img src="static\icon\app.png" alt="app-icon" width="600">
 </figure>
 </center>
 
@@ -11,6 +11,9 @@
 *行为可视化自动测试工具*
 
 version: 0.4.28
+
+# 注意
+- 该项目实现主要功能必须依赖行为关键字，但由于行为关键字改动频率较高暂不纳入版本管理，后继将会把部分稳定的关键字打成资源包来使用。
 
 # 项目结构
 
@@ -24,19 +27,22 @@ workdir主要结构
 - log
 - projects
 - src
+  - utils
 - static
+  - css
   - icon
+  - template
+  - translations
 - tests
-- utils
 - main.py
 
 projects目录结构
 - projects
-  - project(Custom name)
+  - project(自定义名称)
     - business
-      - package(Custom name)
-        - module(Custom name)
-          - action1
+      - package(自定义名称)
+        - module(自定义名称)
+          - action1(module文件内部)
           - action2
           - ...
     - config
