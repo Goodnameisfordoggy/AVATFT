@@ -2,7 +2,7 @@
 
 <center>
 <figure>
-    <img src="static\icon\app.png" alt="app-icon" width="600">
+    <img src="static/icon/app.svg" alt="app-icon" width="600">
 </figure>
 </center>
 
@@ -10,7 +10,7 @@
 
 *行为可视化自动测试工具*
 
-version: 0.4.28
+version: 1.0.0
 
 # 注意
 - 该项目实现主要功能必须依赖行为关键字，但由于行为关键字改动频率较高暂不纳入版本管理，后继将会把部分稳定的关键字打成资源包来使用。
@@ -59,9 +59,12 @@ lrelease static\translations\en_US.ts
 ```
 
 # 感谢
-- https://github.com/Pictogrammers/pictogrammers.com
+- 关键字UI设计与操作逻辑灵感来自 Apple 快捷指令与自动化 https://support.apple.com/zh-cn/guide/shortcuts/welcome/ios
+- 关键字分类灵感来自影刀RPA(https://www.yingdao.com/)的使用体验以及VX公号“enter回车键”的部分文章。
+- 图标源 https://github.com/Pictogrammers/pictogrammers.com
 
 # Update log
+- 1.0.0: 项目主体以及功能构建完成；
 - 0.4.28: 修复了一些问题
 - 0.4.27: 国际化（英文）构建完成
 - 0.3.27: 国际化构建中

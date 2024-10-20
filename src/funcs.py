@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-15 23:53:18
+LastEditTime: 2024-10-20 13:44:17
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\funcs.py
 Description: 
 
@@ -16,21 +16,17 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import os
-import yaml
+import re
+
 import typing
 
-from src.func.web import *
+from src.utils.file import load_file_content, save_file_content
+from src.func import *
 from src.utils.logger import get_logger
-from src import BASE_DIR
 LOG = get_logger()
 
-action_type_dict = {
-	'WebAction': web_dict
-}
 PLAYWRIGHT = None
-PAGE_GROUP = {
-	
-}
+PAGE_GROUP = {} 
 
 
 def initialize_playwright():
@@ -42,18 +38,11 @@ def initialize_playwright():
 
 def run_module(path: str = ''):
 	""" 运行单个模块 """
+	VARIABLES = {} # 变量生命周期为单个模块运行期间
 	current_browser = None
 	current_page_id = 0
 	
-	try:
-		with open(path, 'r', encoding='utf-8') as f:
-			module_content = yaml.safe_load(f)
-	except FileNotFoundError:
-		LOG.critical(f"File {path} not found.")
-		return
-	except yaml.YAMLError as e:
-		LOG.error(f"Error parsing YAML: {e}")
-		return
+	module_content = load_file_content(path, logger=LOG, translater=True)
 	LOG.success(f'正在运行--{module_content['info']['describe']}--id:{module_content['info']['id']}--title:{module_content['info']['title']}')
 	initialize_playwright()
 	
@@ -62,23 +51,49 @@ def run_module(path: str = ''):
 		method_name: str = step_content['method']
 		params: dict = step_content['params']
 		# 获取要调用的方法对象
-		method = action_type_dict[action_type][method_name]
+		method = ACTION_TYPE[action_type][method_name]
 		LOG.trace(f'{method.__module__}:{method.__name__}')
 		
+		for key, value in params.items():
+			match = re.match(r'\$\{(.+?)\}', str(value)) # value 符合参数格式'${var_name}'
+			if match and match.group(0) == value: # 参数格式匹配，且内含参数名也一致
+				if match.group(1) in list(VARIABLES.keys()): # 参数名在 VARIABLES 中存在时
+					params[key] = VARIABLES[match.group(1)]
+				else:
+					if key == "Result":
+						LOG.trace("创建参数 '{}' 成功".format(match.group(1)))
+					else:
+						# 参数名在 VARIABLES 不存在，
+						LOG.warning("不能使用未定义的参数 '{}' 作为值".format(match.group(1)))
 		if action_type == 'WebAction':
 			# 使用 **params 将字典作为关键字参数传入方法
 			if method_name == 'NewBrowser':
-				current_browser = method(**params, playwright=PLAYWRIGHT)
+				current_browser, current_context = method(**params, playwright=PLAYWRIGHT)
 			elif method_name == 'CloseBrowser':
 				method(**params, browser=current_browser)
 			elif method_name == 'NewPage':
-				page = method(**params, playwright=PLAYWRIGHT, browser=current_browser)
+				page = method(**params, playwright=PLAYWRIGHT, context=current_context)
 				page_id = params['id']
 				PAGE_GROUP[page_id] = page
 				current_page_id = page_id
 			else:
-				method(**params, page=PAGE_GROUP[current_page_id])
-				
+				result = method(**params, page=PAGE_GROUP[current_page_id])
+				# 根据返回值创建变量
+				if result and 'Result' in params:
+					match = re.match(r'\$\{(.+?)\}', str(params['Result']))
+					var_name = match.group(1)
+					var_value = result
+					VARIABLES[var_name] = var_value
+		else:
+			result = method(**params)
+			# 根据返回值创建变量
+			if result and 'Result' in params:
+				match = re.match(r'\$\{(.+?)\}', str(params['Result']))
+				var_name = match.group(1)
+				var_value = result
+				VARIABLES[var_name] = var_value
+		# LOG.debug(f'{VARIABLES}')
+
 @typing.overload
 def run(task_list: list[(int, str)]):...
 @typing.overload
@@ -93,19 +108,12 @@ def run(task_list: list[(int, str)] = [], path_list: list[str] = []):
 	task_queue = []
 	if path_list:
 		for path in path_list:
-			try:
-				with open(path, 'r', encoding='utf-8') as f:
-					module_content = yaml.safe_load(f)
-			except FileNotFoundError:
-				LOG.critical(f"File {path} not found.")
-				return
-			except yaml.YAMLError as e:
-				LOG.error(f"Error parsing YAML: {e}")
-				return
+			module_content = load_file_content(path, logger=LOG, translater=True)
 			module_id = module_content['info']['id']
 			task_queue.append((module_id, path))
 	elif task_list:
 		task_queue = task_list
+		
 	task_queue.sort(key=lambda x: x[0])
 	
 	for task in task_queue:

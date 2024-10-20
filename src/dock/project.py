@@ -347,7 +347,7 @@ class TreeWidget(QTreeWidget):
                 # 创建上下文菜单
                 context_menu = QMenu(self)
                 # 创建菜单项
-                newMenu = QMenu('新建', self)
+                newMenu = QMenu(self.tr("新建"), self)
                 newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), self.tr("新建测试用例", "menu_action_new_module"), self)
                 newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), self.tr("新建目录", "menu_action_new_package"), self)
                 openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self)
@@ -384,7 +384,7 @@ class TreeWidget(QTreeWidget):
                 # 创建上下文菜单
                 context_menu = QMenu(self)
                 # 创建菜单项
-                newMenu = QMenu('新建', self)
+                newMenu = QMenu(self.tr("新建"), self)
                 newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), self.tr("新建测试用例", "menu_action_new_module"), self)
                 newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), self.tr("新建目录", "menu_action_new_package"), self)
                 openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self)
