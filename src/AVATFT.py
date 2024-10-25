@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-15 21:58:53
+LastEditTime: 2024-10-24 13:35:39
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\AVATFT.py
 Description: 
 
@@ -150,15 +150,15 @@ class MainWindow(QMainWindow):
         screen_size = screen.size()
         self.screen_width = screen_size.width()
         self.screen_height = screen_size.height()
-        self.resize(self.screen_width, self.screen_height)
+        self.resize(self.screen_width - 100, self.screen_height - 100)
         self.setWindowIcon(QIcon(os.path.join(ICON_DIR, 'app.svg')))
-        # self.maximumSize()        
-
+        
         self.__build_menu()
         self.__create_dock_widgets()
         self.__initialize_layout()
+        self.showMaximized()  # 将窗口设置为最大化    
         self.__connect_signals()
-
+        
         # 重定向标准输出和标准错误到自定义输出类
         sys.stdout = ConsoleOutput(self.log_dock.logTextWidget)
         sys.stderr = ConsoleOutput(self.log_dock.logTextWidget)

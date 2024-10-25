@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-15 22:20:52
+LastEditTime: 2024-10-25 16:05:19
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\edit.py
 Description: 
 
@@ -21,7 +21,7 @@ import yaml
 import typing
 from PySide6.QtWidgets import (
     QApplication, QLabel, QDockWidget, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem,
-    QMenu, QPushButton, QHBoxLayout, QVBoxLayout, QComboBox
+    QMenu, QPushButton, QHBoxLayout, QVBoxLayout, QComboBox, QCheckBox, QAbstractItemView
     )
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
@@ -65,12 +65,24 @@ class EditDock(QDockWidget):
         center_widget_layout = QVBoxLayout(self.center_widget)
 
         search_layout = QHBoxLayout()
+        # 复选框
+        self.check_box = QCheckBox(self)
+        self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
+        self.check_box.stateChanged.connect(self.__on_expand_all_checkbox_changed)
+        self.check_box.setObjectName('SECONDARY')
+        search_layout.addWidget(self.check_box, 1)
+        # 复选框
+        self.check_box2 = QCheckBox(self)
+        self.check_box2.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
+        self.check_box2.stateChanged.connect(self.__on_expand_step_checkbox_changed)
+        self.check_box2.setObjectName('SECONDARY')
+        search_layout.addWidget(self.check_box2, 1)# 复选框
         # 搜索框
         self.search_box = QLineEdit(self)
         self.search_box.setObjectName('SECONDARY')
         self.search_box.setPlaceholderText(self.tr("请输入搜索项，按Enter搜索", "search_box_placeholder_text"))
         self.search_box.textChanged.connect(lambda: self.__search_tree_items())
-        search_layout.addWidget(self.search_box, 3)
+        search_layout.addWidget(self.search_box, 99)
         # 搜索方法下拉列表
         self.search_combo_box =  QComboBox()
         self.search_combo_box.addItems([self.tr("匹配参数描述", "search_combo_box_item_Pdescribe"), self.tr("匹配参数名称", "search_combo_box_item_Pname"), self.tr("匹配参数值", "search_combo_box_item_Pvalue")]) # 添加选项
@@ -139,8 +151,42 @@ class EditDock(QDockWidget):
             if match and item.parent():
                 item.parent().setExpanded(True)
             return match
-
         filter_item(root, column, search_text)
+    
+    def __on_expand_all_checkbox_changed(self, state: int):
+        """ 复选框状态变更绑定事件 """
+        if state == 2:  # 复选框选中
+            self.tree.set_all_items_expanded(self.tree.topLevelItem(0), True) # 展开所有项
+            self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-expand-vertical.svg')))
+            self.check_box2.setChecked(True) # 状态关联
+        else:
+            self.tree.set_all_items_expanded(self.tree.topLevelItem(0).child(0), False)
+            self.tree.set_all_items_expanded(self.tree.topLevelItem(0).child(1), False)
+            self.tree.set_all_items_expanded(self.tree.topLevelItem(0).child(2), False)
+            self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
+            self.check_box2.setChecked(False) # 状态关联
+    
+    def __on_expand_step_checkbox_changed(self, state: int):
+        """ 复选框状态变更绑定事件 """
+        item_step  = self.tree.topLevelItem(0).child(2)
+        if state == 2:  # 复选框选中
+            if item_step:
+                item_step.setExpanded(True)
+                for index in range(0, item_step.childCount()):
+                    item_step.child(index).setExpanded(True)
+
+            self.check_box2.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-expand-vertical.svg')))
+            # try:
+            #     self.tree.scrollToItem(self.current_item, QAbstractItemView.PositionAtTop)
+            # except AttributeError:
+            #     pass
+        else:
+            if item_step:
+                for index in range(0, item_step.childCount()):
+                    item_step.child(index).setExpanded(False)
+                
+            # self.current_item = self.tree.itemAt(0, 0)
+            self.check_box2.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
     
     def __switch_search_method(self):
         """ 切换查找方法，下拉列表绑定操作 """
@@ -250,6 +296,14 @@ class TreeWidget(QTreeWidget):
         self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)
         self.resizeColumnToContents(2)
+    
+    def set_all_items_expanded(self, current_item: QTreeWidgetItem, state: bool):
+        """ 递归设置当前项及其下子项的展开状态 """
+        current_item.setExpanded(state)
+        
+        # 递归设置所有子项
+        for i in range(current_item.childCount()):
+            self.set_all_items_expanded(current_item.child(i), state)
     
     def __find_specific_item_upward(self, root_item: QTreeWidgetItem, condition: typing.Callable) -> (TreeWidgetItem | QTreeWidgetItem | None):
         """

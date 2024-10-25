@@ -335,4 +335,53 @@ QComboBox QAbstractItemView {{
     color: {__SECONDARY_700}; /* 设置下拉列表中选中项的文字颜色*/
 }}
 
+QCheckBox#NEUTRAL {{
+    height: 25px;
+    font-size: 12px;               /* 字体大小 */
+    color: {__PRIMARY_600};                /* 字体颜色 */
+    padding: 0px;                  /* 内边距 */
+    border: 2px solid {__NEUTRAL_500};      /* 主体边框 */
+    border-left: 1px solid {__NEUTRAL_400}; /* 左边框 */
+    border-radius: 5px;             /* 边框圆角 */
+    background-color: {__NEUTRAL_300};     /* 背景色 */
+}}
+QCheckBox#NEUTRAL::indicator {{
+    width: 12px;                   /* 指示器宽度 */
+    height: 12px;                  /* 指示器高度 */
+}}
+QCheckBox#NEUTRAL::indicator:unchecked {{
+    background-color: {__PRIMARY_200};     /* 未选中时背景色 */
+    border-top: 2px solid {__NEUTRAL_500};  /* 上边框 */
+    border-bottom: 2px solid {__NEUTRAL_500};/* 下边框 */
+    border-right: 2px solid {__NEUTRAL_500}; /* 右边框 */
+}}
+QCheckBox#NEUTRAL::indicator:checked {{
+    background-color: {__PRIMARY_800};     /* 选中时背景色 */
+    border: 1px solid {__NEUTRAL_500};     /* 选中时边框 */
+}}
+
+QCheckBox#SECONDARY {{
+    height: 25px;
+    font-size: 12px;               /* 字体大小 */
+    color: {__PRIMARY_600};                /* 字体颜色 */
+    padding: 0px;                  /* 内边距 */
+    border: 2px solid {__SECONDARY_500};      /* 主体边框 */
+    border-left: 1px solid {__SECONDARY_400}; /* 左边框 */
+    border-radius: 5px;             /* 边框圆角 */
+    background-color: {__SECONDARY_300};     /* 背景色 */
+}}
+QCheckBox#SECONDARY::indicator {{
+    width: 12px;                   /* 指示器宽度 */
+    height: 12px;                  /* 指示器高度 */
+}}
+QCheckBox#SECONDARY::indicator:unchecked {{
+    background-color: {__PRIMARY_200};     /* 未选中时背景色 */
+    border-top: 2px solid {__SECONDARY_500};  /* 上边框 */
+    border-bottom: 2px solid {__SECONDARY_500};/* 下边框 */
+    border-right: 2px solid {__SECONDARY_500}; /* 右边框 */
+}}
+QCheckBox#SECONDARY::indicator:checked {{
+    background-color: {__PRIMARY_800};     /* 选中时背景色 */
+    border: 1px solid {__SECONDARY_500};     /* 选中时边框 */
+}}
 """

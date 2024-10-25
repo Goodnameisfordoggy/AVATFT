@@ -183,7 +183,7 @@ class ModuleItem(TreeWidgetItem, QObject):
         self.setText(0, os.path.splitext(os.path.basename(self.module_path))[0])
         self.__create_childItem()
         self.__parent.itemChanged.connect(self.__parent.on_item_changed) # 连接父组件（QTreeWidget）的子项编辑事件，该操作必须位于ModuleItem所有子项初始化之后，以防初始化时触发该事件
-    
+        
     def __del__(self):
         self.__parent.itemChanged.disconnect(self.__parent.on_item_changed) # 析构时取消连接
 

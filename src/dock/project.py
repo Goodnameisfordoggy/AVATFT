@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-13 13:56:22
+LastEditTime: 2024-10-24 15:43:34
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\project.py
 Description: 
 
@@ -49,7 +49,8 @@ class ProjectDock(QDockWidget):
         self.setObjectName('NEUTRAL')
         self.__initUI()
         self.load_history_project()
-        
+        self.destroyed.connect(lambda: print("__on_destroyed")) # 窗口销毁时
+
     def __initUI(self):
         self.center_widget = QWidget(self)
         self.setWidget(self.center_widget)
@@ -108,12 +109,17 @@ class ProjectDock(QDockWidget):
         workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
         folders: list[dict] = workspace_settings['folders']
         if folders:
-            for folder in folders:
+            for index, folder in enumerate(folders):
                 if os.path.isdir(folder['path']):
                     self.tree.load_project_item(folder['path'])
                     LOG.info(self.tr("从历史记录中载入工程: {}", "Log_msg").format(folder['path']))
-
-
+                else:
+                    # 移除不合法的目录
+                    folders = [folder for folder in folders if os.path.isdir(folder['path'])]
+        # 更新历史记录
+        workspace_settings['folders'] = folders
+        save_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), workspace_settings, LOG, translater=True)
+                    
     def __search_tree_items(self):
         """ 搜索树控件子项，搜索框绑定操作"""
         search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
@@ -263,11 +269,13 @@ class ProjectDock(QDockWidget):
         self.closeSignal.emit('close')
         return super().closeEvent(event)
 
+
 class TreeWidget(QTreeWidget):
     
     # 自定义信号
     itemDoubleClickedSignal = Signal(str)  # 信号携带一个字符串参数
     loadProjectSignal = Signal(str)
+    isLockEditDockCheckBoxSignal = Signal()
     
     def __init__(self, parent: QWidget | None = ...) -> None:
         super().__init__(parent)
@@ -279,16 +287,26 @@ class TreeWidget(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu) # 使用自定义菜单
         self.customContextMenuRequested.connect(self.__show_context_menu)
     
+    def __del__(self):
+        self.save_items_expanded_state()
+
     def load_project_item(self, directory_path: str):
         """ 创建树控件子项 """
+        # 读取设置
+        workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
+        projectAreaExpandedState: dict = workspace_settings['projectAreaExpandedState']
         # 暂时禁用信号
         self.blockSignals(True)
+        # 创建各级子项
         projectItem = TreeWidgetItem(self, [os.path.basename(directory_path)], ('Project:project', directory_path), checkbox=True)
-        self.create_item_by_directory_structure(os.path.join(directory_path, 'business'), projectItem)
+        projectItem_expanded_state = projectAreaExpandedState.get(directory_path)
+        if projectItem_expanded_state is not None:
+            projectItem.setExpanded(projectItem_expanded_state)
+        self.create_item_by_directory_structure_wrapper(os.path.join(directory_path, 'business'), projectItem)
         # 启用信号
         self.blockSignals(False)
         
-    def find_checked_items(self, current_item: TreeWidgetItem, checked_items: typing.List[TreeWidgetItem | None]):
+    def find_checked_items(self, current_item: TreeWidgetItem, checked_items: list[TreeWidgetItem | None]):
         """ 递归查找所有被选中的子项 """
         for i in range(current_item.childCount()):
             child_item = current_item.child(i)
@@ -296,24 +314,55 @@ class TreeWidget(QTreeWidget):
                 checked_items.append(child_item)  # 获取选中的子项的文本
             self.find_checked_items(child_item, checked_items)  # 递归检查子项
     
-    def create_item_by_directory_structure(self, root_dir: str, parent):
+    def get_items_expanded_state(self, current_item: TreeWidgetItem, items_expanded_state: dict):
+        """ 递归获取所有子项的展开状态 """
+        for i in range(current_item.childCount()):
+            child_item = current_item.child(i)
+            if child_item:
+                items_expanded_state[child_item.path] = child_item.isExpanded()
+            self.get_items_expanded_state(child_item, items_expanded_state)  # 递归检查子项
+    
+    def create_item_by_directory_structure_wrapper(self, root_dir: str, parent, **kwargs):
+        """ 包装函数 """
+        # 读取设置
+        workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
+        projectAreaExpandedState: dict = workspace_settings['projectAreaExpandedState']
+        # 调用递归函数
+        self.__create_item_by_directory_structure(root_dir, parent, items_expanded_state=projectAreaExpandedState)
+
+    def __create_item_by_directory_structure(self, root_dir: str, parent, **kwargs):
         """ 
-        更新子项，根据传入的根目录结构来构建树控件 
+        创建各级子项，根据传入的根目录结构来构建树控件 
         
         :param root_dir: 根目录路径
         :param parent: 根目录所对应的项
+
+        kwargs:
+            items_expanded_state (dict) 储存各级子项展开状态的字典
         """
+        items_expanded_state = kwargs.get("items_expanded_state", None)
         # 获取目录中的所有条目，并按照原始顺序列出
         with os.scandir(root_dir) as it:
             for entry in it:
                 # 如果是目录
                 if entry.is_dir():
                     newItem = TreeWidgetItem(parent, [entry.name], ('Project:package', entry.path), checkbox=True)
+                    newItem_expanded_state = items_expanded_state.get(entry.path, None)
+                    if newItem_expanded_state is not None:
+                        newItem.setExpanded(newItem_expanded_state)
                     # 递归调用，传入新的父项
-                    self.create_item_by_directory_structure(entry.path, newItem)
+                    self.__create_item_by_directory_structure(entry.path, newItem, **kwargs)
                 # 如果是文件
                 else:
                     newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('Project:module', entry.path), checkbox=True)
+    
+    def save_items_expanded_state(self):
+        """ 将树子项的展开状态保存到配置文件 """
+        workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), logger=LOG, translater=True)
+        tree_items_expanded_state = {}
+        self.get_items_expanded_state(self.invisibleRootItem(), tree_items_expanded_state) # 从树根项开始递归获取每一项的展开状态，并保存到字典中
+        workspace_settings['projectAreaExpandedState'] = tree_items_expanded_state
+        save_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), workspace_settings, logger=LOG, translater=True)
     
     def __on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件，树控件绑定操作 """
@@ -449,7 +498,7 @@ class TreeWidget(QTreeWidget):
     
     def __find_specific_item_upward(self, root_item: QTreeWidgetItem, condition: typing.Callable[[], bool]) -> (TreeWidgetItem | QTreeWidgetItem | None):
         """
-        从子项开始，向上递归查找符合条件的父项。
+        从子项开始，向上递归查找符合条件的首个父项。
         
         :param item: 起始子项
         :param condition: 查找条件的函数，接受 Item 并返回布尔值
@@ -466,11 +515,11 @@ class TreeWidget(QTreeWidget):
         """ 更新目录级子项及其下所有子项"""
         if directory_item.type == 'Project:project':
             directory_item.takeChildren() # 移除所有子项
-            self.create_item_by_directory_structure(os.path.join(directory_item.path, 'business'), directory_item)
+            self.create_item_by_directory_structure_wrapper(os.path.join(directory_item.path, 'business'), directory_item)
             LOG.trace(f'Project item update successfullys')
         elif directory_item.type == 'Project:package':
             directory_item.takeChildren() # 移除所有子项
-            self.create_item_by_directory_structure(directory_item.path, directory_item)
+            self.create_item_by_directory_structure_wrapper(directory_item.path, directory_item)
             LOG.trace(f'Package item update successfullys')
         else:
             LOG.trace(f'Update failed, current item type: {directory_item.type} is not project')

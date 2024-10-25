@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-11 13:50:35
+LastEditTime: 2024-10-24 16:18:44
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\action.py
 Description: 
 
@@ -20,7 +20,8 @@ import sys
 import typing
 import subprocess
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QMenu
+    QApplication, QWidget, QDockWidget, QVBoxLayout, QHBoxLayout,QLineEdit, QTreeWidget, QMenu, 
+    QCheckBox
     )
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, Signal, QPoint
@@ -52,14 +53,21 @@ class ActionDock(QDockWidget):
         self.setWidget(self.center_widget)
         center_widget_layout = QVBoxLayout(self.center_widget)
         
+        layout = QHBoxLayout()
+        center_widget_layout.addLayout(layout)
+        # 复选框
+        self.check_box = QCheckBox(self)
+        self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
+        self.check_box.stateChanged.connect(self.__on_expand_checkbox_changed)
+        self.check_box.setObjectName('NEUTRAL')
+        layout.addWidget(self.check_box, 1)
         # 搜索框
         self.search_box = QLineEdit(self)
         self.search_box.setObjectName('NEUTRAL')
-        center_widget_layout.addWidget(self.search_box)
         self.search_box.setPlaceholderText(self.tr("请输入搜索项，按Enter搜索", "search_box_placeholder_text"))
         self.search_box.textChanged.connect(self.__search_tree_items)
+        layout.addWidget(self.search_box, 99)
         
-
         # 树控件
         self.tree = QTreeWidget()
         self.tree.setObjectName('NEUTRAL') 
@@ -97,6 +105,15 @@ class ActionDock(QDockWidget):
         root = self.tree.invisibleRootItem() # 获取根项
         filter_item(root, search_text)
     
+    def __on_expand_checkbox_changed(self, state: int):
+        """ 复选框状态变更绑定事件 """
+        if state == 2:  # 复选框选中
+            self.tree.expandAll()  # 展开所有项
+            self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-expand-vertical.svg')))
+        else:
+            self.tree.collapseAll()  # 收起所有项
+            self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
+
     def __on_item_double_clicked(self, item: TreeWidgetItem, column):
         """ 树控件子项双击事件 """
         try:
