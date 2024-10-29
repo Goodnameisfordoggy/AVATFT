@@ -275,7 +275,6 @@ class TreeWidget(QTreeWidget):
     # 自定义信号
     itemDoubleClickedSignal = Signal(str)  # 信号携带一个字符串参数
     loadProjectSignal = Signal(str)
-    isLockEditDockCheckBoxSignal = Signal()
     
     def __init__(self, parent: QWidget | None = ...) -> None:
         super().__init__(parent)

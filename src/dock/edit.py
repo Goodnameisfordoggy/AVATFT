@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-25 16:05:19
+LastEditTime: 2024-10-29 23:53:31
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\edit.py
 Description: 
 
@@ -19,6 +19,7 @@ import os
 import json
 import yaml
 import typing
+import threading
 from PySide6.QtWidgets import (
     QApplication, QLabel, QDockWidget, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem,
     QMenu, QPushButton, QHBoxLayout, QVBoxLayout, QComboBox, QCheckBox, QAbstractItemView
@@ -26,15 +27,17 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
-from src.utils import logger
+
 from src.utils.filter import identify_input_type
 from src.utils.file import load_file_content, save_file_content
 from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
 from src.dock.action import ActionDock
-from src.funcs import run_module, run
+from src.funcs import *
 from src import ICON_DIR
+from src.utils import logger
 LOG = logger.get_logger()
 
+OPERATE_LOCK = threading.Lock()
 
 class EditDock(QDockWidget):
     
@@ -70,12 +73,14 @@ class EditDock(QDockWidget):
         self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
         self.check_box.stateChanged.connect(self.__on_expand_all_checkbox_changed)
         self.check_box.setObjectName('SECONDARY')
+        self.check_box.setEnabled(False)
         search_layout.addWidget(self.check_box, 1)
         # 复选框
         self.check_box2 = QCheckBox(self)
         self.check_box2.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
         self.check_box2.stateChanged.connect(self.__on_expand_step_checkbox_changed)
         self.check_box2.setObjectName('SECONDARY')
+        self.check_box2.setEnabled(False)
         search_layout.addWidget(self.check_box2, 1)# 复选框
         # 搜索框
         self.search_box = QLineEdit(self)
@@ -101,25 +106,46 @@ class EditDock(QDockWidget):
         self.operation_btn.clicked.connect(self.operate)
         self.operation_btn.setFocusPolicy(Qt.NoFocus)  # 禁用键盘焦点
         button_layout.addWidget(self.operation_btn)
-    
+
     @Slot(list)  
     @Slot() # 也可处理不带参数的信号
     def operate(self, data: list | bool = False):
         """ 开始测试,按钮绑定操作 """
-        
-        if data is False or data is None: #  按钮clicked信号触发时传递的信息
+        if data is False or data is None: #  data: 按钮clicked信号触发时传递的信息
             self.operateSignal.emit('operate')
-        elif isinstance(data, list): # operateResponseSignal信号触发时回带的信息
+            return
+        if isinstance(data, list): # data: operateResponseSignal信号触发时回带的信息
             if len(data) == 0:
                 LOG.warning(self.tr("还未勾选要运行的测试用例！", "Log_msg"))
                 return
-            LOG.info(self.tr("开始测试 》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》", "Log_msg"))
-            if len(data) == 1:
-                run_module(data[0])
-            else:
-                run(path_list=data)
-            LOG.info(self.tr("测试结束《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《 ", "Log_msg"))
-    
+            # # 获取锁
+            # if OPERATE_LOCK.acquire(blocking=False):  
+            try:
+                # 只有在获取到锁后才创建线程
+                thread = threading.Thread(target=self.__operate_thread, args=(data,))
+                thread.start()
+            except Exception as e:
+                LOG.debug(f"{e}")
+
+    def __operate_thread(self, data: list | bool = False):
+        """ 线程任务 """
+        if OPERATE_LOCK.acquire(blocking=False): # 获取锁，立即返回
+            self.operation_btn.setEnabled(False) # 禁止交互
+            try:
+                LOG.info(self.tr("开始测试 》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》", "Log_msg"))
+                if len(data) == 1:
+                    run_module_process(data[0])
+                else:
+                    run_modules_processes_sequentially(get_ordered_queue(path_list=data))
+                LOG.info(self.tr("测试结束《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《 ", "Log_msg"))
+            except Exception as e:
+                LOG.debug(f"{e}")
+            finally:
+                OPERATE_LOCK.release()  # 在进程任务完成后释放锁
+                self.operation_btn.setEnabled(True) # 允许交互
+        else:
+            LOG.warning(self.tr("已有操作正在进行，请稍候再试", "Log_msg"))
+
     def __search_tree_items(self, column: int = 0):
         """ 
         搜索树控件子项，搜索框绑定操作
@@ -171,10 +197,7 @@ class EditDock(QDockWidget):
         item_step  = self.tree.topLevelItem(0).child(2)
         if state == 2:  # 复选框选中
             if item_step:
-                item_step.setExpanded(True)
-                for index in range(0, item_step.childCount()):
-                    item_step.child(index).setExpanded(True)
-
+                self.tree.set_all_items_expanded(item_step, True)
             self.check_box2.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-expand-vertical.svg')))
             # try:
             #     self.tree.scrollToItem(self.current_item, QAbstractItemView.PositionAtTop)
@@ -182,6 +205,7 @@ class EditDock(QDockWidget):
             #     pass
         else:
             if item_step:
+                # 只处理步骤项下子项的收缩
                 for index in range(0, item_step.childCount()):
                     item_step.child(index).setExpanded(False)
                 
@@ -208,6 +232,8 @@ class EditDock(QDockWidget):
     
 
 class TreeWidget(QTreeWidget):
+    
+    isLockEditDockCheckBoxSignal = Signal(bool)
     
     def __init__(self):
         super().__init__()
@@ -280,6 +306,7 @@ class TreeWidget(QTreeWidget):
         self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)
         self.resizeColumnToContents(2)
+        self.isLockEditDockCheckBoxSignal.emit(True) # 关闭交互
     
     @Slot(str)
     def display_module_details(self, module_path:str):
@@ -296,6 +323,7 @@ class TreeWidget(QTreeWidget):
         self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)
         self.resizeColumnToContents(2)
+        self.isLockEditDockCheckBoxSignal.emit(False) # 放开交互
     
     def set_all_items_expanded(self, current_item: QTreeWidgetItem, state: bool):
         """ 递归设置当前项及其下子项的展开状态 """

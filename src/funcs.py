@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-20 13:44:17
+LastEditTime: 2024-10-29 23:55:48
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\funcs.py
 Description: 
 
@@ -17,8 +17,8 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 '''
 import os
 import re
-
 import typing
+from multiprocessing import Process, Pool
 
 from src.utils.file import load_file_content, save_file_content
 from src.func import *
@@ -29,13 +29,6 @@ PLAYWRIGHT = None
 PAGE_GROUP = {} 
 
 
-def initialize_playwright():
-	"""检查并初始化 Playwright"""
-	global PLAYWRIGHT
-	if not PLAYWRIGHT:
-		PLAYWRIGHT = sync_playwright().start()
-		LOG.trace('Playwright start')
-
 def run_module(path: str = ''):
 	""" 运行单个模块 """
 	VARIABLES = {} # 变量生命周期为单个模块运行期间
@@ -44,7 +37,7 @@ def run_module(path: str = ''):
 	
 	module_content = load_file_content(path, logger=LOG, translater=True)
 	LOG.success(f'正在运行--{module_content['info']['describe']}--id:{module_content['info']['id']}--title:{module_content['info']['title']}')
-	initialize_playwright()
+	__initialize_playwright()
 	
 	for step_content in module_content['step']:
 		action_type: str = step_content['action']
@@ -72,7 +65,7 @@ def run_module(path: str = ''):
 			elif method_name == 'CloseBrowser':
 				method(**params, browser=current_browser)
 			elif method_name == 'NewPage':
-				page = method(**params, playwright=PLAYWRIGHT, context=current_context)
+				page = method(**params, context=current_context)
 				page_id = params['id']
 				PAGE_GROUP[page_id] = page
 				current_page_id = page_id
@@ -95,12 +88,12 @@ def run_module(path: str = ''):
 		# LOG.debug(f'{VARIABLES}')
 
 @typing.overload
-def run(task_list: list[(int, str)]):...
+def get_ordered_queue(task_list: list[(int, str)]) -> list:...
 @typing.overload
-def run(path_list: list[str]):...
-def run(task_list: list[(int, str)] = [], path_list: list[str] = []):
+def get_ordered_queue(path_list: list[str]) -> list:...
+def get_ordered_queue(task_list: list[(int, str)] = [], path_list: list[str] = []) -> list:
 	""" 
-	运行，根据任务队列 
+	获取有序的任务队列 
 	
 	:param task_list: [ ( id(int), path(str) ) ] path: 可运行的单个模块的路径；id: 该模块运行次序
 	:param path_list: [ path(str) ] 可运行的单个模块的路径列表
@@ -115,6 +108,38 @@ def run(task_list: list[(int, str)] = [], path_list: list[str] = []):
 		task_queue = task_list
 		
 	task_queue.sort(key=lambda x: x[0])
-	
-	for task in task_queue:
-		run_module(task[1])
+	return task_queue
+
+def run_module_process(path: str):
+	""" 使用新进程运行单个模块 """
+	process_name = os.path.splitext(os.path.basename(path))[0]
+	process = Process(target=run_module, name=process_name, args=(path,))
+	process.start()
+	process.join()
+
+def run_modules_processes_concurrently(task_queue: list[typing.Tuple[int, str]]):
+	"""使用多进程并发的模式运行多个模块"""
+	pool_size = min(len(task_queue), os.cpu_count() / 2)  # 使用CPU核心数量的1/2或任务数量中的最小值
+	with Pool(processes=pool_size) as pool:
+		# 使用map方法将任务分配给进程池中的进程
+		pool.map(run_module, [task[1] for task in task_queue])  # paths为路径列表
+		pool.close()
+		pool.join()
+
+def run_modules_processes_sequentially(task_queue: list[typing.Tuple[int, str]]):
+    """使用进程依次运行多个模块"""
+    processes = []
+    
+    for task in task_queue:
+        # 为每个任务创建新的进程
+        process = Process(target=run_module, args=(task[1],))
+        processes.append(process)
+        process.start()  # 启动进程
+        process.join() # 等待当前进程完成，再启动下一个进程
+
+def __initialize_playwright():
+	"""检查并初始化 Playwright"""
+	global PLAYWRIGHT # sync_playwright() 不支持跨线程调用，启用进程执行任务时使用全局 PLAYWRIGHT
+	if not PLAYWRIGHT:
+		PLAYWRIGHT = sync_playwright().start()
+		LOG.trace('Playwright start')

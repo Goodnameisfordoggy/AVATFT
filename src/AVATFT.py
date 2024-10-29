@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-24 13:35:39
+LastEditTime: 2024-10-26 23:18:40
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\AVATFT.py
 Description: 
 
@@ -260,9 +260,9 @@ class MainWindow(QMainWindow):
         self.edit_dock.closeSignal.connect(lambda: self.editDockAction.setIcon(QIcon()))
         self.edit_dock.operateSignal.connect(lambda: self.log_dock.setVisible(True))
         self.edit_dock.operateSignal.connect(self.project_dock.get_checked_modules)
+        self.edit_dock.tree.isLockEditDockCheckBoxSignal.connect(lambda is_lock: self.edit_dock.check_box.setEnabled(not is_lock))
+        self.edit_dock.tree.isLockEditDockCheckBoxSignal.connect(lambda is_lock: self.edit_dock.check_box2.setEnabled(not is_lock))
         self.log_dock.closeSignal.connect(lambda: self.logDockAction.setIcon(QIcon()))
-    
-
     
     @typing.override
     def contextMenuEvent(self, event):

@@ -25,9 +25,9 @@ def load_file_content(path: str, logger: Optional[object] = None, translater: bo
     # 检查文件是否存在
     if not file_path.is_file():
         if translater:
-            msg = QCoreApplication.translate("Log_msg", "文件 {} 不存在").format(file_path)
+            msg = QCoreApplication.translate("Log_msg", "文件 '{}' 不存在").format(file_path)
         else:
-            msg = "文件 {} 不存在".format(file_path)
+            msg = "文件 '{}' 不存在".format(file_path)
         if logger:
             logger.critical(msg)
         else:
@@ -43,9 +43,9 @@ def load_file_content(path: str, logger: Optional[object] = None, translater: bo
                 return yaml.safe_load(file)
         else:
             if translater:
-                msg = QCoreApplication.translate("Log_msg", "不支持的文件类型: ").format(file_path.suffix)
+                msg = QCoreApplication.translate("Log_msg", "不支持的文件类型: '{}'").format(file_path.suffix)
             else:
-                msg = "不支持的文件类型: ".format(file_path.suffix)
+                msg = "不支持的文件类型: '{}'".format(file_path.suffix)
             if logger:
                 logger.error(msg)
             else:
