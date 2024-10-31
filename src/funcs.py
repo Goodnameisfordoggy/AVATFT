@@ -20,10 +20,9 @@ import re
 import typing
 from multiprocessing import Process, Pool
 
-from src.utils.file import load_file_content, save_file_content
+from src.modules.file import load_file_content
 from src.func import *
-from src.utils.logger import get_logger
-LOG = get_logger()
+from src.modules import LOG
 
 PLAYWRIGHT = None
 PAGE_GROUP = {} 

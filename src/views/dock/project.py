@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-24 15:43:34
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\project.py
+LastEditTime: 2024-10-31 21:57:24
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\dock\project.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -24,16 +24,14 @@ from PySide6.QtWidgets import (
     QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QTreeWidgetItem, QMenu, QFileDialog
 	)
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import Qt, QPoint, Signal, Slot, QCoreApplication
+from PySide6.QtCore import Qt, QPoint, Signal, Slot
 
-from src.utils.file import open_file, load_file_content, save_file_content
-from src.utils.filter import filter_item
-from src.utils import logger
+from src.ui import Ui_ProjectDock
+from src.modules import open_file, load_file_content, save_file_content, filter_item
 from src.treeWidgetItem import TreeWidgetItem
-from src.dialogBox.input import NameInputDialogBox
-from src.dialogBox.reconfirm import ReconfirmDialogBox
-from src import PROJECTS_DIR, CONFIG_DIR, ICON_DIR, TEMPLATE_DIR
-LOG = logger.get_logger()
+from src.views import NameInputDialogBox, ReconfirmDialogBox
+from src import PROJECTS_DIR, CONFIG_DIR, ICON_DIR
+from src.modules.logger import LOG
 
 
 class ProjectDock(QDockWidget):
@@ -41,32 +39,28 @@ class ProjectDock(QDockWidget):
     # 自定义信号
     closeSignal = Signal(str)
     operateResponseSignal = Signal(list)
+    itemDoubleClickedSignal = Signal(str)
+    loadProjectSignal = Signal(str)
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
         self.setWindowTitle(self.tr("项目", "window_title"))
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.setObjectName('NEUTRAL')
-        self.__initUI()
+        self.ui = Ui_ProjectDock()
+        self.ui.setupUi(self)
         self.load_history_project()
-        self.destroyed.connect(lambda: print("__on_destroyed")) # 窗口销毁时
+        self.__init_connections()
 
-    def __initUI(self):
-        self.center_widget = QWidget(self)
-        self.setWidget(self.center_widget)
-        center_widget_layout = QVBoxLayout(self.center_widget)
-        
-        # 搜索框
-        self.search_box = QLineEdit(self)
-        self.search_box.setObjectName('NEUTRAL')
-        self.search_box.setPlaceholderText(self.tr("请输入搜索项，按Enter搜索", "search_box_placeholder_text"))
-        self.search_box.textChanged.connect(self.__search_tree_items)
-        center_widget_layout.addWidget(self.search_box)
-
-        # 树控件
-        self.tree = TreeWidget(self)
-        center_widget_layout.addWidget(self.tree)
+    def __del__(self):
+        self.__save_items_expanded_state()
     
+    def __init_connections(self):
+        self.ui.search_box.textChanged.connect(self.__search_tree_items)
+        self.ui.tree.itemDoubleClicked.connect(self.__on_item_double_clicked)
+        self.ui.tree.itemChanged.connect(self.__on_item_change)
+        self.ui.tree.customContextMenuRequested.connect(self.__show_context_menu)
+
     @Slot(str)
     def new_project(self, msg: str):
         """ 创建新工程目录，菜单操作"""
@@ -83,7 +77,7 @@ class ProjectDock(QDockWidget):
                 LOG.success(self.tr("项目 '{}' 创建成功", "Log_msg").format(projectName))
             except Exception as err:
                 LOG.debug(f'Exception: {err}')
-            self.tree.load_project_item(projectPath)
+            self.__load_project_item(projectPath)
 
     def select_project(self) -> str:
         directory_path = QFileDialog.getExistingDirectory(self, self.tr("选择项目目录", "dialog_title"), PROJECTS_DIR)
@@ -101,7 +95,7 @@ class ProjectDock(QDockWidget):
                 if directory_path not in folder_paths:
                     workspace_settings['folders'].append({'path': directory_path})
                     save_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), workspace_settings, LOG, translater=True)
-                    self.tree.load_project_item(directory_path)
+                    self.__load_project_item(directory_path)
                     LOG.info(self.tr("从 {} 加载工程", "Log_msg").format(directory_path))
     
     def load_history_project(self):
@@ -111,7 +105,7 @@ class ProjectDock(QDockWidget):
         if folders:
             for index, folder in enumerate(folders):
                 if os.path.isdir(folder['path']):
-                    self.tree.load_project_item(folder['path'])
+                    self.__load_project_item(folder['path'])
                     LOG.info(self.tr("从历史记录中载入工程: {}", "Log_msg").format(folder['path']))
                 else:
                     # 移除不合法的目录
@@ -119,12 +113,6 @@ class ProjectDock(QDockWidget):
         # 更新历史记录
         workspace_settings['folders'] = folders
         save_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), workspace_settings, LOG, translater=True)
-                    
-    def __search_tree_items(self):
-        """ 搜索树控件子项，搜索框绑定操作"""
-        search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
-        root = self.tree.invisibleRootItem() # 获取根项
-        filter_item(root, search_text)
     
     @Slot(str)
     def get_checked_modules(self, msg: str):
@@ -133,195 +121,45 @@ class ProjectDock(QDockWidget):
         
         """
         checked_items = []
-        root = self.tree.invisibleRootItem()  # 获取树的根项
-        self.tree.find_checked_items(root, checked_items)
+        root = self.ui.tree.invisibleRootItem()  # 获取树的根项
+        self.__find_checked_items(root, checked_items)
         modulePaths = [item.path for item in checked_items if item.type == 'Project:module']
         self.operateResponseSignal.emit(modulePaths)
     
-    @staticmethod
-    def new_module_file(path: str) -> bool:
-        """ 
-        创建 module 级配置文件 
         
-        :param path: 目标文件路径
-        """
-        if not os.path.exists(path):
-            if ProjectDock.paste_file(os.path.join(TEMPLATE_DIR, 'module_template.yaml'), path, 'COPY'): # 直接使用模版文件初始化
-                LOG.success(QCoreApplication.translate("ProjectDock", "测试用例已经使用模板文件初始化", "Log_msg"))
-                return True
-            # config_data = {}
-            # # 创建并写入 YAML 文件
-            # with open(path, 'w') as f:
-            #     yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True)
-        else:
-            LOG.warning(QCoreApplication.translate("ProjectDock", "目标位置中存在同名文件，新建操作已取消", "Log_msg"))
-    
-    @staticmethod
-    def new_package_file(path: str) -> bool:
-        """ 
-        创建 package 目录
-        
-        :param path: 目标目录路径
-        """
-        if path:
-            try:
-                os.mkdir(path)
-                LOG.success(QCoreApplication.translate("ProjectDock", "测试集 {} 创建成功：", "Log_msg").format(path))
-                return True
-            except FileExistsError:
-                LOG.warning(QCoreApplication.translate("ProjectDock", "目录 {} 已存在", "Log_msg").format(path))
-    
-    @staticmethod
-    def paste_file(source: str, target: str, pre_event: str = '') -> bool:
-        """ 
-        粘贴文件 
-        
-        :param source: 原文件路径
-        :param target: 目标位路径
-        :param pre_event: CUT | COPY
-        """
-        if source:
-            if os.path.exists(target): # 目标位置存在文件
-                LOG.trace('A file with the same name exists at the destination location, pasting has been canceled')
-                return
-            if os.path.splitext(os.path.basename(source))[1] != os.path.splitext(os.path.basename(target))[1]:
-                LOG.warning(QCoreApplication.translate("ProjectDock", "请注意，源文件的后缀与目标文件不同", "Log_msg"))
-            if not pre_event:
-                LOG.trace('Param pre_event should be set to CUT or COPY')
-            # 剪切粘贴
-            if pre_event == 'CUT': 
-                shutil.move(source, target) # 移动文件或目录
-                return True
-            # 复制粘贴
-            elif pre_event == 'COPY': 
-                # 拷贝文件或目录
-                if os.path.isfile(source):
-                    shutil.copy(source, target)
-                    LOG.trace(f'File copy successfully at {target}')
-                    return True
-                elif os.path.isdir(source):
-                    shutil.copytree(source, target)
-                    LOG.trace(f'Directory copy successfully at {target}')
-                    return True
-                else:
-                    LOG.error(QCoreApplication.translate("ProjectDock", "{} 不是文件或目录", "Log_msg").format(source))
-    
-    @staticmethod
-    def delete_file(path: str) -> bool:
-        """" 
-        删除文件 
-        
-        :param path: 目标文件路径
-        """
-        if os.path.exists(path):  # 检查路径是否存在
-            if os.path.isfile(path):
-                try:
-                    os.remove(path)
-                    LOG.trace(f"File at '{path}' delete successfully")
-                    return True
-                except PermissionError:
-                    LOG.warning(QCoreApplication.translate("ProjectDock", "没有权限删除文件: {}", "Log_msg").format(path))
-                except Exception as e:
-                    LOG.error(QCoreApplication.translate("ProjectDock", "发生错误：{}", "Log_msg").format(e))
-            elif os.path.isdir(path): # 如果是目录直接删除，不考虑是否为空
-                try:
-                    shutil.rmtree(path)
-                    LOG.trace(f"Directory at {path} delete successfully")
-                    return True
-                except PermissionError:
-                    LOG.warning(QCoreApplication.translate("ProjectDock", "没有权限删除目录: {}", "Log_msg").format(path))
-                except Exception as e:
-                    LOG.error(QCoreApplication.translate("ProjectDock", "发生错误：{}", "Log_msg").format(e))
-            else:
-                LOG.warning(QCoreApplication.translate("ProjectDock", "文件 {} 不存在", "Log_msg").format(path))
-    
-    @staticmethod
-    def rename_file(path: str, name: str = '') -> str:
-        """ 
-        重命名文件项或目录项，菜单操作 
-        
-        :param path: 目标文件路径
-        :param name: 要更改的名称
-        :return: 更改完名称的文件绝对路径
-        """
-        if os.path.exists(path):  # 检查路径是否存在
-            dirname = os.path.dirname(path)
-            if os.path.isfile(path): # 文件
-                extension = os.path.splitext(os.path.basename(path))[1]
-                newPath = os.path.join(dirname, name + extension)
-            else: # 目录
-                newPath = os.path.join(dirname, name)
-            try:
-                os.rename(path, newPath)
-                LOG.trace(f'The file or directory has been successfully renamed to {name} at {newPath}')
-                return newPath
-            except FileNotFoundError:
-                LOG.warning(QCoreApplication.translate("ProjectDock", "文件或目录 {} 不存在", "Log_msg").format(path))
-            except PermissionError:
-                LOG.warning(QCoreApplication.translate("ProjectDock", "没有权限重命名文件或目录：{}", "Log_msg").format(path))
-            except Exception as e:
-                LOG.error(QCoreApplication.translate("ProjectDock", "发生错误：{}", "Log_msg").format(e))
-        else:
-            LOG.trace(f"{path} does not exist")
-    
-    @typing.override
-    def closeEvent(self, event) -> None:
-        self.closeSignal.emit('close')
-        return super().closeEvent(event)
-
-
-class TreeWidget(QTreeWidget):
-    
-    # 自定义信号
-    itemDoubleClickedSignal = Signal(str)  # 信号携带一个字符串参数
-    loadProjectSignal = Signal(str)
-    
-    def __init__(self, parent: QWidget | None = ...) -> None:
-        super().__init__(parent)
-        self.setObjectName('NEUTRAL') 
-        self.setHeaderHidden(True) # 隐藏表头
-        self.itemDoubleClicked.connect(self.__on_item_double_clicked)
-        self.itemChanged.connect(self.__on_item_change)
-        # 连接右键菜单事件
-        self.setContextMenuPolicy(Qt.CustomContextMenu) # 使用自定义菜单
-        self.customContextMenuRequested.connect(self.__show_context_menu)
-    
-    def __del__(self):
-        self.save_items_expanded_state()
-
-    def load_project_item(self, directory_path: str):
-        """ 创建树控件子项 """
-        # 读取设置
-        workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
-        projectAreaExpandedState: dict = workspace_settings['projectAreaExpandedState']
-        # 暂时禁用信号
-        self.blockSignals(True)
-        # 创建各级子项
-        projectItem = TreeWidgetItem(self, [os.path.basename(directory_path)], ('Project:project', directory_path), checkbox=True)
-        projectItem_expanded_state = projectAreaExpandedState.get(directory_path)
-        if projectItem_expanded_state is not None:
-            projectItem.setExpanded(projectItem_expanded_state)
-        self.create_item_by_directory_structure_wrapper(os.path.join(directory_path, 'business'), projectItem)
-        # 启用信号
-        self.blockSignals(False)
-        
-    def find_checked_items(self, current_item: TreeWidgetItem, checked_items: list[TreeWidgetItem | None]):
+    def __find_checked_items(self, current_item: TreeWidgetItem, checked_items: list[TreeWidgetItem | None]):
         """ 递归查找所有被选中的子项 """
         for i in range(current_item.childCount()):
             child_item = current_item.child(i)
             if child_item.checkState(0) == Qt.Checked:
                 checked_items.append(child_item)  # 获取选中的子项的文本
-            self.find_checked_items(child_item, checked_items)  # 递归检查子项
+            self.__find_checked_items(child_item, checked_items)  # 递归检查子项
     
-    def get_items_expanded_state(self, current_item: TreeWidgetItem, items_expanded_state: dict):
+    def __get_items_expanded_state(self, current_item: TreeWidgetItem, items_expanded_state: dict):
         """ 递归获取所有子项的展开状态 """
         for i in range(current_item.childCount()):
             child_item = current_item.child(i)
             if child_item:
                 items_expanded_state[child_item.path] = child_item.isExpanded()
-            self.get_items_expanded_state(child_item, items_expanded_state)  # 递归检查子项
+            self.__get_items_expanded_state(child_item, items_expanded_state)  # 递归检查子项
     
-    def create_item_by_directory_structure_wrapper(self, root_dir: str, parent, **kwargs):
+    def __load_project_item(self, directory_path: str):
+        """ 创建树控件子项 """
+        # 读取设置
+        workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
+        projectAreaExpandedState: dict = workspace_settings['projectAreaExpandedState']
+        # 暂时禁用信号
+        self.ui.tree.blockSignals(True)
+        # 创建各级子项
+        projectItem = TreeWidgetItem(self.ui.tree, [os.path.basename(directory_path)], ('Project:project', directory_path), checkbox=True)
+        projectItem_expanded_state = projectAreaExpandedState.get(directory_path)
+        if projectItem_expanded_state is not None:
+            projectItem.setExpanded(projectItem_expanded_state)
+        self.__create_item_by_directory_structure_wrapper(os.path.join(directory_path, 'business'), projectItem)
+        # 启用信号
+        self.ui.tree.blockSignals(False)
+    
+    def __create_item_by_directory_structure_wrapper(self, root_dir: str, parent, **kwargs):
         """ 包装函数 """
         # 读取设置
         workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
@@ -329,6 +167,14 @@ class TreeWidget(QTreeWidget):
         # 调用递归函数
         self.__create_item_by_directory_structure(root_dir, parent, items_expanded_state=projectAreaExpandedState)
 
+    def __save_items_expanded_state(self):
+        """ 将树子项的展开状态保存到配置文件 """
+        workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), logger=LOG, translater=True)
+        tree_items_expanded_state = {}
+        self.__get_items_expanded_state(self.ui.tree.invisibleRootItem(), tree_items_expanded_state) # 从树根项开始递归获取每一项的展开状态，并保存到字典中
+        workspace_settings['projectAreaExpandedState'] = tree_items_expanded_state
+        save_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), workspace_settings, logger=LOG, translater=True)
+    
     def __create_item_by_directory_structure(self, root_dir: str, parent, **kwargs):
         """ 
         创建各级子项，根据传入的根目录结构来构建树控件 
@@ -355,13 +201,11 @@ class TreeWidget(QTreeWidget):
                 else:
                     newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('Project:module', entry.path), checkbox=True)
     
-    def save_items_expanded_state(self):
-        """ 将树子项的展开状态保存到配置文件 """
-        workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), logger=LOG, translater=True)
-        tree_items_expanded_state = {}
-        self.get_items_expanded_state(self.invisibleRootItem(), tree_items_expanded_state) # 从树根项开始递归获取每一项的展开状态，并保存到字典中
-        workspace_settings['projectAreaExpandedState'] = tree_items_expanded_state
-        save_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), workspace_settings, logger=LOG, translater=True)
+    def __search_tree_items(self):
+        """ 搜索树控件子项，搜索框绑定操作"""
+        search_text = self.ui.search_box.text().lower() # 获取搜索框的文本，并转换为小写
+        root = self.ui.tree.invisibleRootItem() # 获取根项
+        filter_item(root, search_text)
     
     def __on_item_double_clicked(self, item, column):
         """ 树控件子项双击事件，树控件绑定操作 """
@@ -374,13 +218,13 @@ class TreeWidget(QTreeWidget):
     def __on_item_change(self, item: TreeWidgetItem, column):
         """ 树控件子项变化处理，树控件绑定操作"""
         # 暂时禁用信号处理，避免递归触发
-        self.blockSignals(True)
+        self.ui.tree.blockSignals(True)
         # 获取当前复选框的状态
         check_state = item.checkState(0)
         self.__update_child_items_check_state(item, check_state)
         self.__update_parent_item_check_state(item)
         # 重新启用信号处理
-        self.blockSignals(False)
+        self.ui.tree.blockSignals(False)
     
     def __show_context_menu(self, pos: QPoint):
         """ 
@@ -389,21 +233,21 @@ class TreeWidget(QTreeWidget):
         :pos: 事件位置
         """
         # 获取点击的项
-        item = self.itemAt(pos)
+        item = self.ui.tree.itemAt(pos)
         if item:
             if item.type in ('Project:module', 'Project:package'):
                 # 创建上下文菜单
-                context_menu = QMenu(self)
+                context_menu = QMenu(self.ui.tree)
                 # 创建菜单项
-                newMenu = QMenu(self.tr("新建"), self)
-                newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), self.tr("新建测试用例", "menu_action_new_module"), self)
-                newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), self.tr("新建目录", "menu_action_new_package"), self)
-                openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self)
-                copyAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-copy.svg')), self.tr("复制", "menu_action_copy"), self)
-                cutAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-cut.svg')), self.tr("剪切", "meun_action_cut"), self)
-                pasteAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-paste.svg')), self.tr("粘贴", "meun_action_paste"), self)
-                deleteAction = QAction(QIcon(os.path.join(ICON_DIR, 'trash-can-outline.svg')), self.tr("删除", "menu_action_delete"), self)
-                renameAction = QAction(QIcon(os.path.join(ICON_DIR, 'rename.svg')), self.tr("重命名", "menu_action_rename"), self)
+                newMenu = QMenu(self.tr("新建"), self.ui.tree)
+                newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), self.ui.tree.tr("新建测试用例", "menu_action_new_module"), self.ui.tree)
+                newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), self.tr("新建目录", "menu_action_new_package"), self.ui.tree)
+                openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self.ui.tree)
+                copyAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-copy.svg')), self.tr("复制", "menu_action_copy"), self.ui.tree)
+                cutAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-cut.svg')), self.tr("剪切", "meun_action_cut"), self.ui.tree)
+                pasteAction = QAction(QIcon(os.path.join(ICON_DIR, 'content-paste.svg')), self.tr("粘贴", "meun_action_paste"), self.ui.tree)
+                deleteAction = QAction(QIcon(os.path.join(ICON_DIR, 'trash-can-outline.svg')), self.tr("删除", "menu_action_delete"), self.ui.tree)
+                renameAction = QAction(QIcon(os.path.join(ICON_DIR, 'rename.svg')), self.tr("重命名", "menu_action_rename"), self.ui.tree)
 
                 # 连接菜单项的触发信号
                 newModuleAction.triggered.connect(lambda: self.__new_module_item(item))
@@ -427,23 +271,23 @@ class TreeWidget(QTreeWidget):
                 context_menu.addAction(pasteAction)
                 context_menu.addAction(deleteAction)
                 context_menu.addAction(renameAction)
-                context_menu.exec(self.viewport().mapToGlobal(pos)) # 显示上下文菜单
+                context_menu.exec(self.ui.tree.viewport().mapToGlobal(pos)) # 显示上下文菜单
             elif item.type == 'Project:project':
                 # 创建上下文菜单
-                context_menu = QMenu(self)
+                context_menu = QMenu(self.ui.tree)
                 # 创建菜单项
-                newMenu = QMenu(self.tr("新建"), self)
-                newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), self.tr("新建测试用例", "menu_action_new_module"), self)
-                newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), self.tr("新建目录", "menu_action_new_package"), self)
-                openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self)
-                addProjectAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-plus.svg')), self.tr("将文件添加到工作区", "menu_action_add_project"), self)
-                removeProjectAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-remove.svg')), self.tr("将文件从工作区移除", "menu_action_remove_project"), self)
+                newMenu = QMenu(self.tr("新建"), self.ui.tree)
+                newModuleAction = QAction(QIcon(os.path.join(ICON_DIR, 'file-plus.svg')), self.tr("新建测试用例", "menu_action_new_module"), self.ui.tree)
+                newPackageAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')), self.tr("新建目录", "menu_action_new_package"), self.ui.tree)
+                openAction = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self.ui.tree)
+                addProjectAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-plus.svg')), self.tr("将文件添加到工作区", "menu_action_add_project"), self.ui.tree)
+                removeProjectAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-remove.svg')), self.tr("将文件从工作区移除", "menu_action_remove_project"), self.ui.tree)
                 # 连接菜单项的触发信号
                 newModuleAction.triggered.connect(lambda: self.__new_module_item(item))
                 newPackageAction.triggered.connect(lambda: self.__new_package_item(item))
                 openAction.triggered.connect(lambda: open_file(item.path))
                 addProjectAction.triggered.connect(lambda: self.loadProjectSignal.emit('load project'))
-                removeProjectAction.triggered.connect(lambda: self.__remove_project(self.indexOfTopLevelItem(item)))
+                removeProjectAction.triggered.connect(lambda: self.__remove_project(self.ui.tree.indexOfTopLevelItem(item)))
 
                 # 将菜单项添加到上下文菜单
                 context_menu.addMenu(newMenu)
@@ -455,14 +299,14 @@ class TreeWidget(QTreeWidget):
                 context_menu.addAction(addProjectAction)
                 context_menu.addAction(removeProjectAction)
                 
-                context_menu.exec(self.viewport().mapToGlobal(pos)) # 显示上下文菜单
+                context_menu.exec(self.ui.tree.viewport().mapToGlobal(pos)) # 显示上下文菜单
 
         else: # 右击树控件空白处
-            context_menu = QMenu(self)
-            openAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-plus.svg')), self.tr("将文件添加到工作区", "menu_action_add_project"), self)
+            context_menu = QMenu(self.ui.tree)
+            openAction = QAction(QIcon(os.path.join(ICON_DIR, 'layers-plus.svg')), self.tr("将文件添加到工作区", "menu_action_add_project"), self.ui.tree)
             openAction.triggered.connect(lambda: self.loadProjectSignal.emit('load project'))
             context_menu.addAction(openAction)
-            context_menu.exec(self.viewport().mapToGlobal(pos))
+            context_menu.exec(self.ui.tree.viewport().mapToGlobal(pos))
 
     def __remove_project(self, index: int):
         """ 移除工程目录， 菜单操作"""
@@ -470,7 +314,7 @@ class TreeWidget(QTreeWidget):
         workspace_settings = load_file_content(workspace_setting_file, LOG, True)
         folders: list = workspace_settings['folders']
         workspace_settings['folders'].pop(index)
-        self.takeTopLevelItem(index)
+        self.ui.tree.takeTopLevelItem(index)
         save_file_content(workspace_setting_file, workspace_settings, LOG, True)
     
     def __update_child_items_check_state(self, current_item: TreeWidgetItem, check_state: Qt.CheckState):
@@ -514,11 +358,11 @@ class TreeWidget(QTreeWidget):
         """ 更新目录级子项及其下所有子项"""
         if directory_item.type == 'Project:project':
             directory_item.takeChildren() # 移除所有子项
-            self.create_item_by_directory_structure_wrapper(os.path.join(directory_item.path, 'business'), directory_item)
+            self.__create_item_by_directory_structure_wrapper(os.path.join(directory_item.path, 'business'), directory_item)
             LOG.trace(f'Project item update successfullys')
         elif directory_item.type == 'Project:package':
             directory_item.takeChildren() # 移除所有子项
-            self.create_item_by_directory_structure_wrapper(directory_item.path, directory_item)
+            self.__create_item_by_directory_structure_wrapper(directory_item.path, directory_item)
             LOG.trace(f'Package item update successfullys')
         else:
             LOG.trace(f'Update failed, current item type: {directory_item.type} is not project')
@@ -644,3 +488,8 @@ class TreeWidget(QTreeWidget):
                 item.change_UserData(1, newPath)
                 LOG.trace('Item rename successfully')
                 self.__update_directory_item(self.__find_specific_item_upward(item, lambda item: item.type == 'Project:package' or item.type == 'Project:project'))
+    
+    @typing.override
+    def closeEvent(self, event) -> None:
+        self.closeSignal.emit('close')
+        return super().closeEvent(event)

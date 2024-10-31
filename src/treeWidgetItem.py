@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-11 21:25:51
+LastEditTime: 2024-10-31 16:45:39
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\treeWidgetItem.py
 Description: 
 
@@ -25,10 +25,9 @@ from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from PySide6.QtCore import Qt, QObject
 from PySide6.QtGui import QIcon
 
-from src.utils.filter import identify_input_type
-from src.utils.logger import get_logger
+from src.modules import identify_input_type
+from src.modules import LOG
 from src import BASE_DIR, ICON_DIR
-LOG = get_logger()
 
 
 class TreeWidgetItem(QTreeWidgetItem, QObject):
@@ -182,10 +181,10 @@ class ModuleItem(TreeWidgetItem, QObject):
         self.setFirstColumnSpanned(True)
         self.setText(0, os.path.splitext(os.path.basename(self.module_path))[0])
         self.__create_childItem()
-        self.__parent.itemChanged.connect(self.__parent.on_item_changed) # 连接父组件（QTreeWidget）的子项编辑事件，该操作必须位于ModuleItem所有子项初始化之后，以防初始化时触发该事件
+        self.__parent.itemChanged.connect(self.__parent.parentWidget().parentWidget().on_item_changed) # 连接父组件（QTreeWidget）的子项编辑事件，该操作必须位于ModuleItem所有子项初始化之后，以防初始化时触发该事件
         
     def __del__(self):
-        self.__parent.itemChanged.disconnect(self.__parent.on_item_changed) # 析构时取消连接
+        self.__parent.itemChanged.disconnect(self.__parent.parentWidget().parentWidget().on_item_changed) # 析构时取消连接
 
     def __create_childItem(self):
         try:

@@ -1,8 +1,8 @@
-'''
+r'''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-10 00:01:59
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\messagebox\__init__.py
+LastEditTime: 2024-10-31 23:16:34
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\ui\__init__.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -15,3 +15,7 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
+from .ActionDock_ui import Ui_ActionDock
+from .EditDock_ui import Ui_EditDock
+from .LogDock_ui import Ui_LogDock
+from .ProjectDock_ui import Ui_ProjectDock

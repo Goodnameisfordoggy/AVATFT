@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-09-13 23:29:07
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\logger\logger.py
+LastEditTime: 2024-09-04 23:45:19
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\VATFT\src\dock\__init__.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -15,25 +15,7 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
-import os
-import sys
-from loguru import logger
-from src import LOG_DIR
-
-logger.remove()
-
-logger.add(sys.stdout, level="TRACE")
-
-logger.add(
-    os.path.join(LOG_DIR, "{time:YYYY-MM-DD}.log"),
-    rotation="1 day",
-    retention="1 month",
-    level="TRACE",
-    format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
-    colorize=True
-)
-
-def get_logger():
-    return logger
-
-
+from .action import ActionDock
+from .edit import EditDock
+from .log import LogDock
+from .project import ProjectDock

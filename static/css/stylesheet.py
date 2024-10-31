@@ -210,7 +210,7 @@ QPushButton:disabled {{
     border: none; /* 禁用时的边框颜色 */
 }}
 
-QLineEdit#NEUTRAL {{
+#NEUTRAL QLineEdit {{
     background-color: {__NEUTRAL_100}; /* 背景颜色 */
     color: {__PRIMARY_700};               /* 文本颜色 */
     border: 2px solid {__NEUTRAL_300}; /* 边框样式 */
@@ -219,20 +219,20 @@ QLineEdit#NEUTRAL {{
     font-size: 12px;                            /* 字体大小 */
     margin: 0px;
 }}
-QLineEdit#NEUTRAL:hover {{
+#NEUTRAL QLineEdit:hover {{
     border: 2px solid {__NEUTRAL_300};  /* 鼠标悬停时的边框颜色 */
 }}
-QLineEdit#NEUTRAL:focus {{                             
+#NEUTRAL QLineEdit:focus {{                             
     border: 2px solid {__NEUTRAL_500};  /* 焦点时的边框颜色 */
     background-color: {__NEUTRAL_200}; /* 焦点时的背景颜色 */
 }}
-QLineEdit#NEUTRAL:disabled {{
+#NEUTRAL QLineEdit:disabled {{
     background-color: {__NEUTRAL_100}; /* 禁用状态下的背景颜色 */
     color: {__PRIMARY_700};            /* 禁用状态下的文本颜色 */
     border: 2px solid {__NEUTRAL_300}; /* 禁用状态下的边框颜色 */
 }}
 
-QLineEdit#SECONDARY {{
+#SECONDARY QLineEdit {{
     background-color: {__SECONDARY_100}; /* 背景颜色 */
     color: {__PRIMARY_700};               /* 文本颜色 */
     border: 2px solid {__SECONDARY_300}; /* 边框样式 */
@@ -240,69 +240,69 @@ QLineEdit#SECONDARY {{
     padding: 5px;                               /* 内边距 */
     font-size: 12px;                            /* 字体大小 */
 }}
-QLineEdit#SECONDARY:hover {{
+#SECONDARY QLineEdit:hover {{
     border: 2px solid {__SECONDARY_300};  /* 鼠标悬停时的边框颜色 */
 }}
-QLineEdit#SECONDARY:focus {{                             
+#SECONDARY QLineEdit:focus {{                             
     border: 2px solid {__SECONDARY_500};  /* 焦点时的边框颜色 */
     background-color: {__SECONDARY_200}; /* 焦点时的背景颜色 */
 }}
-QLineEdit#SECONDARY:disabled {{
+#SECONDARY QLineEdit:disabled {{
     background-color: {__SECONDARY_100}; /* 禁用状态下的背景颜色 */
     color: {__PRIMARY_700};            /* 禁用状态下的文本颜色 */
     border: 2px solid {__SECONDARY_300}; /* 禁用状态下的边框颜色 */
 }}
 
-QTreeWidget#NEUTRAL {{
+#NEUTRAL QTreeWidget {{
     background-color: {__NEUTRAL_200}; /* 背景色 */
     color: {__PRIMARY_700};           /* 文字颜色 */
 }}
-QTreeWidget#NEUTRAL::item:selected {{
+#NEUTRAL QTreeWidget::item:selected {{
     background-color: {__NEUTRAL_400}; /* 选中项背景色 */
     color: white;              /* 选中项文字颜色 */
 }}
-QTreeWidget#NEUTRAL::branch {{
+#NEUTRAL QTreeWidget::branch {{
     margin: 0px;  /* 设置分支之间的间隔 */
 }}
-QTreeWidget#NEUTRAL::item {{
+#NEUTRAL QTreeWidget::item {{
     min-height: 24px; /* 设置最小行高 */
 }}
-QTreeWidget#NEUTRAL::item:selected {{
+#NEUTRAL QTreeWidget::item:selected {{
     background-color: {__NEUTRAL_400}; /* 选中项背景色 */
     color: {__PRIMARY_200};              /* 选中项文字颜色 */
     border: none;
 }}
 
-QTreeWidget#SECONDARY {{
+#SECONDARY QTreeWidget {{
     background-color: {__SECONDARY_200}; /* 背景色 */
     color: {__PRIMARY_700};           /* 文字颜色 */
     border: 1px solid {__SECONDARY_500};
     border-radius: 5px;
 }}
-QTreeWidget#SECONDARY::item:selected {{
+#SECONDARY QTreeWidget::item:selected {{
     background-color: {__SECONDARY_400}; /* 选中项背景色 */
     color: {__PRIMARY_200};              /* 选中项文字颜色 */
 }}
-QTreeWidget#SECONDARY::branch {{
+#SECONDARY QTreeWidget::branch {{
     margin: 0px;                         /* 设置分支之间的间隔 */
 }}
-QTreeWidget#SECONDARY::item {{
+#SECONDARY QTreeWidget::item {{
     min-height: 26px; /* 设置最小行高 */
     border-left: 1px solid {__SECONDARY_500};
     border-right: 1px solid {__SECONDARY_500};
 }}
-QTreeWidget#SECONDARY::item:first {{
+#SECONDARY QTreeWidget::item:first {{
     border-left: none;
 }}
 
-QTreeWidget#SECONDARY QHeaderView{{         
+#SECONDARY QTreeWidget QHeaderView{{         
     background-color: {__SECONDARY_200}; /* 标题栏背景 */
     height: 30px;
     border: 0px;
     border-radius: 5px;
     color: {__PRIMARY_100};
 }}
-QTreeWidget#SECONDARY QHeaderView::section {{
+#SECONDARY QTreeWidget QHeaderView::section {{
     background-color: {__SECONDARY_300};
     border: 2px solid {__SECONDARY_500};
     font-weight: bold;
@@ -316,7 +316,26 @@ QTextEdit {{
     border-style: dotted;
 }}
 
-QComboBox {{
+#NEUTRAL QComboBox {{
+    background-color: {__NEUTRAL_100};    /* 下拉框的背景色 */
+    border: 2px solid {__NEUTRAL_300};       /* 边框样式 */
+    padding: 5px;                 /* 内边距 */
+    border-radius: 5px;           /* 圆角 */
+    font-size: 12px;              /* 字体大小 */
+    font-weight: bold;
+    color: {__NEUTRAL_500};
+}}
+#NEUTRAL QComboBox:open {{
+    border: 1px solid {__NEUTRAL_500}; /* 获取焦点或打开时 */
+    color: {__NEUTRAL_200};
+}}
+#NEUTRAL QComboBox QAbstractItemView {{
+    border: 1px solid {__NEUTRAL_500}; /* 设置下拉列表边框颜色*/
+    background-color: {__NEUTRAL_100}; /* 设置下拉列表中选中项的背景色 */
+    color: {__NEUTRAL_700}; /* 设置下拉列表中选中项的文字颜色*/
+}}
+
+#SECONDARY QComboBox {{
     background-color: {__SECONDARY_100};    /* 下拉框的背景色 */
     border: 2px solid {__SECONDARY_300};       /* 边框样式 */
     padding: 5px;                 /* 内边距 */
@@ -325,17 +344,17 @@ QComboBox {{
     font-weight: bold;
     color: {__SECONDARY_500};
 }}
-QComboBox:open {{
+#SECONDARY QComboBox:open {{
     border: 1px solid {__SECONDARY_500}; /* 获取焦点或打开时 */
     color: {__SECONDARY_200};
 }}
-QComboBox QAbstractItemView {{
+#SECONDARY QComboBox QAbstractItemView {{
     border: 1px solid {__SECONDARY_500}; /* 设置下拉列表边框颜色*/
     background-color: {__SECONDARY_100}; /* 设置下拉列表中选中项的背景色 */
     color: {__SECONDARY_700}; /* 设置下拉列表中选中项的文字颜色*/
 }}
 
-QCheckBox#NEUTRAL {{
+#NEUTRAL QCheckBox {{
     height: 25px;
     font-size: 12px;               /* 字体大小 */
     color: {__PRIMARY_600};                /* 字体颜色 */
@@ -345,22 +364,22 @@ QCheckBox#NEUTRAL {{
     border-radius: 5px;             /* 边框圆角 */
     background-color: {__NEUTRAL_300};     /* 背景色 */
 }}
-QCheckBox#NEUTRAL::indicator {{
+#NEUTRAL QCheckBox::indicator {{
     width: 12px;                   /* 指示器宽度 */
     height: 12px;                  /* 指示器高度 */
 }}
-QCheckBox#NEUTRAL::indicator:unchecked {{
+#NEUTRAL QCheckBox::indicator:unchecked {{
     background-color: {__PRIMARY_200};     /* 未选中时背景色 */
     border-top: 2px solid {__NEUTRAL_500};  /* 上边框 */
     border-bottom: 2px solid {__NEUTRAL_500};/* 下边框 */
     border-right: 2px solid {__NEUTRAL_500}; /* 右边框 */
 }}
-QCheckBox#NEUTRAL::indicator:checked {{
+#NEUTRAL QCheckBox::indicator:checked {{
     background-color: {__PRIMARY_800};     /* 选中时背景色 */
     border: 1px solid {__NEUTRAL_500};     /* 选中时边框 */
 }}
 
-QCheckBox#SECONDARY {{
+#SECONDARY QCheckBox {{
     height: 25px;
     font-size: 12px;               /* 字体大小 */
     color: {__PRIMARY_600};                /* 字体颜色 */
@@ -370,17 +389,17 @@ QCheckBox#SECONDARY {{
     border-radius: 5px;             /* 边框圆角 */
     background-color: {__SECONDARY_300};     /* 背景色 */
 }}
-QCheckBox#SECONDARY::indicator {{
+#SECONDARY QCheckBox::indicator {{
     width: 12px;                   /* 指示器宽度 */
     height: 12px;                  /* 指示器高度 */
 }}
-QCheckBox#SECONDARY::indicator:unchecked {{
+#SECONDARY QCheckBox::indicator:unchecked {{
     background-color: {__PRIMARY_200};     /* 未选中时背景色 */
     border-top: 2px solid {__SECONDARY_500};  /* 上边框 */
     border-bottom: 2px solid {__SECONDARY_500};/* 下边框 */
     border-right: 2px solid {__SECONDARY_500}; /* 右边框 */
 }}
-QCheckBox#SECONDARY::indicator:checked {{
+#SECONDARY QCheckBox::indicator:checked {{
     background-color: {__PRIMARY_800};     /* 选中时背景色 */
     border: 1px solid {__SECONDARY_500};     /* 选中时边框 */
 }}

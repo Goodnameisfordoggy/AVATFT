@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-24 16:18:44
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\action.py
+LastEditTime: 2024-10-31 22:13:07
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\dock\action.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -26,12 +26,12 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, Signal, QPoint
 
-from src.utils.file import open_file
-from src.utils.filter import filter_item
-from src.utils import logger
+from src.ui import Ui_ActionDock
+from src.modules.file import open_file
+from src.modules.filter import filter_item
 from src.treeWidgetItem import TreeWidgetItem
+from src.modules.logger import LOG
 from src import ACTION_KEYWORDS_DIR, ICON_DIR
-LOG = logger.get_logger()
 
 
 class ActionDock(QDockWidget):
@@ -46,47 +46,22 @@ class ActionDock(QDockWidget):
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.resize(400, 300)
         self.setObjectName('NEUTRAL')
-        self.__initUI()
-        
-    def __initUI(self):
-        self.center_widget = QWidget(self)
-        self.setWidget(self.center_widget)
-        center_widget_layout = QVBoxLayout(self.center_widget)
-        
-        layout = QHBoxLayout()
-        center_widget_layout.addLayout(layout)
-        # 复选框
-        self.check_box = QCheckBox(self)
-        self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
-        self.check_box.stateChanged.connect(self.__on_expand_checkbox_changed)
-        self.check_box.setObjectName('NEUTRAL')
-        layout.addWidget(self.check_box, 1)
-        # 搜索框
-        self.search_box = QLineEdit(self)
-        self.search_box.setObjectName('NEUTRAL')
-        self.search_box.setPlaceholderText(self.tr("请输入搜索项，按Enter搜索", "search_box_placeholder_text"))
-        self.search_box.textChanged.connect(self.__search_tree_items)
-        layout.addWidget(self.search_box, 99)
-        
-        # 树控件
-        self.tree = QTreeWidget()
-        self.tree.setObjectName('NEUTRAL') 
-        center_widget_layout.addWidget(self.tree)
-        self.tree.setHeaderHidden(True) # 隐藏表头
-        # 拖拽功能
-        self.tree.setDragEnabled(True) # 能否拖拽
-        self.tree.setAcceptDrops(False) # 能否放置
-        self.tree.setDropIndicatorShown(True) # 是否启用放置指示器
-        self.tree.setDefaultDropAction(Qt.CopyAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
-        self.tree.itemDoubleClicked.connect(self.__on_item_double_clicked)
-        # 连接右键菜单事件
-        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tree.customContextMenuRequested.connect(self.__show_context_menu)
-        # 子项
-        self.__initChildItem(ACTION_KEYWORDS_DIR, self.tree)
-    
+        self.ui = Ui_ActionDock()
+        self.ui.setupUi(self)
+        self.__init_childItem(ACTION_KEYWORDS_DIR, self.ui.tree)
+        self.__init_connections()
 
-    def __initChildItem(self, root_dir, parent):
+        self.ui.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
+
+            
+    def __init_connections(self):
+        self.ui.check_box.stateChanged.connect(self.__on_expand_checkbox_changed)
+        self.ui.search_box.textChanged.connect(self.__search_tree_items)
+        self.ui.tree.itemDoubleClicked.connect(self.__on_item_double_clicked)
+        self.ui.tree.customContextMenuRequested.connect(self.__show_context_menu)
+
+
+    def __init_childItem(self, root_dir, parent):
         # 获取目录中的所有条目，并按照原始顺序列出
         with os.scandir(root_dir) as it:
             for entry in it:
@@ -94,25 +69,25 @@ class ActionDock(QDockWidget):
                 if entry.is_dir():
                     newItem = TreeWidgetItem(parent, [entry.name], ('package', entry.path))
                     # 递归调用，传入新的父项 newItem
-                    self.__initChildItem(entry.path, newItem)
+                    self.__init_childItem(entry.path, newItem)
                 # 如果是文件
                 else:
                     newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('action', entry.path))
     
     def __search_tree_items(self):
         """ 搜索树控件子项，搜索框绑定操作"""
-        search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
-        root = self.tree.invisibleRootItem() # 获取根项
+        search_text = self.ui.search_box.text().lower() # 获取搜索框的文本，并转换为小写
+        root = self.ui.tree.invisibleRootItem() # 获取根项
         filter_item(root, search_text)
     
     def __on_expand_checkbox_changed(self, state: int):
         """ 复选框状态变更绑定事件 """
         if state == 2:  # 复选框选中
-            self.tree.expandAll()  # 展开所有项
-            self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-expand-vertical.svg')))
+            self.ui.tree.expandAll()  # 展开所有项
+            self.ui.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-expand-vertical.svg')))
         else:
-            self.tree.collapseAll()  # 收起所有项
-            self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
+            self.ui.tree.collapseAll()  # 收起所有项
+            self.ui.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
 
     def __on_item_double_clicked(self, item: TreeWidgetItem, column):
         """ 树控件子项双击事件 """
@@ -125,10 +100,10 @@ class ActionDock(QDockWidget):
     def __show_context_menu(self, pos: QPoint):
         """ 树控件子项右键菜单事件 """
         # 获取点击的项
-        item = self.tree.itemAt(pos)
+        item = self.ui.tree.itemAt(pos)
         if item:
             # 创建上下文菜单
-            context_menu = QMenu(self)
+            context_menu = QMenu(self.ui.tree)
 
             # 创建菜单项
             action_edit = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self)
@@ -140,7 +115,7 @@ class ActionDock(QDockWidget):
             context_menu.addAction(action_edit)
 
             # 显示上下文菜单
-            context_menu.exec(self.tree.viewport().mapToGlobal(pos))
+            context_menu.exec(self.ui.tree.viewport().mapToGlobal(pos))
     
     @typing.override
     def closeEvent(self, event) -> None:

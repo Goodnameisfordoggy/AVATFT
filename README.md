@@ -10,7 +10,7 @@
 
 *行为可视化自动测试工具*
 
-version: 1.2.0
+version: 1.2.1
 
 # 注意
 - 该项目实现主要功能必须依赖行为关键字，但由于行为关键字改动频率较高暂不纳入版本管理，后继将会把部分稳定的关键字打成资源包来使用。
@@ -64,6 +64,7 @@ lrelease static\translations\en_US.ts
 - 图标源 https://github.com/Pictogrammers/pictogrammers.com
 
 # Update log
+- 1.2.1: 尝试使用MVC结构重新组织源码。
 - 1.2.0: 更新了测试用例运行方式
 - 1.1.0: 新增展开/收缩树视图子项功能
 - 1.0.0: 项目主体以及功能构建完成；

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-04 00:47:25
+LastEditTime: 2024-10-31 20:42:38
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\log.py
 Description: 
 
@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 	)
 from PySide6.QtCore import Signal
 
+from src.ui import Ui_LogDock
 
 class LogDock(QDockWidget):
     
@@ -32,23 +33,8 @@ class LogDock(QDockWidget):
         self.setWindowTitle(self.tr("日志", "window_title"))
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.setObjectName('NEUTRAL')
-        self.__initUI()
-        
-    def __initUI(self):
-        self.center_widget = QWidget(self)
-        self.setWidget(self.center_widget)
-        center_widget_layout = QVBoxLayout(self.center_widget)
-        
-        # 搜索框
-        # self.search_box = QLineEdit(self)
-        # self.search_box.setObjectName('NEUTRAL') 
-        # self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
-        # # self.search_box.textChanged.connect()
-        # center_widget_layout.addWidget(self.search_box)
-
-        # 日志区
-        self.logTextWidget = QTextEdit(self)
-        center_widget_layout.addWidget(self.logTextWidget)
+        self.ui = Ui_LogDock()
+        self.ui.setupUi(self)
     
     @typing.override
     def closeEvent(self, event) -> None:

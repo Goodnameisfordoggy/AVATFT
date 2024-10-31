@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-13 00:52:58
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dialogBox\reconfirm.py
+LastEditTime: 2024-10-31 20:50:06
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\view\dialogBox\input.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -15,24 +15,24 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
+
 import os
 import sys
-from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit
 from PySide6.QtGui import QIcon
 
 from src import ICON_DIR
 
-class ReconfirmDialogBox(QDialog):
-    def __init__(self, parent, title: str = 'reconfirm', text: str = 'text', ok_text: str = "确定", cancel_text: str = "取消"):
+class NameInputDialogBox(QDialog):
+    def __init__(self, parent, title: str = 'nameInput', text: str = 'text'):
         super().__init__()
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon(os.path.join(ICON_DIR, 'app.svg')))
         self.label = QLabel(text)
-        self.okButton = QPushButton(ok_text)
-        self.cancelButton = QPushButton(cancel_text)
+        self.lineEdit = QLineEdit()
+        self.okButton = QPushButton("确定")
+        self.cancelButton = QPushButton("取消")
         # 样式
-        self.label.setAlignment(Qt.AlignCenter)
 
         self.okButton.clicked.connect(self.accept)
         self.cancelButton.clicked.connect(self.reject)
@@ -44,5 +44,25 @@ class ReconfirmDialogBox(QDialog):
         
         mainLayout = QVBoxLayout(self)
         mainLayout.addWidget(self.label)
+        mainLayout.addWidget(self.lineEdit)
         mainLayout.addLayout(buttonLayout)
-        
+    
+    def nameInput(self):
+        return self.lineEdit.text()
+    
+    def set_default_name(self, text: str):
+        self.lineEdit.setText(text)
+    
+
+if __name__ == '__main__':
+    # Application setup
+    app = QApplication(sys.argv)
+    dialog = NameInputDialogBox('text')
+    dialog.set_default_name("file_name")
+    
+    # Show the dialog and wait for it to close
+    if dialog.exec():
+        print("Password:", dialog.lineEdit.text())
+    else:
+        print("Operation cancelled.")
+    sys.exit(app.exec())
