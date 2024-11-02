@@ -2,63 +2,64 @@ import os
 import shutil
 from PySide6.QtCore import Qt, QCoreApplication
 
-from . import LOG
+from src.modules.logger import get_global_logger
+LOG = get_global_logger()
 from src import TEMPLATE_DIR
 
 def new_module_file(path: str) -> bool:
     """ 
-    ´´½¨ module ¼¶ÅäÖÃÎÄ¼ş 
+    åˆ›å»º module çº§é…ç½®æ–‡ä»¶ 
     
-    :param path: Ä¿±êÎÄ¼şÂ·¾¶
+    :param path: ç›®æ ‡æ–‡ä»¶è·¯å¾„
     """
     if not os.path.exists(path):
-        if paste_file(os.path.join(TEMPLATE_DIR, 'module_template.yaml'), path, 'COPY'): # Ö±½ÓÊ¹ÓÃÄ£°æÎÄ¼ş³õÊ¼»¯
-            LOG.success(QCoreApplication.translate("ProjectDock", "²âÊÔÓÃÀıÒÑ¾­Ê¹ÓÃÄ£°åÎÄ¼ş³õÊ¼»¯", "Log_msg"))
+        if paste_file(os.path.join(TEMPLATE_DIR, 'module_template.yaml'), path, 'COPY'): # ç›´æ¥ä½¿ç”¨æ¨¡ç‰ˆæ–‡ä»¶åˆå§‹åŒ–
+            LOG.success(QCoreApplication.translate("ProjectDock", "æµ‹è¯•ç”¨ä¾‹å·²ç»ä½¿ç”¨æ¨¡æ¿æ–‡ä»¶åˆå§‹åŒ–", "Log_msg"))
             return True
         # config_data = {}
-        # # ´´½¨²¢Ğ´Èë YAML ÎÄ¼ş
+        # # åˆ›å»ºå¹¶å†™å…¥ YAML æ–‡ä»¶
         # with open(path, 'w') as f:
         #     yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True)
     else:
-        LOG.warning(QCoreApplication.translate("ProjectDock", "Ä¿±êÎ»ÖÃÖĞ´æÔÚÍ¬ÃûÎÄ¼ş£¬ĞÂ½¨²Ù×÷ÒÑÈ¡Ïû", "Log_msg"))
+        LOG.warning(QCoreApplication.translate("ProjectDock", "ç›®æ ‡ä½ç½®ä¸­å­˜åœ¨åŒåæ–‡ä»¶ï¼Œæ–°å»ºæ“ä½œå·²å–æ¶ˆ", "Log_msg"))
 
 def new_package_file(path: str) -> bool:
     """ 
-    ´´½¨ package Ä¿Â¼
+    åˆ›å»º package ç›®å½•
     
-    :param path: Ä¿±êÄ¿Â¼Â·¾¶
+    :param path: ç›®æ ‡ç›®å½•è·¯å¾„
     """
     if path:
         try:
             os.mkdir(path)
-            LOG.success(QCoreApplication.translate("ProjectDock", "²âÊÔ¼¯ {} ´´½¨³É¹¦£º", "Log_msg").format(path))
+            LOG.success(QCoreApplication.translate("ProjectDock", "æµ‹è¯•é›† {} åˆ›å»ºæˆåŠŸï¼š", "Log_msg").format(path))
             return True
         except FileExistsError:
-            LOG.warning(QCoreApplication.translate("ProjectDock", "Ä¿Â¼ {} ÒÑ´æÔÚ", "Log_msg").format(path))
+            LOG.warning(QCoreApplication.translate("ProjectDock", "ç›®å½• {} å·²å­˜åœ¨", "Log_msg").format(path))
 
 def paste_file(source: str, target: str, pre_event: str = '') -> bool:
     """ 
-    ¼ôÇĞ»ò¸´ÖÆºóÕ³ÌùÎÄ¼ş 
+    å‰ªåˆ‡æˆ–å¤åˆ¶åç²˜è´´æ–‡ä»¶ 
     
-    :param source: Ô­ÎÄ¼şÂ·¾¶
-    :param target: Ä¿±êÎ»Â·¾¶
+    :param source: åŸæ–‡ä»¶è·¯å¾„
+    :param target: ç›®æ ‡ä½è·¯å¾„
     :param pre_event: CUT | COPY
     """
     if source:
-        if os.path.exists(target): # Ä¿±êÎ»ÖÃ´æÔÚÎÄ¼ş
+        if os.path.exists(target): # ç›®æ ‡ä½ç½®å­˜åœ¨æ–‡ä»¶
             LOG.trace('A file with the same name exists at the destination location, pasting has been canceled')
             return
         if os.path.splitext(os.path.basename(source))[1] != os.path.splitext(os.path.basename(target))[1]:
-            LOG.warning(QCoreApplication.translate("ProjectDock", "Çë×¢Òâ£¬Ô´ÎÄ¼şµÄºó×ºÓëÄ¿±êÎÄ¼ş²»Í¬", "Log_msg"))
+            LOG.warning(QCoreApplication.translate("ProjectDock", "è¯·æ³¨æ„ï¼Œæºæ–‡ä»¶çš„åç¼€ä¸ç›®æ ‡æ–‡ä»¶ä¸åŒ", "Log_msg"))
         if not pre_event:
             LOG.trace('Param pre_event should be set to CUT or COPY')
-        # ¼ôÇĞÕ³Ìù
+        # å‰ªåˆ‡ç²˜è´´
         if pre_event == 'CUT': 
-            shutil.move(source, target) # ÒÆ¶¯ÎÄ¼ş»òÄ¿Â¼
+            shutil.move(source, target) # ç§»åŠ¨æ–‡ä»¶æˆ–ç›®å½•
             return True
-        # ¸´ÖÆÕ³Ìù
+        # å¤åˆ¶ç²˜è´´
         elif pre_event == 'COPY': 
-            # ¿½±´ÎÄ¼ş»òÄ¿Â¼
+            # æ‹·è´æ–‡ä»¶æˆ–ç›®å½•
             if os.path.isfile(source):
                 shutil.copy(source, target)
                 LOG.trace(f'File copy successfully at {target}')
@@ -68,60 +69,60 @@ def paste_file(source: str, target: str, pre_event: str = '') -> bool:
                 LOG.trace(f'Directory copy successfully at {target}')
                 return True
             else:
-                LOG.error(QCoreApplication.translate("ProjectDock", "{} ²»ÊÇÎÄ¼ş»òÄ¿Â¼", "Log_msg").format(source))
+                LOG.error(QCoreApplication.translate("ProjectDock", "{} ä¸æ˜¯æ–‡ä»¶æˆ–ç›®å½•", "Log_msg").format(source))
 
 def delete_file(path: str) -> bool:
     """" 
-    É¾³ıÎÄ¼ş 
+    åˆ é™¤æ–‡ä»¶ 
     
-    :param path: Ä¿±êÎÄ¼şÂ·¾¶
+    :param path: ç›®æ ‡æ–‡ä»¶è·¯å¾„
     """
-    if os.path.exists(path):  # ¼ì²éÂ·¾¶ÊÇ·ñ´æÔÚ
+    if os.path.exists(path):  # æ£€æŸ¥è·¯å¾„æ˜¯å¦å­˜åœ¨
         if os.path.isfile(path):
             try:
                 os.remove(path)
                 LOG.trace(f"File at '{path}' delete successfully")
                 return True
             except PermissionError:
-                LOG.warning(QCoreApplication.translate("ProjectDock", "Ã»ÓĞÈ¨ÏŞÉ¾³ıÎÄ¼ş: {}", "Log_msg").format(path))
+                LOG.warning(QCoreApplication.translate("ProjectDock", "æ²¡æœ‰æƒé™åˆ é™¤æ–‡ä»¶: {}", "Log_msg").format(path))
             except Exception as e:
-                LOG.error(QCoreApplication.translate("ProjectDock", "·¢Éú´íÎó£º{}", "Log_msg").format(e))
-        elif os.path.isdir(path): # Èç¹ûÊÇÄ¿Â¼Ö±½ÓÉ¾³ı£¬²»¿¼ÂÇÊÇ·ñÎª¿Õ
+                LOG.error(QCoreApplication.translate("ProjectDock", "å‘ç”Ÿé”™è¯¯ï¼š{}", "Log_msg").format(e))
+        elif os.path.isdir(path): # å¦‚æœæ˜¯ç›®å½•ç›´æ¥åˆ é™¤ï¼Œä¸è€ƒè™‘æ˜¯å¦ä¸ºç©º
             try:
                 shutil.rmtree(path)
                 LOG.trace(f"Directory at {path} delete successfully")
                 return True
             except PermissionError:
-                LOG.warning(QCoreApplication.translate("ProjectDock", "Ã»ÓĞÈ¨ÏŞÉ¾³ıÄ¿Â¼: {}", "Log_msg").format(path))
+                LOG.warning(QCoreApplication.translate("ProjectDock", "æ²¡æœ‰æƒé™åˆ é™¤ç›®å½•: {}", "Log_msg").format(path))
             except Exception as e:
-                LOG.error(QCoreApplication.translate("ProjectDock", "·¢Éú´íÎó£º{}", "Log_msg").format(e))
+                LOG.error(QCoreApplication.translate("ProjectDock", "å‘ç”Ÿé”™è¯¯ï¼š{}", "Log_msg").format(e))
         else:
-            LOG.warning(QCoreApplication.translate("ProjectDock", "ÎÄ¼ş {} ²»´æÔÚ", "Log_msg").format(path))
+            LOG.warning(QCoreApplication.translate("ProjectDock", "æ–‡ä»¶ {} ä¸å­˜åœ¨", "Log_msg").format(path))
 
 def rename_file(path: str, name: str = '') -> str:
     """ 
-    ÖØÃüÃûÎÄ¼ş»òÄ¿Â¼
+    é‡å‘½åæ–‡ä»¶æˆ–ç›®å½•
     
-    :param path: Ä¿±êÎÄ¼şÂ·¾¶
-    :param name: Òª¸ü¸ÄµÄÃû³Æ
-    :return: ¸ü¸ÄÍêÃû³ÆµÄÎÄ¼ş¾ø¶ÔÂ·¾¶
+    :param path: ç›®æ ‡æ–‡ä»¶è·¯å¾„
+    :param name: è¦æ›´æ”¹çš„åç§°
+    :return: æ›´æ”¹å®Œåç§°çš„æ–‡ä»¶ç»å¯¹è·¯å¾„
     """
-    if os.path.exists(path):  # ¼ì²éÂ·¾¶ÊÇ·ñ´æÔÚ
+    if os.path.exists(path):  # æ£€æŸ¥è·¯å¾„æ˜¯å¦å­˜åœ¨
         dirname = os.path.dirname(path)
-        if os.path.isfile(path): # ÎÄ¼ş
+        if os.path.isfile(path): # æ–‡ä»¶
             extension = os.path.splitext(os.path.basename(path))[1]
             newPath = os.path.join(dirname, name + extension)
-        else: # Ä¿Â¼
+        else: # ç›®å½•
             newPath = os.path.join(dirname, name)
         try:
             os.rename(path, newPath)
             LOG.trace(f'The file or directory has been successfully renamed to {name} at {newPath}')
             return newPath
         except FileNotFoundError:
-            LOG.warning(QCoreApplication.translate("ProjectDock", "ÎÄ¼ş»òÄ¿Â¼ {} ²»´æÔÚ", "Log_msg").format(path))
+            LOG.warning(QCoreApplication.translate("ProjectDock", "æ–‡ä»¶æˆ–ç›®å½• {} ä¸å­˜åœ¨", "Log_msg").format(path))
         except PermissionError:
-            LOG.warning(QCoreApplication.translate("ProjectDock", "Ã»ÓĞÈ¨ÏŞÖØÃüÃûÎÄ¼ş»òÄ¿Â¼£º{}", "Log_msg").format(path))
+            LOG.warning(QCoreApplication.translate("ProjectDock", "æ²¡æœ‰æƒé™é‡å‘½åæ–‡ä»¶æˆ–ç›®å½•ï¼š{}", "Log_msg").format(path))
         except Exception as e:
-            LOG.error(QCoreApplication.translate("ProjectDock", "·¢Éú´íÎó£º{}", "Log_msg").format(e))
+            LOG.error(QCoreApplication.translate("ProjectDock", "å‘ç”Ÿé”™è¯¯ï¼š{}", "Log_msg").format(e))
     else:
         LOG.trace(f"{path} does not exist")

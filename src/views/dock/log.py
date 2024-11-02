@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-31 20:42:38
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\dock\log.py
+LastEditTime: 2024-11-03 00:00:17
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\dock\log.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -21,7 +21,6 @@ from PySide6.QtWidgets import (
 	)
 from PySide6.QtCore import Signal
 
-from src.ui import Ui_LogDock
 
 class LogDock(QDockWidget):
     
@@ -33,8 +32,23 @@ class LogDock(QDockWidget):
         self.setWindowTitle(self.tr("日志", "window_title"))
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.setObjectName('NEUTRAL')
-        self.ui = Ui_LogDock()
-        self.ui.setupUi(self)
+        self.setupUi()
+    
+    def setupUi(self):
+        self.center_widget = QWidget(self)
+        self.setWidget(self.center_widget)
+        self.center_widget_layout = QVBoxLayout(self.center_widget)
+        
+        # 搜索框
+        # self.search_box = QLineEdit(separentlf)
+        # self.search_box.setObjectName('NEUTRAL') 
+        # self.search_box.setPlaceholderText("请输入搜索项，按Enter搜索")
+        # self.search_box.textChanged.connect()
+        # center_widget_layout.addWidget(self.search_box)
+
+        # 日志区
+        self.logTextWidget = QTextEdit(self)
+        self.center_widget_layout.addWidget(self.logTextWidget)
     
     @typing.override
     def closeEvent(self, event) -> None:

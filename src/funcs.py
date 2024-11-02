@@ -22,7 +22,8 @@ from multiprocessing import Process, Pool
 
 from src.modules.file import load_file_content
 from src.func import *
-from src.modules import LOG
+from src.modules.logger import get_global_logger
+LOG = get_global_logger()
 
 PLAYWRIGHT = None
 PAGE_GROUP = {} 

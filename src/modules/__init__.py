@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-31 21:40:28
+LastEditTime: 2024-11-01 14:06:15
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\modules\__init__.py
 Description: 
 
@@ -15,6 +15,5 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
-from .logger import LOG
 from .file import open_file, load_file_content, save_file_content
 from .filter import filter_item, identify_input_type

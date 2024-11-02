@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-31 21:43:43
+LastEditTime: 2024-11-01 14:28:26
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\modules\logger.py
 Description: 
 
@@ -20,21 +20,22 @@ import sys
 from loguru import logger
 from src import LOG_DIR
 
-logger_global = logger
-logger_global.remove()
 
-logger_global.add(sys.stdout, level="TRACE")
+def get_global_logger():
+	logger_global = logger
+	logger_global.remove()
 
-logger_global.add(
-    os.path.join(LOG_DIR, "{time:YYYY-MM-DD}.log"),
-    rotation="1 day",
-    retention="1 month",
-    level="TRACE",
-    format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
-    colorize=True
-)
+	logger_global.add(sys.stdout, level="TRACE")
 
-LOG = logger_global
+	logger_global.add(
+		os.path.join(LOG_DIR, "{time:YYYY-MM-DD}.log"),
+		rotation="1 day",
+		retention="1 month",
+		level="TRACE",
+		format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
+		colorize=True
+	)
+	return logger_global
 
 
 

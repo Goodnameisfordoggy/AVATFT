@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-31 23:37:36
+LastEditTime: 2024-11-02 22:43:28
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\mainWindow.py
 Description: 
 
@@ -21,17 +21,13 @@ import typing
 from PySide6.QtCore import QTranslator
 from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QTextEdit, QToolBar
 from PySide6.QtGui import QAction, QIcon, QTextCursor
-from PySide6.QtCore import Qt, Signal, Slot, QSize
+from PySide6.QtCore import Qt, Signal
 
 from src.views import ActionDock, EditDock, LogDock, ProjectDock, ReconfirmDialogBox
-from src.modules.logger import LOG
+from src.controllers import ProjectController
 from src import ICON_DIR
 
 class Main_Window(QMainWindow):
-    
-    # 自定义信号
-    newProjectSignal = Signal(str)
-    loadProjectSignal = Signal(str)
     
     def __init__(self, app):
         super().__init__()
@@ -52,10 +48,10 @@ class Main_Window(QMainWindow):
         self.showMaximized()  # 将窗口设置为最大化    
         
         # 重定向标准输出和标准错误到自定义输出类
-        sys.stdout = ConsoleOutput(self.log_dock.ui.logTextWidget)
-        sys.stderr = ConsoleOutput(self.log_dock.ui.logTextWidget)
-        # 将日志输出到自定义输出类
-        textEditLogger = QTextEditLogger(self.log_dock.ui.logTextWidget)
+        # sys.stdout = ConsoleOutput(self.log_dock.ui.logTextWidget)
+        # sys.stderr = ConsoleOutput(self.log_dock.ui.logTextWidget)
+        # # 将日志输出到自定义输出类
+        # textEditLogger = QTextEditLogger(self.log_dock.ui.logTextWidget)
     
     def __build_menu(self):
         # 创建菜单栏
@@ -70,10 +66,9 @@ class Main_Window(QMainWindow):
         # fileMenu动作
         self.newProjectAction = QAction(self.tr("新建工程"), self)
         self.newProjectAction.setIcon(QIcon(os.path.join(ICON_DIR, 'folder-plus.svg')))
-        self.newProjectAction.triggered.connect(lambda: self.newProjectSignal.emit('new_project'))
+        
         self.openProjectAction = QAction(self.tr("打开工程"), self)
         self.openProjectAction.setIcon(QIcon(os.path.join(ICON_DIR, 'folder-search.svg')))
-        self.openProjectAction.triggered.connect(lambda: self.loadProjectSignal.emit('load_project'))
         self.exitAction = QAction(self.tr("退出"), self)
         self.exitAction.setIcon(QIcon(os.path.join(ICON_DIR, 'window-close.svg')))
         self.exitAction.triggered.connect(self.close)  # 连接退出动作到窗口的关闭功能
@@ -172,49 +167,49 @@ class ConsoleOutput:
         sys.__stdout__.flush()
 
 
-class QTextEditLogger:
-    """ 使用 QTextEdit 作为日志记录器 """
-    def __init__(self, outputWidget: QTextEdit):
-        self.outputWidget = outputWidget
-        LOG.add(self.log_to_widget, level="TRACE")
+# class QTextEditLogger:
+#     """ 使用 QTextEdit 作为日志记录器 """
+#     def __init__(self, outputWidget: QTextEdit):
+#         self.outputWidget = outputWidget
+#         LOG.add(self.log_to_widget, level="TRACE")
 
-    def log_to_widget(self, message):
-        log_level = message.record["level"].name
-        background = None
-        # 根据日志级别设置颜色
-        if log_level == "CRITICAL":
-            color = "white"
-            background = "#de747e"
-        elif log_level == "ERROR":
-            color = "red"
-        elif log_level == "WARNING":
-            color = "orange"
-        elif log_level == "SUCCESS":
-            color = "green"
-        elif log_level == "DEBUG":
-            color = "blue"
-        elif log_level == "TRACE":
-            color = "skyblue"
-        else:
-            color = "black"
-        # 构建 HTML 格式的日志消息
-        html_message = f"""
-            <div>
-                <span style='color:gray; '>{message.record["time"].strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]}</span> | 
-                <span style='color:{color}; background-color: {background}; font-weight: bold; '>{message.record["level"].name}</span> | 
-                <span style='color:{color}; background-color: {background}; '>{message.record["message"]}</span> 
-                <br>
-            </div>
-            """
-        cursor = self.outputWidget.textCursor()  # 获取当前光标
-        cursor.movePosition(QTextCursor.End)  # 将光标移动到末尾
-        self.outputWidget.setTextCursor(cursor)  # 更新 QTextEdit 的光标
-        # 在主线程中将日志插入到 QTextEdit 中
-        self.outputWidget.insertHtml(html_message)
+#     def log_to_widget(self, message):
+#         log_level = message.record["level"].name
+#         background = None
+#         # 根据日志级别设置颜色
+#         if log_level == "CRITICAL":
+#             color = "white"
+#             background = "#de747e"
+#         elif log_level == "ERROR":
+#             color = "red"
+#         elif log_level == "WARNING":
+#             color = "orange"
+#         elif log_level == "SUCCESS":
+#             color = "green"
+#         elif log_level == "DEBUG":
+#             color = "blue"
+#         elif log_level == "TRACE":
+#             color = "skyblue"
+#         else:
+#             color = "black"
+#         # 构建 HTML 格式的日志消息
+#         html_message = f"""
+#             <div>
+#                 <span style='color:gray; '>{message.record["time"].strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]}</span> | 
+#                 <span style='color:{color}; background-color: {background}; font-weight: bold; '>{message.record["level"].name}</span> | 
+#                 <span style='color:{color}; background-color: {background}; '>{message.record["message"]}</span> 
+#                 <br>
+#             </div>
+#             """
+#         cursor = self.outputWidget.textCursor()  # 获取当前光标
+#         cursor.movePosition(QTextCursor.End)  # 将光标移动到末尾
+#         self.outputWidget.setTextCursor(cursor)  # 更新 QTextEdit 的光标
+#         # 在主线程中将日志插入到 QTextEdit 中
+#         self.outputWidget.insertHtml(html_message)
 
-    def write(self, message):
-        # 保持兼容性，write 方法处理一般的文本输出
-        self.outputWidget.append(message)
+#     def write(self, message):
+#         # 保持兼容性，write 方法处理一般的文本输出
+#         self.outputWidget.append(message)
 
-    def flush(self):
-        pass  # 不需要特殊的 flush 处理
+#     def flush(self):
+#         pass  # 不需要特殊的 flush 处理

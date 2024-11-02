@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-31 23:13:19
+LastEditTime: 2024-11-02 22:03:09
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\AVATFT.py
 Description: 
 
@@ -25,7 +25,8 @@ from src.views import Main_Window
 from src.controllers import MainController
 from static.css.stylesheet import STYLE_SHEET
 from src import CONFIG_DIR, TRANSLATIONS_DIR
-from src.modules.logger import LOG
+from src.modules.logger import get_global_logger
+LOG = get_global_logger()
 
 class AVATFT:
     def __init__(self) -> None:
@@ -45,6 +46,8 @@ class AVATFT:
                 self.app.installTranslator(self.translator)
 
         self.main_window = Main_Window(self.app)
-        MainController(self.main_window)
+        main_controller = MainController(self.main_window)
         self.main_window.show()
+        main_controller.init_APP()
         self.app.exec()
+        

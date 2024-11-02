@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-31 22:13:07
+LastEditTime: 2024-11-03 00:30:15
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\dock\action.py
 Description: 
 
@@ -26,19 +26,17 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, Signal, QPoint
 
-from src.ui import Ui_ActionDock
-from src.modules.file import open_file
-from src.modules.filter import filter_item
 from src.treeWidgetItem import TreeWidgetItem
-from src.modules.logger import LOG
 from src import ACTION_KEYWORDS_DIR, ICON_DIR
-
+from src.modules.logger import get_global_logger
+LOG = get_global_logger()
 
 class ActionDock(QDockWidget):
     
     # 自定义信号
     closeSignal = Signal(str)
-    itemDoubleClickedSignal = Signal(str)  # 信号携带一个字符串参数
+    itemDoubleClickedSignal = Signal(str)
+    updateChildrenItemSignal = Signal()
     
     def __init__(self, title='', parent=None):
         super().__init__(title, parent)
@@ -46,76 +44,39 @@ class ActionDock(QDockWidget):
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.resize(400, 300)
         self.setObjectName('NEUTRAL')
-        self.ui = Ui_ActionDock()
-        self.ui.setupUi(self)
-        self.__init_childItem(ACTION_KEYWORDS_DIR, self.ui.tree)
-        self.__init_connections()
+        self.setupUi()
 
-        self.ui.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
-
-            
-    def __init_connections(self):
-        self.ui.check_box.stateChanged.connect(self.__on_expand_checkbox_changed)
-        self.ui.search_box.textChanged.connect(self.__search_tree_items)
-        self.ui.tree.itemDoubleClicked.connect(self.__on_item_double_clicked)
-        self.ui.tree.customContextMenuRequested.connect(self.__show_context_menu)
-
-
-    def __init_childItem(self, root_dir, parent):
-        # 获取目录中的所有条目，并按照原始顺序列出
-        with os.scandir(root_dir) as it:
-            for entry in it:
-                # 如果是目录
-                if entry.is_dir():
-                    newItem = TreeWidgetItem(parent, [entry.name], ('package', entry.path))
-                    # 递归调用，传入新的父项 newItem
-                    self.__init_childItem(entry.path, newItem)
-                # 如果是文件
-                else:
-                    newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('action', entry.path))
-    
-    def __search_tree_items(self):
-        """ 搜索树控件子项，搜索框绑定操作"""
-        search_text = self.ui.search_box.text().lower() # 获取搜索框的文本，并转换为小写
-        root = self.ui.tree.invisibleRootItem() # 获取根项
-        filter_item(root, search_text)
-    
-    def __on_expand_checkbox_changed(self, state: int):
-        """ 复选框状态变更绑定事件 """
-        if state == 2:  # 复选框选中
-            self.ui.tree.expandAll()  # 展开所有项
-            self.ui.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-expand-vertical.svg')))
-        else:
-            self.ui.tree.collapseAll()  # 收起所有项
-            self.ui.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
-
-    def __on_item_double_clicked(self, item: TreeWidgetItem, column):
-        """ 树控件子项双击事件 """
-        try:
-            if item.type == 'action':
-                self.itemDoubleClickedSignal.emit(item.path) # 发送信号
-        except AttributeError:
-            pass
-    
-    def __show_context_menu(self, pos: QPoint):
-        """ 树控件子项右键菜单事件 """
-        # 获取点击的项
-        item = self.ui.tree.itemAt(pos)
-        if item:
-            # 创建上下文菜单
-            context_menu = QMenu(self.ui.tree)
-
-            # 创建菜单项
-            action_edit = QAction(QIcon(os.path.join(ICON_DIR, 'folder-eye.svg')), self.tr("打开文件(目录)", "menu_action_open_file_or_directory"), self)
-
-            # 连接菜单项的触发信号
-            action_edit.triggered.connect(lambda: open_file(item.path))
-
-            # 将菜单项添加到上下文菜单
-            context_menu.addAction(action_edit)
-
-            # 显示上下文菜单
-            context_menu.exec(self.ui.tree.viewport().mapToGlobal(pos))
+    def setupUi(self):
+        self.center_widget = QWidget(self)
+        self.setWidget(self.center_widget)
+        self.center_widget_layout = QVBoxLayout(self.center_widget)
+        
+        self.layout = QHBoxLayout()
+        self.center_widget_layout.addLayout(self.layout)
+        # 复选框
+        self.check_box = QCheckBox(self)
+        self.check_box.setIcon(QIcon(os.path.join(ICON_DIR, 'arrow-collapse-vertical.svg')))
+        
+        self.check_box.setObjectName('NEUTRAL')
+        self.layout.addWidget(self.check_box, 1)
+        # 搜索框
+        self.search_box = QLineEdit(self)
+        self.search_box.setObjectName('NEUTRAL')
+        self.search_box.setPlaceholderText(self.tr("请输入搜索项，按Enter搜索", "search_box_placeholder_text"))
+        self.layout.addWidget(self.search_box, 99)
+        
+        # 树控件
+        self.tree = QTreeWidget(self)
+        self.tree.setObjectName('NEUTRAL') 
+        self.center_widget_layout.addWidget(self.tree)
+        self.tree.setHeaderHidden(True) # 隐藏表头
+        # 拖拽功能
+        self.tree.setDragEnabled(True) # 能否拖拽
+        self.tree.setAcceptDrops(False) # 能否放置
+        self.tree.setDropIndicatorShown(True) # 是否启用放置指示器
+        self.tree.setDefaultDropAction(Qt.CopyAction) # 放置操作 (MoveAction, CopyAction, LinkAction: 创建一个链接或引用)
+        # 设置右键菜单
+        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
     
     @typing.override
     def closeEvent(self, event) -> None:

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-31 22:48:52
+LastEditTime: 2024-11-03 00:03:36
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\controllers\__init__.py
 Description: 
 
@@ -16,3 +16,7 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 from .main_controller import MainController
+from .project_controller import ProjectController
+from .action_controller import ActionController
+from .edit_controller import EditController
+from .log_controller import LogController
