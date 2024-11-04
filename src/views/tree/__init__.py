@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-04 09:09:12
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\controllers\log_controller.py
+LastEditTime: 2024-11-04 09:38:56
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\tree\__init__.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -15,13 +15,6 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
-from PySide6.QtCore import QObject
-
-class LogController(QObject):
-    
-    def __init__(self, log_dock):
-        # super().__init__()
-        from src.views import LogDock
-        self.view: LogDock = log_dock
-        # self.__init_connections()
-        # self.__connect_custom_signals()
+from .TreeWidgetItem import TreeWidgetItem
+from .actionItem import ActionItem
+from .moduleItem import ModuleItem

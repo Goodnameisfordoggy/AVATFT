@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-03 01:02:50
+LastEditTime: 2024-11-04 22:43:16
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\controllers\edit_controller.py
 Description: 
 
@@ -16,20 +16,14 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import os
-import json
-import yaml
-import typing
 import threading
-from PySide6.QtWidgets import (
-    QApplication, QLabel, QDockWidget, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem,
-    QMenu, QPushButton, QHBoxLayout, QVBoxLayout, QComboBox, QCheckBox, QAbstractItemView
-    )
+from PySide6.QtWidgets import QTreeWidgetItem, QMenu
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import QObject, Qt, QPoint, Signal, Slot, QEvent
+from PySide6.QtCore import QObject, QPoint, Slot
 
-from src.modules import load_file_content, save_file_content, identify_input_type
-from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
-from src.funcs import *
+from src.modules import load_file_content, save_file_content
+from src.views.tree import ActionItem, ModuleItem, TreeWidgetItem
+from src.modules.funcs import *
 from src import ICON_DIR, CONFIG_DIR
 from src.modules.logger import get_global_logger
 LOG = get_global_logger()
@@ -39,6 +33,7 @@ OPERATE_LOCK = threading.Lock()
 class EditController(QObject):
     
     def __init__(self, edit_dock):
+        # super().__init__()
         from src.views import EditDock
         self.view: EditDock = edit_dock
         self.__init_connections()
@@ -52,14 +47,17 @@ class EditController(QObject):
         self.view.search_combo_box.currentIndexChanged.connect(self.__switch_search_method)
         self.view.operation_btn.clicked.connect(self.operate)
         self.view.tree.customContextMenuRequested.connect(self.__show_context_menu)
+        self.view.tree.itemChanged.connect(self.view.tree.on_item_changed)
         # 子项展开和收缩事件
         self.view.tree.itemExpanded.connect(self.__adjust_column_widths)
         self.view.tree.itemCollapsed.connect(self.__adjust_column_widths)
+        
 
     def __connect_custom_signals(self):
         """连接自定义信号与槽函数"""
         self.view.displayActionDetailsSignal.connect(lambda action_path: self.__display_action_details(action_path))
         self.view.displayModuleDetailsSignal.connect(lambda module_path: self.__display_module_details(module_path))
+        self.view.operateSignal.connect(lambda module_path_list: self.operate(module_path_list))
     
     @Slot(int)
     def __on_expand_all_checkbox_changed(self, state: int):
@@ -104,7 +102,7 @@ class EditController(QObject):
         
         :param column: 搜索文本所在的列
         """
-        search_text = self.search_box.text().lower() # 获取搜索框的文本，并转换为小写
+        search_text = self.view.search_box.text().lower() # 获取搜索框的文本，并转换为小写
         root = self.view.tree.invisibleRootItem() # 获取根项
         
         def filter_item(item: QTreeWidgetItem, column: int, search_text: str):
@@ -150,16 +148,13 @@ class EditController(QObject):
     def operate(self, data: list | bool = False):
         """ 开始测试,按钮绑定操作 """
         if data is False or data is None: #  data: 按钮clicked信号触发时传递的信息
-            self.operateSignal.emit('operate')
+            self.view.operateRequestSignal.emit('request for module path list')
             return
         if isinstance(data, list): # data: operateResponseSignal信号触发时回带的信息
             if len(data) == 0:
                 LOG.warning(self.tr("还未勾选要运行的测试用例！", "Log_msg"))
                 return
-            # # 获取锁
-            # if OPERATE_LOCK.acquire(blocking=False):  
             try:
-                # 只有在获取到锁后才创建线程
                 thread = threading.Thread(target=self.__operate_thread, args=(data,))
                 thread.start()
             except Exception as e:
@@ -178,6 +173,8 @@ class EditController(QObject):
         
         :param action_path: 由信号携带
         """
+        self.view.tree.itemChanged.disconnect(self.view.tree.on_item_changed)
+
         # 清空树控件
         self.view.tree.clear()
         # 创建action子项
@@ -189,6 +186,8 @@ class EditController(QObject):
         self.view.tree.resizeColumnToContents(1)
         self.view.tree.resizeColumnToContents(2)
         self.view.isLockEditDockCheckBoxSignal.emit(True) # 关闭交互
+
+        self.view.tree.itemChanged.connect(self.view.tree.on_item_changed) 
     
     @Slot(str)
     def __display_module_details(self, module_path:str):
@@ -197,7 +196,7 @@ class EditController(QObject):
         
         :param module_path: 由信号携带
         """
-        # self.__parent.itemChanged.disconnect(self.__parent.on_item_changed)
+        self.view.tree.itemChanged.disconnect(self.view.tree.on_item_changed)
 
         # 清空树控件
         self.view.tree.clear()
@@ -209,44 +208,9 @@ class EditController(QObject):
         self.view.tree.resizeColumnToContents(2)
         self.view.isLockEditDockCheckBoxSignal.emit(False) # 放开交互
 
-        # self.view.tree.itemChanged.connect(self.on_item_changed) # 连接父组件（QTreeWidget）的子项编辑事件，该操作必须位于ModuleItem所有子项初始化之后，以防初始化时触发该事件
-
-
-    def __operate_thread(self, data: list | bool = False):
-        """ 线程任务 """
-        if OPERATE_LOCK.acquire(blocking=False): # 获取锁，立即返回
-            self.view.operation_btn.setEnabled(False) # 禁止交互
-            try:
-                LOG.info(self.tr("开始测试 》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》", "Log_msg"))
-                if len(data) == 1:
-                    run_module_process(data[0])
-                else:
-                    workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
-                    multi_module_operation_mode = workspace_settings['settings']['multi_module_operation_mode']
-                    if multi_module_operation_mode == 'concurrently':
-                        run_modules_processes_concurrently(get_ordered_queue(path_list=data))
-                    elif multi_module_operation_mode == 'sequential':
-                        run_modules_processes_sequentially(get_ordered_queue(path_list=data))
-                    else:
-                        LOG.critical("未知的运行模式配置！multi_module_operation_mode: {}".format(multi_module_operation_mode))
-
-                LOG.info(self.tr("测试结束《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《 ", "Log_msg"))
-            except Exception as e:
-                LOG.debug(f"{e}")
-            finally:
-                OPERATE_LOCK.release()  # 在进程任务完成后释放锁
-                self.view.operation_btn.setEnabled(True) # 允许交互
-        else:
-            LOG.warning(self.tr("已有操作正在进行，请稍候再试", "Log_msg"))
-
-    def __set_all_items_expanded(self, current_item: QTreeWidgetItem, state: bool):
-        """ 递归设置当前项及其下子项的展开状态 """
-        current_item.setExpanded(state)
-        
-        # 递归设置所有子项
-        for i in range(current_item.childCount()):
-            self.__set_all_items_expanded(current_item.child(i), state)
+        self.view.tree.itemChanged.connect(self.view.tree.on_item_changed) 
     
+    @Slot()
     def __show_context_menu(self, pos: QPoint):
         """ 
         树控件子项右键菜单事件 
@@ -363,3 +327,38 @@ class EditController(QObject):
             if item.type == 'action':
                 item.setFirstColumnSpanned(True)
             self.__swap_actionInfo(index, index + 1)
+    
+    def __set_all_items_expanded(self, current_item: QTreeWidgetItem, state: bool):
+        """ 递归设置当前项及其下子项的展开状态 """
+        current_item.setExpanded(state)
+        
+        # 递归设置所有子项
+        for i in range(current_item.childCount()):
+            self.__set_all_items_expanded(current_item.child(i), state)
+    
+    def __operate_thread(self, data: list | bool = False):
+        """ 线程任务 """
+        if OPERATE_LOCK.acquire(blocking=False): # 获取锁，立即返回
+            self.view.operation_btn.setEnabled(False) # 禁止交互
+            try:
+                LOG.info(self.tr("开始测试 》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》》", "Log_msg"))
+                if len(data) == 1:
+                    run_module_process(data[0])
+                else:
+                    workspace_settings = load_file_content(os.path.join(CONFIG_DIR, 'workspace.json'), LOG, translater=True)
+                    multi_module_operation_mode = workspace_settings['settings']['multi_module_operation_mode']
+                    if multi_module_operation_mode == 'concurrently':
+                        run_modules_processes_concurrently(get_ordered_queue(path_list=data))
+                    elif multi_module_operation_mode == 'sequential':
+                        run_modules_processes_sequentially(get_ordered_queue(path_list=data))
+                    else:
+                        LOG.critical("未知的运行模式配置！multi_module_operation_mode: {}".format(multi_module_operation_mode))
+
+                LOG.info(self.tr("测试结束《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《《 ", "Log_msg"))
+            except Exception as e:
+                LOG.debug(f"{e}")
+            finally:
+                OPERATE_LOCK.release()  # 在进程任务完成后释放锁
+                self.view.operation_btn.setEnabled(True) # 允许交互
+        else:
+            LOG.warning(self.tr("已有操作正在进行，请稍候再试", "Log_msg"))

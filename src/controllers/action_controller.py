@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-03 00:42:12
+LastEditTime: 2024-11-04 09:40:13
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\controllers\action_controller.py
 Description: 
 
@@ -16,26 +16,20 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import os
-import json
-import yaml
-import typing
-import shutil
-from PySide6.QtWidgets import (
-    QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QTreeWidgetItem, QMenu, QFileDialog
-	)
+from PySide6.QtWidgets import QTreeWidget, QMenu
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import QObject, Qt, QPoint, Signal, Slot
+from PySide6.QtCore import QObject, QPoint, Slot
 
-from src.modules import open_file, load_file_content, save_file_content, filter_item
-from src.treeWidgetItem import TreeWidgetItem
-from src.views import NameInputDialogBox, ReconfirmDialogBox
-from src import PROJECTS_DIR, CONFIG_DIR, ICON_DIR, ACTION_KEYWORDS_DIR
+from src.modules import open_file, filter_item
+from src.views.tree import TreeWidgetItem
+from src import ICON_DIR, ACTION_KEYWORDS_DIR
 from src.modules.logger import get_global_logger
 LOG = get_global_logger()
 
 class ActionController(QObject):
     
     def __init__(self, action_dock):
+        # super().__init__()
         from src.views import ActionDock
         self.view: ActionDock = action_dock
         self.__init_connections()

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-02 23:24:46
+LastEditTime: 2024-11-04 10:40:05
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\controllers\project_controller.py
 Description: 
 
@@ -16,19 +16,14 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import os
-import json
-import yaml
 import typing
-import shutil
-from PySide6.QtWidgets import (
-    QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QTreeWidgetItem, QMenu, QFileDialog
-	)
+from PySide6.QtWidgets import QTreeWidgetItem, QMenu, QFileDialog
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import QObject, Qt, QPoint, Signal, Slot
+from PySide6.QtCore import QObject, Qt, QPoint, Slot
 
 from src.modules import open_file, load_file_content, save_file_content, filter_item
 from src.modules.project_module import *
-from src.treeWidgetItem import TreeWidgetItem
+from src.views.tree import TreeWidgetItem
 from src.views import NameInputDialogBox, ReconfirmDialogBox
 from src import PROJECTS_DIR, CONFIG_DIR, ICON_DIR
 from src.modules.logger import get_global_logger
@@ -37,6 +32,7 @@ LOG = get_global_logger()
 class ProjectController(QObject):
     
     def __init__(self, project_dock):
+        # super().__init__()
         from src.views import ProjectDock
         self.view: ProjectDock = project_dock
         self.__init_connections()
@@ -52,6 +48,7 @@ class ProjectController(QObject):
     def __connect_custom_signals(self):
         """连接自定义信号与槽函数"""
         self.view.distorySignal.connect(self.__save_items_expanded_state)
+        self.view.getCheckedModulesSignal.connect(self.__get_checked_modules)
         self.view.loadProjectSignal.connect(lambda: self.__load_project(self.__select_project()))
         self.view.loadHistoryProjectSiganl.connect(self.__load_history_project)
         self.view.newProjectSignal.connect(self.__new_project)
@@ -60,7 +57,7 @@ class ProjectController(QObject):
     def __search_tree_items(self):
         """搜索树控件子项，搜索框绑定操作"""
         search_text = self.view.search_box.text().lower() # 获取搜索框的文本，并转换为小写
-        root = self.tree.invisibleRootItem() # 获取根项
+        root = self.view.tree.invisibleRootItem() # 获取根项
         filter_item(root, search_text)
     
     @Slot(TreeWidgetItem, int)
@@ -79,8 +76,8 @@ class ProjectController(QObject):
         self.view.tree.blockSignals(True)
         # 获取当前复选框的状态
         check_state = item.checkState(0)
-        self.view.update_child_items_check_state(item, check_state)
-        self.view.update_parent_item_check_state(item)
+        self.__update_child_items_check_state(item, check_state)
+        self.__update_parent_item_check_state(item)
         # 重新启用信号处理
         self.view.tree.blockSignals(False)
     
@@ -247,14 +244,14 @@ class ProjectController(QObject):
         self.view.tree.takeTopLevelItem(index)
         save_file_content(workspace_setting_file, workspace_settings, LOG, True)
     
-    def update_child_items_check_state(self, current_item: TreeWidgetItem, check_state: Qt.CheckState):
+    def __update_child_items_check_state(self, current_item: TreeWidgetItem, check_state: Qt.CheckState):
         """ 递归遍历所有子项，并设置与父项一致的复选框状态 """
         for i in range(current_item.childCount()):
             child_item = current_item.child(i)
             child_item.setCheckState(0, check_state)
-            self.update_child_items_check_state(child_item, check_state)
+            self.__update_child_items_check_state(child_item, check_state)
     
-    def update_parent_item_check_state(self, current_item: TreeWidgetItem):
+    def __update_parent_item_check_state(self, current_item: TreeWidgetItem):
         """ 递归，向上设置直系父项的复选框状态 """
         parent_item = current_item.parent()
         if isinstance(parent_item, TreeWidgetItem):
@@ -267,7 +264,7 @@ class ProjectController(QObject):
                 parent_item.setCheckState(0, Qt.Unchecked) # 未有子项选中
             else:
                 parent_item.setCheckState(0, Qt.PartiallyChecked) # 部分子项被选中
-            self.update_parent_item_check_state(parent_item)
+            self.__update_parent_item_check_state(parent_item)
     
     def __find_specific_item_upward(self, root_item: QTreeWidgetItem, condition: typing.Callable[[], bool]) -> (TreeWidgetItem | QTreeWidgetItem | None):
         """

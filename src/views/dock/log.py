@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-03 00:00:17
+LastEditTime: 2024-11-04 09:50:40
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\dock\log.py
 Description: 
 
@@ -20,7 +20,10 @@ from PySide6.QtWidgets import (
     QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTextEdit
 	)
 from PySide6.QtCore import Signal
+from PySide6.QtGui import QTextCursor
 
+from src.modules.logger import get_global_logger
+LOG = get_global_logger()
 
 class LogDock(QDockWidget):
     
@@ -54,4 +57,51 @@ class LogDock(QDockWidget):
     def closeEvent(self, event) -> None:
         self.closeSignal.emit('close')
         return super().closeEvent(event)
+
+class QTextEditLogger:
+    """ 使用 QTextEdit 作为日志记录器 """
+    def __init__(self, outputWidget: QTextEdit):
+        self.outputWidget = outputWidget
+        LOG.add(self.log_to_widget, level="TRACE")
+
+    def log_to_widget(self, message):
+        log_level = message.record["level"].name
+        background = None
+        # 根据日志级别设置颜色
+        if log_level == "CRITICAL":
+            color = "white"
+            background = "#de747e"
+        elif log_level == "ERROR":
+            color = "red"
+        elif log_level == "WARNING":
+            color = "orange"
+        elif log_level == "SUCCESS":
+            color = "green"
+        elif log_level == "DEBUG":
+            color = "blue"
+        elif log_level == "TRACE":
+            color = "skyblue"
+        else:
+            color = "black"
+        # 构建 HTML 格式的日志消息
+        html_message = f"""
+            <div>
+                <span style='color:gray; '>{message.record["time"].strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]}</span> | 
+                <span style='color:{color}; background-color: {background}; font-weight: bold; '>{message.record["level"].name}</span> | 
+                <span style='color:{color}; background-color: {background}; '>{message.record["message"]}</span> 
+                <br>
+            </div>
+            """
+        cursor = self.outputWidget.textCursor()  # 获取当前光标
+        cursor.movePosition(QTextCursor.End)  # 将光标移动到末尾
+        self.outputWidget.setTextCursor(cursor)  # 更新 QTextEdit 的光标
+        # 在主线程中将日志插入到 QTextEdit 中
+        self.outputWidget.insertHtml(html_message)
+
+    def write(self, message):
+        # 保持兼容性，write 方法处理一般的文本输出
+        self.outputWidget.append(message)
+
+    def flush(self):
+        pass  # 不需要特殊的 flush 处理
 

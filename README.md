@@ -10,7 +10,7 @@
 
 *行为可视化自动测试工具*
 
-version: 1.2.2
+version: 1.3.2
 
 # 注意
 - 该项目实现主要功能必须依赖行为关键字，但由于行为关键字改动频率较高暂不纳入版本管理，后继将会把部分稳定的关键字打成资源包来使用。
@@ -51,7 +51,7 @@ projects目录结构
 # 命令
 生成ts文件模版
 ```
-pyside6-lupdate src\AVATFT.py src\dock\action.py src\dock\edit.py src\dock\log.py src\dock\project.py src\treeWidgetItem.py src\utils\file.py -ts static\translations\en_US.ts
+pyside6-lupdate src\AVATFT.py src\views\mainWindow.py src\views\dock\action.py src\views\dock\edit.py src\views\dock\log.py src\views\dock\project.py src\views\tree\actionItem.py src\views\tree\moduleItem.py src\controllers\main_controller.py src\controllers\action_controller.py src\controllers\edit_controller.py src\controllers\log_controller.py src\controllers\project_controller.py src\modules\utils\file.py src\modules\project_module.py -ts static\translations\en_US.ts
 ```
 将ts文件转为qm文件(二进制)供程序读取
 ```
@@ -64,6 +64,7 @@ lrelease static\translations\en_US.ts
 - 图标源 https://github.com/Pictogrammers/pictogrammers.com
 
 # Update log
+- 1.3.2: 使用MVC结构重组完成。
 - 1.2.2: 使用MVC结构重新组织源码。
 - 1.2.1: 尝试使用MVC结构重新组织源码。
 - 1.2.0: 更新了测试用例运行方式

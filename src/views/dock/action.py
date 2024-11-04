@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-03 00:30:15
+LastEditTime: 2024-11-04 09:33:31
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\dock\action.py
 Description: 
 
@@ -20,14 +20,12 @@ import sys
 import typing
 import subprocess
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QDockWidget, QVBoxLayout, QHBoxLayout,QLineEdit, QTreeWidget, QMenu, 
-    QCheckBox
+    QWidget, QDockWidget, QVBoxLayout, QHBoxLayout,QLineEdit, QTreeWidget, QCheckBox
     )
-from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import Qt, Signal, QPoint
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt, Signal
 
-from src.treeWidgetItem import TreeWidgetItem
-from src import ACTION_KEYWORDS_DIR, ICON_DIR
+from src import ICON_DIR
 from src.modules.logger import get_global_logger
 LOG = get_global_logger()
 

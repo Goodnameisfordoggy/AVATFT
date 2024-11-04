@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-10-29 23:55:48
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\funcs.py
+LastEditTime: 2024-11-04 09:14:08
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\modules\funcs.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -20,7 +20,7 @@ import re
 import typing
 from multiprocessing import Process, Pool
 
-from src.modules.file import load_file_content
+from src.modules.utils.file import load_file_content
 from src.func import *
 from src.modules.logger import get_global_logger
 LOG = get_global_logger()

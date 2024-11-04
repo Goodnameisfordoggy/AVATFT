@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-03 01:03:01
+LastEditTime: 2024-11-04 22:33:27
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\dock\edit.py
 Description: 
 
@@ -21,16 +21,16 @@ import yaml
 import typing
 import threading
 from PySide6.QtWidgets import (
-    QApplication, QLabel, QDockWidget, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem,
-    QMenu, QPushButton, QHBoxLayout, QVBoxLayout, QComboBox, QCheckBox, QAbstractItemView
+    QLabel, QDockWidget, QWidget, QLineEdit, QTreeWidget, QTreeWidgetItem, QPushButton, 
+    QHBoxLayout, QVBoxLayout, QComboBox, QCheckBox
     )
-from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import Qt, QPoint, Signal, Slot, QEvent
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt, Signal, Slot
 
 from src.modules import load_file_content, save_file_content, identify_input_type
-from src.treeWidgetItem import ActionItem, ModuleItem, TreeWidgetItem
-from src.funcs import *
-from src import ICON_DIR, CONFIG_DIR
+from src.views.tree import TreeWidgetItem, ActionItem
+from src.modules.funcs import *
+from src import ICON_DIR
 from src.modules.logger import get_global_logger
 LOG = get_global_logger()
 
@@ -42,7 +42,8 @@ class EditDock(QDockWidget):
     closeSignal = Signal(str)
     displayActionDetailsSignal = Signal(str)
     displayModuleDetailsSignal = Signal(str)
-    operateSignal = Signal(str)
+    operateSignal = Signal(list)
+    operateRequestSignal = Signal(object)
     isLockEditDockCheckBoxSignal = Signal(bool)
     
 
@@ -129,7 +130,7 @@ class TreeWidget(QTreeWidget):
     def __init__(self, parent):
         super().__init__(parent) 
         
-    
+    @Slot()
     def on_item_changed(self, item: TreeWidgetItem, column):
         """
         子项完成编辑, 树控件事件绑定操作。
@@ -137,6 +138,7 @@ class TreeWidget(QTreeWidget):
         :param item: 发生变动的子项，即完成编辑的子项
         :param column: 发生变动的列
         """
+        LOG.debug("on_item_changed")
         if item:
             key = item.text(1)
             newValue = item.text(column)
@@ -146,8 +148,6 @@ class TreeWidget(QTreeWidget):
             # 文件变动
             mouduleItem = self.topLevelItem(0)
             content = load_file_content(mouduleItem.path, LOG, translater=True)
-            # with open(mouduleItem.path, 'r', encoding='utf-8') as f:
-            #     content = yaml.safe_load(f)
             try:
                 if self.__find_specific_item_upward(item, lambda item: item.text(0) == self.tr("用例信息")):
                     content['info'][key] = newValue
@@ -201,14 +201,6 @@ class TreeWidget(QTreeWidget):
         # 将更新后的内容写回目标文件
         save_file_content(module_file, module_content, logger=LOG, translater=True)
         LOG.trace(f'Add action info to the "step" section of the {module_file}')
-    
-    def __delete_actionInfo(self, index: int):
-        """ 从 module 文件(step)中删除 action 信息"""
-        moduleItem = self.topLevelItem(0)
-        content = load_file_content(moduleItem.path, logger=LOG, translater=True)
-        removed_action = content['step'].pop(index) # 根据子项索引在文件中删除对应位置上的信息
-        save_file_content(moduleItem.path, content, logger=LOG, translater=True)
-        LOG.trace(f'Action info at "step" index {index} delete successfully at {moduleItem.path}')
 
     def __move_actionInfo_to(self, move_index: int,  to_index: int):
         """ 向 module 文件(step)中特定索引插入 action 信息"""
@@ -219,14 +211,6 @@ class TreeWidget(QTreeWidget):
         save_file_content(moduleItem.path, content, logger=LOG, translater=True)
         LOG.trace(f'Action info at "step" index {move_index} move to index {move_index} successfully at {moduleItem.path}')
 
-    def __swap_actionInfo(self, index_1: int, index_2: int):
-        """ 将 module 文件(step)中两个不同索引的 action 信息交换 """
-        moduleItem = self.topLevelItem(0)
-        content = load_file_content(moduleItem.path, logger=LOG, translater=True)
-        content['step'][index_1], content['step'][index_2] = content['step'][index_2], content['step'][index_1] # 交换值
-        save_file_content(moduleItem.path, content, logger=LOG, translater=True)
-        LOG.trace(f'Action info at "step" index {index_1} and {index_2} swap successfully at {moduleItem.path}')
-    
     @typing.override
     def edit(self, index, trigger, event):
         """ 仅允许编辑第3列的文本 """

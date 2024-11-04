@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-02 22:03:09
+LastEditTime: 2024-11-04 21:59:21
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\AVATFT.py
 Description: 
 
@@ -17,6 +17,7 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 '''
 import os
 import sys
+from PySide6.QtGui import QIcon
 from PySide6.QtCore import QTranslator
 from PySide6.QtWidgets import QApplication
 
@@ -24,7 +25,7 @@ from src.modules import load_file_content
 from src.views import Main_Window
 from src.controllers import MainController
 from static.css.stylesheet import STYLE_SHEET
-from src import CONFIG_DIR, TRANSLATIONS_DIR
+from src import CONFIG_DIR, TRANSLATIONS_DIR, ICON_DIR
 from src.modules.logger import get_global_logger
 LOG = get_global_logger()
 
@@ -32,6 +33,7 @@ class AVATFT:
     def __init__(self) -> None:
         self.app = QApplication(sys.argv)  # 将 QApplication 实例作为成员变量
         
+        self.app.setWindowIcon(QIcon(os.path.join(ICON_DIR, 'app.svg')))
         if STYLE_SHEET:
             self.app.setStyleSheet(STYLE_SHEET)
 
@@ -45,9 +47,16 @@ class AVATFT:
             if self.translator.load(qm_file):
                 self.app.installTranslator(self.translator)
 
+        # 重定向标准输出和标准错误到自定义输出类
+        # sys.stdout = ConsoleOutput(self.log_dock.ui.logTextWidget)
+        # sys.stderr = ConsoleOutput(self.log_dock.ui.logTextWidget)
+        # # 将日志输出到自定义输出类
+        # textEditLogger = QTextEditLogger(self.log_dock.ui.logTextWidget)
+        
         self.main_window = Main_Window(self.app)
         main_controller = MainController(self.main_window)
         self.main_window.show()
         main_controller.init_APP()
         self.app.exec()
         
+

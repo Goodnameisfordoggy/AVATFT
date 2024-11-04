@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-02 22:45:52
+LastEditTime: 2024-11-04 10:39:02
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\dock\project.py
 Description: 
 
@@ -15,21 +15,13 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
-import os
-import json
-import yaml
 import typing
-import shutil
 from PySide6.QtWidgets import (
     QWidget, QDockWidget, QVBoxLayout, QLineEdit, QTreeWidget, QTreeWidgetItem, QMenu, QFileDialog
 	)
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import Qt, QPoint, Signal, Slot
+from PySide6.QtCore import Qt, Signal
 
-from src.modules import open_file, load_file_content, save_file_content, filter_item
-from src.treeWidgetItem import TreeWidgetItem
-from src.views import NameInputDialogBox, ReconfirmDialogBox
-from src import PROJECTS_DIR, CONFIG_DIR, ICON_DIR
 from src.modules.logger import get_global_logger
 LOG = get_global_logger()
 
@@ -38,6 +30,7 @@ class ProjectDock(QDockWidget):
     # 自定义信号
     closeSignal = Signal(str)
     distorySignal = Signal()
+    getCheckedModulesSignal = Signal(str)
     itemDoubleClickedSignal = Signal(str)
     loadProjectSignal = Signal(str)
     loadHistoryProjectSiganl = Signal()
@@ -51,7 +44,6 @@ class ProjectDock(QDockWidget):
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.setObjectName('NEUTRAL')
         self.setupUi()
-
 
     def __del__(self):
         self.distorySignal.emit()
