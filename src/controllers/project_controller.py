@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-04 10:40:05
+LastEditTime: 2024-11-05 00:01:40
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\controllers\project_controller.py
 Description: 
 
@@ -484,4 +484,6 @@ class ProjectController(QObject):
                     self.__create_item_by_directory_structure(entry.path, newItem, **kwargs)
                 # 如果是文件
                 else:
-                    newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('Project:module', entry.path), checkbox=True)
+                    extension = os.path.splitext(entry.name)[1]
+                    if extension != '' and extension in ('.yaml'): 
+                        newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('Project:module', entry.path), checkbox=True)

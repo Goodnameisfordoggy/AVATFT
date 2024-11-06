@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-04 09:50:40
+LastEditTime: 2024-11-05 00:25:53
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\dock\log.py
 Description: 
 
@@ -62,6 +62,7 @@ class QTextEditLogger:
     """ 使用 QTextEdit 作为日志记录器 """
     def __init__(self, outputWidget: QTextEdit):
         self.outputWidget = outputWidget
+        self.outputWidget.setReadOnly(True)
         LOG.add(self.log_to_widget, level="TRACE")
 
     def log_to_widget(self, message):
@@ -92,11 +93,13 @@ class QTextEditLogger:
                 <br>
             </div>
             """
+        # self.outputWidget.setReadOnly(False)
         cursor = self.outputWidget.textCursor()  # 获取当前光标
         cursor.movePosition(QTextCursor.End)  # 将光标移动到末尾
         self.outputWidget.setTextCursor(cursor)  # 更新 QTextEdit 的光标
         # 在主线程中将日志插入到 QTextEdit 中
         self.outputWidget.insertHtml(html_message)
+        
 
     def write(self, message):
         # 保持兼容性，write 方法处理一般的文本输出

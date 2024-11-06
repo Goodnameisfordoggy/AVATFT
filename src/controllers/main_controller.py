@@ -52,6 +52,7 @@ class MainController(QObject):
     def __connect_custom_signals(self): # QwQ: sender.signal.connect(receiver.func)
         """连接自定义信号与槽函数"""
         # 需要跨模块连接
+        self.view.closeSignal.connect(self.view.project_dock.distorySignal.emit)
         self.view.action_dock.closeSignal.connect(lambda: self.view.actionDockAction.setIcon(QIcon()))
         self.view.action_dock.itemDoubleClickedSignal.connect(lambda action_path: self.view.edit_dock.displayActionDetailsSignal.emit(action_path))
         self.view.project_dock.closeSignal.connect(lambda: self.view.projectDockAction.setIcon(QIcon()))

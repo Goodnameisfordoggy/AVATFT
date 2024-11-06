@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-04 22:01:24
+LastEditTime: 2024-11-04 23:43:39
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\mainWindow.py
 Description: 
 
@@ -26,6 +26,8 @@ from src.views import ActionDock, EditDock, LogDock, ProjectDock, ReconfirmDialo
 from src import ICON_DIR
 
 class Main_Window(QMainWindow):
+    
+    closeSignal = Signal()
     
     def __init__(self, app):
         super().__init__()
@@ -126,6 +128,7 @@ class Main_Window(QMainWindow):
     
     @typing.override
     def closeEvent(self, event):
+        self.closeSignal.emit()
         # 恢复标准输出和标准错误，保持良好的编程习惯Qwq。
         # 程序结束时，操作系统会自动释放所有资源，包括标准输出和标准错误的重定向。
         # 因此，这种重定向不会影响其他正在运行的程序，也不会影响外部的终端或控制台。

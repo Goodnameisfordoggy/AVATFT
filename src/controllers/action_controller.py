@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-04 09:40:13
+LastEditTime: 2024-11-05 00:07:39
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\controllers\action_controller.py
 Description: 
 
@@ -105,4 +105,6 @@ class ActionController(QObject):
                     self.__init_childItem(entry.path, newItem)
                 # 如果是文件
                 else:
-                    newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('action', entry.path))
+                    extension = os.path.splitext(entry.name)[1]
+                    if extension != '' and extension in ('.yaml'): 
+                        newItem = TreeWidgetItem(parent, [os.path.splitext(entry.name)[0]], ('action', entry.path))

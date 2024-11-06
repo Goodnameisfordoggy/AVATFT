@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-11-04 10:39:02
+LastEditTime: 2024-11-04 23:44:02
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\AVATFT\src\views\dock\project.py
 Description: 
 
@@ -45,9 +45,6 @@ class ProjectDock(QDockWidget):
         self.setObjectName('NEUTRAL')
         self.setupUi()
 
-    def __del__(self):
-        self.distorySignal.emit()
-    
     def setupUi(self):
         self.center_widget = QWidget(self)
         self.setWidget(self.center_widget)
@@ -65,9 +62,6 @@ class ProjectDock(QDockWidget):
         self.tree.setHeaderHidden(True) # 隐藏表头
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu) # 使用自定义菜单
         self.center_widget_layout.addWidget(self.tree)
-    
-
-    
     
     @typing.override
     def closeEvent(self, event) -> None:
